@@ -5,11 +5,17 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 export default function Index() {
   const { language } = useApp();
-  const [showPanel, setShowPanel] = useState(false);
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -18,15 +24,28 @@ export default function Index() {
         <ChatArea />
       </div>
 
-      {/* Mobile toggle */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="fixed bottom-36 left-4 z-40 md:hidden shadow-lg rounded-full h-10 w-10 bg-primary text-primary-foreground border-0"
-        onClick={() => setShowPanel(!showPanel)}
-      >
-        {showPanel ? <X className="h-5 w-5" /> : <SlidersHorizontal className="h-5 w-5" />}
-      </Button>
+      {/* Mobile drawer trigger + drawer */}
+      <div className="md:hidden">
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="fixed bottom-36 left-4 z-40 shadow-lg rounded-full h-10 w-10 bg-primary text-primary-foreground border-0"
+            >
+              <SlidersHorizontal className="h-5 w-5" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="max-h-[85vh]">
+            <DrawerHeader className="border-b border-border pb-3">
+              <DrawerTitle className="font-display text-lg">{t('chat.subtitle', language)}</DrawerTitle>
+            </DrawerHeader>
+            <ScrollArea className="overflow-y-auto px-1 pb-6" style={{ maxHeight: 'calc(85vh - 60px)' }}>
+              <ContextPanel />
+            </ScrollArea>
+          </DrawerContent>
+        </Drawer>
+      </div>
 
       {/* Context panel - desktop */}
       <div className="hidden md:block w-[320px] border-l border-border bg-card/50">
@@ -37,19 +56,6 @@ export default function Index() {
           <ContextPanel />
         </ScrollArea>
       </div>
-
-      {/* Context panel - mobile overlay */}
-      {showPanel && (
-        <div className="fixed inset-0 z-30 md:hidden bg-background/80 backdrop-blur-sm" onClick={() => setShowPanel(false)}>
-          <div className="absolute right-0 top-0 bottom-0 w-[300px] bg-card border-l border-border shadow-xl overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold">{t('chat.subtitle', language)}</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowPanel(false)}><X className="h-4 w-4" /></Button>
-            </div>
-            <ContextPanel />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
