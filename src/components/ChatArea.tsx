@@ -4,7 +4,8 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Sparkles, Trash2 } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Trash2 } from 'lucide-react';
+import ReligionIcon from '@/components/ReligionIcon';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -24,15 +25,15 @@ function TypingDots() {
   );
 }
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate }: {
-  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; onNarrate: (text: string, index: number) => void;
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, religion }: {
+  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; onNarrate: (text: string, index: number) => void; religion: string;
 }) {
   const isUser = msg.role === 'user';
   return (
     <div className={cn("flex gap-3 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <ReligionIcon religion={religion} />
         </div>
       )}
       <div className="flex flex-col gap-1 max-w-[80%]">
@@ -79,6 +80,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate }: {
 
 export default function ChatArea() {
   const { language, user, chatContext, questionsRemaining, setQuestionsRemaining } = useApp();
+  const religion = chatContext.religion || '';
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -372,12 +374,13 @@ export default function ChatArea() {
             playingIndex={playingIndex}
             loadingAudio={loadingAudio}
             onNarrate={playNarration}
+            religion={religion}
           />
         ))}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex gap-3 justify-start animate-fade-in">
             <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <ReligionIcon religion={religion} />
             </div>
             <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
               <TypingDots />

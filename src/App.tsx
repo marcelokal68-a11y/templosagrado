@@ -13,6 +13,7 @@ import Verse from "./pages/Verse";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
 import NotFound from "./pages/NotFound";
+import BottomNav from "./components/BottomNav";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/invite/:code" element={<InviteRedeem />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <BottomNav />
           </div>
         </AppProvider>
       </BrowserRouter>
