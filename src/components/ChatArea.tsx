@@ -48,20 +48,22 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate }: {
             onClick={() => onNarrate(msg.content, index)}
             disabled={loadingAudio === index}
             className={cn(
-              "self-start flex items-center gap-1.5 text-xs px-2 py-1 rounded-full transition-all",
+              "self-start flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl border transition-all",
               playingIndex === index
-                ? "text-primary bg-primary/10"
-                : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                ? "text-primary bg-primary/15 border-primary/30 shadow-sm"
+                : loadingAudio === index
+                  ? "text-muted-foreground bg-muted/50 border-border"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 border-border"
             )}
           >
             {loadingAudio === index ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : playingIndex === index ? (
-              <VolumeX className="h-3 w-3" />
+              <VolumeX className="h-5 w-5" />
             ) : (
-              <Volume2 className="h-3 w-3" />
+              <Volume2 className="h-5 w-5" />
             )}
-            <span>{playingIndex === index ? 'Parar' : 'Ouvir'}</span>
+            <span>{loadingAudio === index ? 'Carregando...' : playingIndex === index ? 'Parar' : '🔊 Ouvir'}</span>
           </button>
         )}
       </div>
@@ -82,6 +84,7 @@ export default function ChatArea() {
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCacheRef = useRef<Map<number, string>>(new Map());
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -97,11 +100,8 @@ export default function ChatArea() {
     setPlayingIndex(null);
   }, []);
 
-  const playNarration = useCallback(async (text: string, index: number) => {
-    if (playingIndex === index) { stopAudio(); return; }
-    stopAudio();
-    setLoadingAudio(index);
-
+  const preloadAudio = useCallback(async (text: string, index: number) => {
+    if (audioCacheRef.current.has(index)) return;
     try {
       const resp = await fetch(TTS_URL, {
         method: 'POST',
@@ -112,17 +112,48 @@ export default function ChatArea() {
         },
         body: JSON.stringify({ text }),
       });
-
-      if (!resp.ok) throw new Error('TTS failed');
-
+      if (!resp.ok) return;
       const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
+      audioCacheRef.current.set(index, url);
+    } catch { /* silent preload failure */ }
+  }, []);
+
+  const playNarration = useCallback(async (text: string, index: number) => {
+    if (playingIndex === index) { stopAudio(); return; }
+    stopAudio();
+
+    const cachedUrl = audioCacheRef.current.get(index);
+    if (cachedUrl) {
+      const audio = new Audio(cachedUrl);
+      audioRef.current = audio;
+      setPlayingIndex(index);
+      audio.onended = () => setPlayingIndex(null);
+      audio.onerror = () => setPlayingIndex(null);
+      await audio.play();
+      return;
+    }
+
+    setLoadingAudio(index);
+    try {
+      const resp = await fetch(TTS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!resp.ok) throw new Error('TTS failed');
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      audioCacheRef.current.set(index, url);
       const audio = new Audio(url);
       audioRef.current = audio;
       setPlayingIndex(index);
-
-      audio.onended = () => { setPlayingIndex(null); URL.revokeObjectURL(url); };
-      audio.onerror = () => { setPlayingIndex(null); URL.revokeObjectURL(url); };
+      audio.onended = () => setPlayingIndex(null);
+      audio.onerror = () => setPlayingIndex(null);
       await audio.play();
     } catch (e) {
       console.error(e);
@@ -216,6 +247,11 @@ export default function ChatArea() {
       }
 
       setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
+      // Auto-preload audio for the assistant's response
+      if (assistantSoFar.length > 0) {
+        const assistantIndex = messages.length + 1; // user msg + assistant msg
+        preloadAudio(assistantSoFar, assistantIndex);
+      }
     } catch (e) {
       console.error(e);
       toast({ title: t('chat.error', language), description: t('chat.error_desc', language), variant: 'destructive' });
