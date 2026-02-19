@@ -28,6 +28,26 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.error_desc': 'Não foi possível conectar ao sacerdote.',
     'chat.narrate': 'Ouvir',
     'chat.narrate_stop': 'Parar',
+    'chat.clear': 'Limpar conversa',
+    
+    // History
+    'history.title': 'Histórico',
+    'history.delete_all': 'Apagar tudo',
+    'history.empty': 'Nenhuma mensagem salva.',
+    'history.deleted': 'Histórico apagado',
+    
+    // Posts
+    'nav.posts': 'Post',
+    'posts.title': 'Criar Post',
+    'posts.subtitle': 'Transforme respostas do chat em posts para redes sociais',
+    'posts.select': '1. Selecione uma resposta',
+    'posts.networks': '2. Escolha as redes',
+    'posts.generate': 'Gerar Posts',
+    'posts.results': '3. Posts gerados',
+    'posts.copy': 'Copiar',
+    'posts.copied': 'Copiado!',
+    'posts.no_messages': 'Nenhuma conversa encontrada. Converse primeiro no chat!',
+    'posts.login_required': 'Faça login para criar posts.',
     
     // Recommended questions
     'rec.default.1': 'Como posso encontrar paz?',
@@ -189,6 +209,24 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.error_desc': 'Could not connect to the priest.',
     'chat.narrate': 'Listen',
     'chat.narrate_stop': 'Stop',
+    'chat.clear': 'Clear chat',
+    
+    'history.title': 'History',
+    'history.delete_all': 'Delete all',
+    'history.empty': 'No saved messages.',
+    'history.deleted': 'History deleted',
+    
+    'nav.posts': 'Post',
+    'posts.title': 'Create Post',
+    'posts.subtitle': 'Transform chat responses into social media posts',
+    'posts.select': '1. Select a response',
+    'posts.networks': '2. Choose networks',
+    'posts.generate': 'Generate Posts',
+    'posts.results': '3. Generated posts',
+    'posts.copy': 'Copy',
+    'posts.copied': 'Copied!',
+    'posts.no_messages': 'No conversations found. Chat first!',
+    'posts.login_required': 'Log in to create posts.',
     
     'rec.default.1': 'How can I find peace?',
     'rec.default.2': 'What is the meaning of life?',
@@ -340,6 +378,24 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.error_desc': 'No se pudo conectar con el sacerdote.',
     'chat.narrate': 'Escuchar',
     'chat.narrate_stop': 'Detener',
+    'chat.clear': 'Limpiar chat',
+    
+    'history.title': 'Historial',
+    'history.delete_all': 'Borrar todo',
+    'history.empty': 'Sin mensajes guardados.',
+    'history.deleted': 'Historial borrado',
+    
+    'nav.posts': 'Post',
+    'posts.title': 'Crear Post',
+    'posts.subtitle': 'Transforma respuestas del chat en posts para redes sociales',
+    'posts.select': '1. Selecciona una respuesta',
+    'posts.networks': '2. Elige las redes',
+    'posts.generate': 'Generar Posts',
+    'posts.results': '3. Posts generados',
+    'posts.copy': 'Copiar',
+    'posts.copied': '¡Copiado!',
+    'posts.no_messages': 'Sin conversaciones. ¡Chatea primero!',
+    'posts.login_required': 'Inicia sesión para crear posts.',
     
     'rec.default.1': '¿Cómo puedo encontrar la paz?',
     'rec.default.2': '¿Cuál es el sentido de la vida?',
