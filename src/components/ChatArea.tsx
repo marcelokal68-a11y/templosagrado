@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -163,8 +163,15 @@ export default function ChatArea() {
     }
   }, [playingIndex, stopAudio, language, toast]);
 
+  const navigate = useNavigate();
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
+
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
 
     if (questionsRemaining <= 0) {
       toast({ title: t('chat.no_questions', language), description: t('chat.upgrade', language), variant: 'destructive' });
