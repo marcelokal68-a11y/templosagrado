@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Trash2 } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import ChatHistory from '@/components/ChatHistory';
 import { useToast } from '@/hooks/use-toast';
@@ -87,6 +87,7 @@ export default function ChatArea() {
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<number | null>(null);
+  const [ttsSpeed, setTtsSpeed] = useState(1.15);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -129,7 +130,7 @@ export default function ChatArea() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, speed: ttsSpeed }),
       });
       if (!resp.ok) return;
       const blob = await resp.blob();
@@ -162,7 +163,7 @@ export default function ChatArea() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, speed: ttsSpeed }),
       });
       if (!resp.ok) throw new Error('TTS failed');
       const blob = await resp.blob();
@@ -330,24 +331,44 @@ export default function ChatArea() {
   return (
     <div className="flex flex-col h-full">
       {messages.length > 0 && (
-        <div className="flex justify-end gap-1 p-2 border-b border-border">
-          <ChatHistory />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-destructive gap-1.5"
-            onClick={async () => {
-              if (user) {
-                await supabase.from('chat_messages').delete().eq('user_id', user.id);
-              }
-              stopAudio();
-              audioCacheRef.current.clear();
-              setMessages([]);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-            {t('chat.clear', language) || 'Limpar conversa'}
-          </Button>
+        <div className="flex justify-between items-center gap-1 p-2 border-b border-border">
+          <div className="flex items-center gap-1.5">
+            <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={ttsSpeed}
+              onChange={e => {
+                setTtsSpeed(parseFloat(e.target.value));
+                audioCacheRef.current.clear();
+                stopAudio();
+              }}
+              className="text-xs bg-transparent border border-border rounded px-1.5 py-0.5 text-muted-foreground focus:outline-none"
+            >
+              <option value={0.8}>0.8×</option>
+              <option value={0.9}>0.9×</option>
+              <option value={1.0}>1.0×</option>
+              <option value={1.15}>1.15×</option>
+              <option value={1.2}>1.2×</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <ChatHistory />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-destructive gap-1.5"
+              onClick={async () => {
+                if (user) {
+                  await supabase.from('chat_messages').delete().eq('user_id', user.id);
+                }
+                stopAudio();
+                audioCacheRef.current.clear();
+                setMessages([]);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              {t('chat.clear', language) || 'Limpar conversa'}
+            </Button>
+          </div>
         </div>
       )}
       {messages.length === 0 && (
