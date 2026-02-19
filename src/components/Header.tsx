@@ -92,17 +92,17 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile nav */}
+      {/* Mobile menu - login/logout only */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background p-4 space-y-2">
-          {navItems.map(item => (
-            <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}>
+          {isAdmin && (
+            <Link to="/admin" onClick={() => setMobileOpen(false)}>
               <Button variant="ghost" className="w-full justify-start gap-2">
-                <item.icon className="h-4 w-4" />
-                {item.label}
+                <Shield className="h-4 w-4" />
+                Admin
               </Button>
             </Link>
-          ))}
+          )}
           {user ? (
             <Button variant="outline" className="w-full justify-start gap-2" onClick={() => { handleLogout(); setMobileOpen(false); }}>
               <LogOut className="h-4 w-4" />
