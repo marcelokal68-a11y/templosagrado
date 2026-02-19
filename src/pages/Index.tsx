@@ -22,7 +22,7 @@ export default function Index() {
       <Button
         variant="outline"
         size="icon"
-        className="fixed bottom-[5.5rem] right-4 z-40 md:hidden shadow-lg rounded-full h-12 w-12 bg-primary text-primary-foreground border-0"
+        className="fixed bottom-28 right-4 z-40 md:hidden shadow-lg rounded-full h-12 w-12 bg-primary text-primary-foreground border-0"
         onClick={() => setShowPanel(!showPanel)}
       >
         {showPanel ? <X className="h-5 w-5" /> : <SlidersHorizontal className="h-5 w-5" />}
