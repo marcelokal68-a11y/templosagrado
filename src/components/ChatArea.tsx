@@ -181,15 +181,26 @@ export default function ChatArea() {
 
   const navigate = useNavigate();
 
+  const getAnonCount = () => parseInt(localStorage.getItem('anon_chat_count') || '0', 10);
+  const incrementAnonCount = () => {
+    const count = getAnonCount() + 1;
+    localStorage.setItem('anon_chat_count', count.toString());
+    return count;
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     if (!user) {
-      navigate('/auth');
-      return;
+      const anonUsed = getAnonCount();
+      if (anonUsed >= 10) {
+        toast({ title: 'Limite atingido', description: 'Faça login para continuar conversando.', variant: 'destructive' });
+        navigate('/auth');
+        return;
+      }
     }
 
-    if (questionsRemaining <= 0) {
+    if (user && questionsRemaining <= 0) {
       toast({ title: t('chat.no_questions', language), description: t('chat.upgrade', language), variant: 'destructive' });
       return;
     }
@@ -269,7 +280,11 @@ export default function ChatArea() {
         }
       }
 
-      setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
+      if (user) {
+        setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
+      } else {
+        incrementAnonCount();
+      }
 
       // Persist messages to DB
       if (user && assistantSoFar.length > 0) {
@@ -386,8 +401,18 @@ export default function ChatArea() {
           </Button>
         </div>
         <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{questionsRemaining} {t('chat.questions_remaining', language)}</span>
-          {questionsRemaining <= 3 && (
+          <span>
+            {user 
+              ? `${questionsRemaining} ${t('chat.questions_remaining', language)}`
+              : `${Math.max(0, 10 - getAnonCount())} ${t('chat.questions_remaining', language)} (sem login)`
+            }
+          </span>
+          {!user && (
+            <Link to="/auth" className="text-primary hover:underline font-medium">
+              Fazer login
+            </Link>
+          )}
+          {user && questionsRemaining <= 3 && (
             <Link to="/pricing" className="text-primary hover:underline font-medium">
               {t('chat.upgrade', language)}
             </Link>

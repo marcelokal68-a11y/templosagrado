@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
@@ -11,9 +11,13 @@ import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
 
 export default function Auth() {
-  const { language } = useApp();
+  const { language, user } = useApp();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) navigate('/', { replace: true });
+  }, [user, navigate]);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
