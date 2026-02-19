@@ -26,12 +26,15 @@ export default function BottomNav() {
               key={to}
               to={to}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors",
-                active ? "text-primary" : "text-muted-foreground"
+                "relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-all duration-300",
+                active ? "text-primary scale-105" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium leading-none">{t(labelKey, language)}</span>
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary animate-scale-in" />
+              )}
+              <Icon className={cn("h-5 w-5 transition-transform duration-300", active && "animate-scale-in")} />
+              <span className={cn("text-[10px] font-medium leading-none transition-all duration-300", active && "font-semibold")}>{t(labelKey, language)}</span>
             </Link>
           );
         })}
