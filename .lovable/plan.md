@@ -1,40 +1,62 @@
 
-# Botao de Narracao com ElevenLabs TTS
+# Icones Religiosos no Avatar do Chat + Melhorias Mobile UX/UI
 
-## Resumo
-Adicionar um botao de narracao (icone de alto-falante) em cada mensagem do assistente no chat. Ao clicar, o texto da resposta sera convertido em audio usando a API do ElevenLabs com a voz ID `HOfBIVLhom4mc9WvXfyH`.
+## O que muda
 
-## Etapas
+### 1. Avatar do Sacerdote por Religiao
+Em vez do icone generico de IA (Sparkles), o avatar do assistente mostrara um simbolo especifico da religiao selecionada:
 
-### 1. Conectar ElevenLabs ao projeto
-- Usar o conector ElevenLabs ja existente no workspace para vincular a API key ao projeto
-- O secret `ELEVENLABS_API_KEY` ficara disponivel nas edge functions
+| Religiao | Simbolo |
+|----------|---------|
+| christian | Cruz (Cross) |
+| catholic | Cruz (Cross) |
+| protestant | Cruz (Cross) |
+| jewish | Estrela de Davi (Star) |
+| islam | Lua crescente (Moon) |
+| hindu | Om (🕉️ emoji ou icone) |
+| buddhist | Flor de lotus (Flower2) |
+| mormon | Cruz (Cross) |
+| spiritist | Estrela (Star) |
+| umbanda | Estrela (Star) |
+| candomble | Estrela (Star) |
+| agnostic / default | Sparkles (atual) |
 
-### 2. Criar Edge Function `elevenlabs-tts`
-- Arquivo: `supabase/functions/elevenlabs-tts/index.ts`
-- Recebe `{ text }` no body
-- Usa voz fixa `HOfBIVLhom4mc9WvXfyH` e modelo `eleven_multilingual_v2`
-- Retorna audio MP3 binario
-- CORS configurado
-- `verify_jwt = false` no config.toml
+Sera criado um helper `getReligionIcon` que retorna o icone Lucide correto baseado no `chatContext.religion`.
 
-### 3. Atualizar `ChatArea.tsx`
-- Importar icone `Volume2` e `VolumeX` do lucide-react
-- Adicionar estado `playingIndex` para rastrear qual mensagem esta sendo narrada
-- Criar funcao `playNarration(text, index)` que:
-  - Chama a edge function via fetch
-  - Converte resposta em blob de audio
-  - Reproduz com `new Audio()`
-  - Controla estado de play/stop
-- Adicionar botao de narrar abaixo de cada mensagem do assistente (apenas quando nao esta em loading/streaming)
+### 2. Melhorias Mobile UX/UI
 
-### 4. Traducoes em `i18n.ts`
-- Adicionar chaves `chat.narrate` e `chat.narrate_stop` nos 3 idiomas
+**Barra de navegacao inferior (bottom tab bar):**
+- Criar uma barra fixa na parte inferior da tela em mobile com os links principais (Chat, Precos, Oracoes, Versiculo)
+- Esconder a nav do header em mobile (manter so logo + menu hamburger para login/logout)
+- O botao flutuante do painel de contexto sera reposicionado acima da bottom bar
 
-## Detalhes Tecnicos
+**Input de chat:**
+- Garantir que o input fica visivel e acessivel acima da bottom bar
+- Melhorar espacamento para nao sobrepor elementos
 
-- **Voice ID**: `HOfBIVLhom4mc9WvXfyH`
-- **Modelo**: `eleven_multilingual_v2` (suporte multilingual para PT-BR, EN, ES)
-- **Formato**: `mp3_44100_128`
-- **Playback**: Usar `fetch()` direto (nao `supabase.functions.invoke()`) para preservar dados binarios
-- **UX**: Icone muda entre Volume2 (narrar) e VolumeX (parar) com animacao de loading enquanto carrega o audio
+### Detalhes Tecnicos
+
+**Arquivos modificados:**
+
+1. **`src/components/ChatArea.tsx`**
+   - Importar icones Lucide: `Cross`, `Moon`, `Star`, `Flower2`
+   - Criar funcao `getReligionIcon(religion: string)` que retorna o componente de icone correto
+   - Substituir `<Sparkles>` no `MessageBubble` e no indicador de "typing" pelo icone dinamico
+   - Receber `religion` do `chatContext` via props ou contexto
+
+2. **`src/components/BottomNav.tsx`** (novo arquivo)
+   - Componente de navegacao inferior fixo, visivel apenas em mobile (`md:hidden`)
+   - 4 tabs: Chat, Precos, Oracoes, Versiculo
+   - Icones + labels pequenos, estilo tab bar nativa
+   - Destaque visual no item ativo usando `useLocation()`
+
+3. **`src/App.tsx`**
+   - Adicionar `<BottomNav />` dentro do layout, abaixo das `Routes`
+
+4. **`src/components/Header.tsx`**
+   - Esconder os links de navegacao em mobile (ja esta `hidden md:flex`)
+   - Simplificar menu hamburger para conter apenas login/logout e idioma
+
+5. **`src/pages/Index.tsx`**
+   - Ajustar posicao do botao flutuante do painel de contexto para `bottom-28` (acima da bottom bar)
+   - Adicionar `pb-16` no container do chat para nao ficar atras da bottom bar
