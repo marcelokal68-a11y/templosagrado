@@ -56,12 +56,12 @@ export default function ChatArea() {
       });
 
       if (resp.status === 429) {
-        toast({ title: 'Rate limit', description: 'Aguarde um momento antes de enviar outra pergunta.', variant: 'destructive' });
+        toast({ title: t('chat.rate_limit', language), description: t('chat.rate_limit_desc', language), variant: 'destructive' });
         setIsLoading(false);
         return;
       }
       if (resp.status === 402) {
-        toast({ title: 'Créditos esgotados', description: 'Adicione créditos para continuar.', variant: 'destructive' });
+        toast({ title: t('chat.credits_out', language), description: t('chat.credits_out_desc', language), variant: 'destructive' });
         setIsLoading(false);
         return;
       }
@@ -111,7 +111,7 @@ export default function ChatArea() {
       setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
     } catch (e) {
       console.error(e);
-      toast({ title: 'Erro', description: 'Não foi possível conectar ao sacerdote.', variant: 'destructive' });
+      toast({ title: t('chat.error', language), description: t('chat.error_desc', language), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -124,17 +124,11 @@ export default function ChatArea() {
     }
   };
 
-  const recommendedQuestions: Record<string, string[]> = {
-    christian: ['What does Jesus teach about forgiveness?', 'How can I strengthen my faith?', 'What does the Bible say about love?'],
-    buddhist: ['What is the path to enlightenment?', 'How can I practice mindfulness?', 'What are the Four Noble Truths?'],
-    islam: ['What does the Quran say about mercy?', 'How can I improve my prayers?', 'What is the meaning of Ramadan?'],
-    jewish: ['What does the Torah teach about justice?', 'How can I observe Shabbat better?', 'What is the meaning of Tikkun Olam?'],
-    hindu: ['What is Dharma?', 'How can I practice meditation?', 'What does the Bhagavad Gita teach?'],
-    spiritist: ['What is the spirit world?', 'How does reincarnation work?', 'What did Allan Kardec teach?'],
-    '': ['How can I find peace?', 'What is the meaning of life?', 'How do I connect with the divine?'],
-  };
-
-  const questions = recommendedQuestions[chatContext.religion] || recommendedQuestions[''];
+  const questions = [
+    t(`rec.${chatContext.religion || 'default'}.1`, language),
+    t(`rec.${chatContext.religion || 'default'}.2`, language),
+    t(`rec.${chatContext.religion || 'default'}.3`, language),
+  ];
 
   return (
     <div className="flex flex-col h-full">
