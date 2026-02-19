@@ -26,6 +26,8 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.credits_out_desc': 'Adicione créditos para continuar.',
     'chat.error': 'Erro',
     'chat.error_desc': 'Não foi possível conectar ao sacerdote.',
+    'chat.narrate': 'Ouvir',
+    'chat.narrate_stop': 'Parar',
     
     // Recommended questions
     'rec.default.1': 'Como posso encontrar paz?',
@@ -185,6 +187,8 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.credits_out_desc': 'Add credits to continue.',
     'chat.error': 'Error',
     'chat.error_desc': 'Could not connect to the priest.',
+    'chat.narrate': 'Listen',
+    'chat.narrate_stop': 'Stop',
     
     'rec.default.1': 'How can I find peace?',
     'rec.default.2': 'What is the meaning of life?',
@@ -334,6 +338,8 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.credits_out_desc': 'Agrega créditos para continuar.',
     'chat.error': 'Error',
     'chat.error_desc': 'No se pudo conectar con el sacerdote.',
+    'chat.narrate': 'Escuchar',
+    'chat.narrate_stop': 'Detener',
     
     'rec.default.1': '¿Cómo puedo encontrar la paz?',
     'rec.default.2': '¿Cuál es el sentido de la vida?',

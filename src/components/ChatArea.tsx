@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Send, Loader2, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -12,18 +11,126 @@ import { Link } from 'react-router-dom';
 type Msg = { role: 'user' | 'assistant'; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
+const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
+
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 px-2">
+      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+    </div>
+  );
+}
+
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate }: {
+  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; onNarrate: (text: string, index: number) => void;
+}) {
+  const isUser = msg.role === 'user';
+  return (
+    <div className={cn("flex gap-3 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+      {!isUser && (
+        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
+          <Sparkles className="h-4 w-4 text-primary" />
+        </div>
+      )}
+      <div className="flex flex-col gap-1 max-w-[80%]">
+        <div className={cn(
+          "rounded-2xl px-4 py-3 text-sm leading-relaxed",
+          isUser
+            ? "bg-primary text-primary-foreground rounded-br-md"
+            : "bg-card border border-border rounded-bl-md shadow-sm"
+        )}>
+          <p className="whitespace-pre-wrap">{msg.content}</p>
+        </div>
+        {!isUser && msg.content.length > 0 && (
+          <button
+            onClick={() => onNarrate(msg.content, index)}
+            disabled={loadingAudio === index}
+            className={cn(
+              "self-start flex items-center gap-1.5 text-xs px-2 py-1 rounded-full transition-all",
+              playingIndex === index
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+            )}
+          >
+            {loadingAudio === index ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : playingIndex === index ? (
+              <VolumeX className="h-3 w-3" />
+            ) : (
+              <Volume2 className="h-3 w-3" />
+            )}
+            <span>{playingIndex === index ? 'Parar' : 'Ouvir'}</span>
+          </button>
+        )}
+      </div>
+      {isUser && (
+        <div className="shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center mt-1">
+          <span className="text-xs font-semibold text-secondary-foreground">Eu</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ChatArea() {
   const { language, user, chatContext, questionsRemaining, setQuestionsRemaining } = useApp();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const [loadingAudio, setLoadingAudio] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setPlayingIndex(null);
+  }, []);
+
+  const playNarration = useCallback(async (text: string, index: number) => {
+    if (playingIndex === index) { stopAudio(); return; }
+    stopAudio();
+    setLoadingAudio(index);
+
+    try {
+      const resp = await fetch(TTS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!resp.ok) throw new Error('TTS failed');
+
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      setPlayingIndex(index);
+
+      audio.onended = () => { setPlayingIndex(null); URL.revokeObjectURL(url); };
+      audio.onerror = () => { setPlayingIndex(null); URL.revokeObjectURL(url); };
+      await audio.play();
+    } catch (e) {
+      console.error(e);
+      toast({ title: t('chat.error', language), variant: 'destructive' });
+    } finally {
+      setLoadingAudio(null);
+    }
+  }, [playingIndex, stopAudio, language, toast]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -118,10 +225,7 @@ export default function ChatArea() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   const questions = [
@@ -132,16 +236,15 @@ export default function ChatArea() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Recommended questions */}
       {messages.length === 0 && (
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 animate-fade-in">
           <h3 className="font-display text-sm font-semibold text-muted-foreground">{t('chat.recommended', language)}</h3>
           <div className="space-y-2">
             {questions.map((q, i) => (
               <button
                 key={i}
-                onClick={() => { setInput(q); }}
-                className="block w-full text-left px-4 py-3 rounded-lg border border-border bg-card hover:bg-primary/5 hover:border-primary/30 transition-all text-sm"
+                onClick={() => setInput(q)}
+                className="block w-full text-left px-4 py-3 rounded-lg border border-border bg-card hover:bg-primary/5 hover:border-primary/30 transition-all text-sm hover-scale"
               >
                 {q}
               </button>
@@ -150,30 +253,29 @@ export default function ChatArea() {
         </div>
       )}
 
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, i) => (
-          <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-            <div className={cn(
-              "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-              msg.role === 'user'
-                ? "bg-primary text-primary-foreground rounded-br-md"
-                : "bg-card border border-border rounded-bl-md"
-            )}>
-              <p className="whitespace-pre-wrap">{msg.content}</p>
-            </div>
-          </div>
+          <MessageBubble
+            key={i}
+            msg={msg}
+            index={i}
+            playingIndex={playingIndex}
+            loadingAudio={loadingAudio}
+            onNarrate={playNarration}
+          />
         ))}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
-          <div className="flex justify-start">
+          <div className="flex gap-3 justify-start animate-fade-in">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
             <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <TypingDots />
             </div>
           </div>
         )}
       </div>
 
-      {/* Input */}
       <div className="border-t border-border p-4">
         <div className="flex gap-2">
           <Textarea
