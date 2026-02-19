@@ -1,76 +1,40 @@
-# Templo Sagrado — Templo Virtual Multi-Religioso
 
-## Visão Geral
+# Botao de Narracao com ElevenLabs TTS
 
-App de chatbot espiritual multi-religioso com IA, inspirado no estilo "ChatWithGod". O sacerdote virtual responde com base nos livros sagrados de todas as religiões. Interface em múltiplos idiomas, com monetização via Stripe + PIX.
+## Resumo
+Adicionar um botao de narracao (icone de alto-falante) em cada mensagem do assistente no chat. Ao clicar, o texto da resposta sera convertido em audio usando a API do ElevenLabs com a voz ID `HOfBIVLhom4mc9WvXfyH`.
 
----
+## Etapas
 
-## Páginas e Funcionalidades
+### 1. Conectar ElevenLabs ao projeto
+- Usar o conector ElevenLabs ja existente no workspace para vincular a API key ao projeto
+- O secret `ELEVENLABS_API_KEY` ficara disponivel nas edge functions
 
-### 1. Página Principal — Chat com o Sacerdote
+### 2. Criar Edge Function `elevenlabs-tts`
+- Arquivo: `supabase/functions/elevenlabs-tts/index.ts`
+- Recebe `{ text }` no body
+- Usa voz fixa `HOfBIVLhom4mc9WvXfyH` e modelo `eleven_multilingual_v2`
+- Retorna audio MP3 binario
+- CORS configurado
+- `verify_jwt = false` no config.toml
 
-- **Layout dividido**: Chat à esquerda, painel de contexto à direita (como na referência)
-- **Painel direito com:**
-  - **Perguntas recomendadas** — sugestões clicáveis baseadas na religião selecionada
-  - **Afiliação religiosa** (escolha uma): Cristão, Hindu, Budista, Islã, Mórmon, Protestante, Católico, Judeu, Agnóstico, Espírita, Umbanda, Candomblé
-  - **O que preciso hoje**: Inspiração, Geral, Versículo, Confissão, Comunhão, Conforto, Oração
-  - **Mood do fiel**: Feliz, Otimista, Indiferente, Triste, Ansioso, Pessimista, Com raiva, Confuso, Espiritual
-  - **Tópicos de discussão**: Jesus, Inferno, Céu, Futuro, Falecidos, Animais, Carreira, Saúde, Finanças, Relacionamento, Família, Política, Sacrifícios, Outros (campo aberto)
-- As seleções do painel direito influenciam o contexto enviado à IA
-- Contador de perguntas gratuitas restantes na parte inferior
-- Design dourado/âmbar como na referência
+### 3. Atualizar `ChatArea.tsx`
+- Importar icone `Volume2` e `VolumeX` do lucide-react
+- Adicionar estado `playingIndex` para rastrear qual mensagem esta sendo narrada
+- Criar funcao `playNarration(text, index)` que:
+  - Chama a edge function via fetch
+  - Converte resposta em blob de audio
+  - Reproduz com `new Audio()`
+  - Controla estado de play/stop
+- Adicionar botao de narrar abaixo de cada mensagem do assistente (apenas quando nao esta em loading/streaming)
 
-### 2. Chatbot com IA (Lovable AI)
+### 4. Traducoes em `i18n.ts`
+- Adicionar chaves `chat.narrate` e `chat.narrate_stop` nos 3 idiomas
 
-- Edge function conectada ao Lovable AI Gateway
-- System prompt como "Grande Sacerdote" com conhecimento profundo dos livros sagrados de cada religião
-- Respostas contextualizadas pela religião, mood, necessidade e tópico selecionados
-- Streaming de respostas token a token
-- Citações de textos sagrados relevantes (Bíblia, Alcorão, Torah, Vedas, Tripitaka, Livro de Mórmon, etc.). Nunca misture religiões. Procure na web esses livros sagrados, em pdf para download e faça upload para a base de conhecimento do app. 
+## Detalhes Tecnicos
 
-### 3. Navegação Superior
-
-- Chat, Preços, Enviar Orações, Versículo do Dia, Login
-
-### 4. Página de Preços
-
-- **Plano Gratuito**: 10 perguntas grátis
-- **Plano Mensal**: R$10/mês por 30 perguntas
-- Integração com Stripe para pagamento com cartão
-- Nota sobre PIX (será adicionado posteriormente via integração manual ou gateway brasileiro)
-
-### 5. Autenticação
-
-- Login/cadastro com email e senha
-- Controle de perguntas por usuário (10 grátis, depois precisa assinar)
-
-### 6. Multi-idioma
-
-- Suporte inicial: Português (BR), Inglês, Espanhol
-- Seletor de idioma no header
-- Textos da interface traduzidos; respostas da IA no idioma selecionado
-
-### 7. Versículo do Dia
-
-- Página com versículo/passagem diária gerada pela IA baseada na religião do usuário
-
-### 8. Enviar Orações
-
-- Formulário simples para o usuário enviar uma intenção de oração
-
----
-
-## Backend (Lovable Cloud)
-
-- **Database**: tabelas para usuários, contagem de perguntas, orações enviadas
-- **Auth**: autenticação com email/senha
-- **Edge Functions**: chatbot IA, versículo do dia
-- **Stripe**: assinatura mensal R$10
-
-## Design
-
-- Paleta dourada/âmbar com fundo branco, inspirada na referência
-- Cards com bordas suaves, botões com estilo chip/tag para seleções
-- Ícones espirituais sutis
-- Responsivo mobile e desktop
+- **Voice ID**: `HOfBIVLhom4mc9WvXfyH`
+- **Modelo**: `eleven_multilingual_v2` (suporte multilingual para PT-BR, EN, ES)
+- **Formato**: `mp3_44100_128`
+- **Playback**: Usar `fetch()` direto (nao `supabase.functions.invoke()`) para preservar dados binarios
+- **UX**: Icone muda entre Volume2 (narrar) e VolumeX (parar) com animacao de loading enquanto carrega o audio
