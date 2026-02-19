@@ -4,13 +4,26 @@ import { t, Language, languageNames } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, DollarSign, Heart, BookOpen, LogIn, LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { MessageCircle, DollarSign, Heart, BookOpen, LogIn, LogOut, Menu, X, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
   const { language, setLanguage, user } = useApp();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('admin', {
+        body: { action: 'check-role' },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      setIsAdmin(resp.data?.isAdmin ?? false);
+    })();
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -22,6 +35,7 @@ export default function Header() {
     { to: '/pricing', label: t('nav.pricing', language), icon: DollarSign },
     { to: '/prayers', label: t('nav.prayers', language), icon: Heart },
     { to: '/verse', label: t('nav.verse', language), icon: BookOpen },
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: Shield }] : []),
   ];
 
   return (
