@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
@@ -87,6 +88,21 @@ export default function ChatArea() {
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Load chat history from DB
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('chat_messages')
+      .select('role, content, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setMessages(data.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })));
+        }
+      });
+  }, [user]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -254,9 +270,25 @@ export default function ChatArea() {
       }
 
       setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
+
+      // Persist messages to DB
+      if (user && assistantSoFar.length > 0) {
+        const ctx = {
+          user_id: user.id,
+          religion: chatContext.religion || null,
+          need: chatContext.need || null,
+          mood: chatContext.mood || null,
+          topic: chatContext.topic || null,
+        };
+        supabase.from('chat_messages').insert([
+          { ...ctx, role: 'user', content: userMsg.content },
+          { ...ctx, role: 'assistant', content: assistantSoFar },
+        ]).then(() => {});
+      }
+
       // Auto-preload audio for the assistant's response
       if (assistantSoFar.length > 0) {
-        const assistantIndex = messages.length + 1; // user msg + assistant msg
+        const assistantIndex = messages.length + 1;
         preloadAudio(assistantSoFar, assistantIndex);
       }
     } catch (e) {
