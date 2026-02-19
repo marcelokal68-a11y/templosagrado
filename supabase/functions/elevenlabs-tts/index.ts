@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, speed } = await req.json();
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 
     if (!ELEVENLABS_API_KEY) {
@@ -41,7 +41,7 @@ serve(async (req) => {
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
-            speed: 1.0,
+            speed: Math.min(1.2, Math.max(0.7, speed || 1.15)),
           },
         }),
       }
