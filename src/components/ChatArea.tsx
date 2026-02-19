@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Volume2, VolumeX, Trash2 } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
+import ChatHistory from '@/components/ChatHistory';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -329,7 +330,8 @@ export default function ChatArea() {
   return (
     <div className="flex flex-col h-full">
       {messages.length > 0 && (
-        <div className="flex justify-end p-2 border-b border-border">
+        <div className="flex justify-end gap-1 p-2 border-b border-border">
+          <ChatHistory />
           <Button
             variant="ghost"
             size="sm"
