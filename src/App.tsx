@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import Prayers from "./pages/Prayers";
 import Verse from "./pages/Verse";
+import Admin from "./pages/Admin";
+import InviteRedeem from "./pages/InviteRedeem";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +31,8 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/prayers" element={<Prayers />} />
               <Route path="/verse" element={<Verse />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/invite/:code" element={<InviteRedeem />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
