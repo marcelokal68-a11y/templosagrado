@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Sparkles, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -311,6 +311,26 @@ export default function ChatArea() {
 
   return (
     <div className="flex flex-col h-full">
+      {messages.length > 0 && (
+        <div className="flex justify-end p-2 border-b border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-destructive gap-1.5"
+            onClick={async () => {
+              if (user) {
+                await supabase.from('chat_messages').delete().eq('user_id', user.id);
+              }
+              stopAudio();
+              audioCacheRef.current.clear();
+              setMessages([]);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('chat.clear', language) || 'Limpar conversa'}
+          </Button>
+        </div>
+      )}
       {messages.length === 0 && (
         <div className="p-4 space-y-3 animate-fade-in">
           <h3 className="font-display text-sm font-semibold text-muted-foreground">{t('chat.recommended', language)}</h3>
