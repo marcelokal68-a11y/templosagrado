@@ -1,0 +1,7 @@
+project_id = "ejiymtkresynljwckhug"
+
+[functions.sacred-chat]
+verify_jwt = false
+
+[functions.verse-of-day]
+verify_jwt = false
