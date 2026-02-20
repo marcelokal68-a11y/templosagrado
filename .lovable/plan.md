@@ -1,121 +1,78 @@
 
 
-# Musicas de Fundo por Tema - Spotify Embed
+# Persistir Chat Durante Navegacao
 
-## Resumo
+## Problema
 
-Adicionar uma secao colapsavel "Musicas de Fundo" no ContextPanel que exibe um player Spotify embutido (iframe) com uma playlist relacionada ao tema religioso ou filosofia selecionada. Sem necessidade de API key -- usa o Spotify Embed gratuito.
+Quando voce navega para outra aba (Historico, Posts, etc.) e volta ao chat, todas as mensagens somem. Isso acontece porque as mensagens ficam armazenadas apenas dentro do componente ChatArea, que e destruido ao sair da pagina e recriado ao voltar.
 
----
+## Solucao
 
-## Como Funciona
-
-- Uma nova secao colapsavel aparece no ContextPanel, abaixo dos topicos
-- Quando o usuario seleciona uma religiao ou filosofia, a playlist correspondente aparece automaticamente
-- Se nada estiver selecionado, mostra uma playlist generica de meditacao
-- O player e compacto (80px de altura) e fica embutido via iframe do Spotify
-- O usuario pode ouvir diretamente no app (preview de 30s por musica no Spotify free)
+Mover o estado das mensagens do chat para o contexto global do app (AppContext), que vive acima de todas as paginas e nunca e destruido durante a navegacao.
 
 ---
 
-## Playlists Mapeadas
+## Mudancas
 
-Cada religiao/filosofia tera uma playlist do Spotify curada:
+### 1. AppContext - armazenar mensagens globalmente
 
-### Religioes
-| Religiao | Playlist | Estilo |
-|----------|----------|--------|
-| Cristao/Catolico/Protestante | Worship & Praise | Louvor contemporaneo |
-| Mormom | LDS Hymns | Hinos mormons |
-| Judaico | Jewish Meditation / Shabbat | Musica judaica contemplativa |
-| Islamico | Islamic Nasheed | Nasheeds instrumentais |
-| Budista | Buddhist Chanting & Meditation | Cantos tibetanos |
-| Hindu | Kirtan & Devotional | Kirtan e mantras |
-| Espirita | Musica Espirita | Musicas espiritas brasileiras |
-| Umbanda/Candomble | Pontos de Umbanda | Pontos e canticos |
-| Agnostico | Ambient Meditation | Ambient/meditacao neutra |
+**Arquivo:** `src/contexts/AppContext.tsx`
 
-### Filosofias
-| Filosofia | Playlist | Estilo |
-|-----------|----------|--------|
-| Estoicismo | Stoic Calm / Neoclassical | Ambient neoclassico |
-| Taoismo | Chinese Meditation | Musica chinesa contemplativa |
-| Humanismo/Existencialismo | Classical Philosophy | Classica pensativa |
-| Xamanismo | Shamanic Drums | Tambores e natureza |
-| Default | Meditation & Mindfulness | Meditacao generica |
+- Adicionar `messages` e `setMessages` ao contexto global
+- Adicionar `chatInput` e `setChatInput` para preservar o texto digitado
+- No logout, limpar as mensagens (ja existente para outros campos)
 
----
+### 2. ChatArea - usar estado do contexto
 
-## Arquivos a Modificar
+**Arquivo:** `src/components/ChatArea.tsx`
 
-### 1. `src/components/ContextPanel.tsx`
+- Remover `const [messages, setMessages] = useState<Msg[]>([])` local
+- Remover `const [input, setInput] = useState('')` local
+- Importar `messages`, `setMessages`, `chatInput`, `setChatInput` do `useApp()`
+- Substituir todas as referencias de `input` por `chatInput` e `setInput` por `setChatInput`
+- Manter toda a logica de streaming, TTS e salvamento no banco inalterada
 
-- Importar icone `Music` do lucide-react
-- Adicionar mapeamento de playlists Spotify por religiao/filosofia
-- Adicionar nova secao colapsavel com iframe do Spotify Embed
-- O iframe usa URL `https://open.spotify.com/embed/playlist/{ID}?utm_source=generator&theme=0`
-- Altura compacta: 152px (mostra lista pequena)
-- Aparece apenas quando ha uma selecao ativa
+### 3. Resultado esperado
 
-### 2. `src/lib/i18n.ts`
-
-- Adicionar traducao `panel.music` nos 3 idiomas:
-  - pt-BR: "Musicas de Fundo"
-  - en: "Background Music"
-  - es: "Musica de Fondo"
+- Navegar para qualquer aba e voltar: mensagens continuam la
+- O texto sendo digitado tambem e preservado
+- Logout continua limpando tudo
+- Login continua carregando mensagens do banco
 
 ---
 
 ## Detalhes Tecnicos
 
-### Mapeamento de Playlists
+### AppContext - novos campos
 
 ```text
-const SPOTIFY_PLAYLISTS: Record<string, string> = {
-  // Religioes
-  christian: '0Z5jq2YzMqMrqEQWMEVj9T',   // Christian worship
-  catholic: '25lg9pkqwUaa7nOcIvd4ta',      // Catholic meditation
-  protestant: '0Z5jq2YzMqMrqEQWMEVj9T',   // Protestant worship
-  mormon: '37i9dQZF1DX4vth7idTQMe',        // LDS/Hymns
-  jewish: '3d8ALeO6Op4V4gBY0JuGcO',        // Jewish Shabbat
-  islam: '37i9dQZF1DWVYkjGjalkYY',         // Nasheed/Islamic
-  buddhist: '1RJKluktWr9Dh7fXhhRkHV',      // Meditation sounds
-  hindu: '5cqh7Bs1h4z5pzrBZO9LLd',         // Kirtan
-  spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',     // Meditative
-  umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',       // Meditative
-  candomble: '3kg2IhbcbiRE4ZmvYWlUdw',     // Meditative
-  agnostic: '1RJKluktWr9Dh7fXhhRkHV',      // Meditation sounds
+type Msg = { role: 'user' | 'assistant'; content: string };
 
-  // Filosofias
-  stoicism: '1RJKluktWr9Dh7fXhhRkHV',      // Calm ambient
-  logosophy: '1RJKluktWr9Dh7fXhhRkHV',
-  humanism: '1RJKluktWr9Dh7fXhhRkHV',
-  taoism: '1RJKluktWr9Dh7fXhhRkHV',
-  shamanism: '1RJKluktWr9Dh7fXhhRkHV',
-  // ... demais filosofias usam playlist default de meditacao
+// Novos estados:
+const [messages, setMessages] = useState<Msg[]>([]);
+const [chatInput, setChatInput] = useState('');
 
-  default: '1RJKluktWr9Dh7fXhhRkHV',       // Default meditation
-};
+// No logout (dentro do onAuthStateChange):
+setMessages([]);
+setChatInput('');
+
+// Expor no Provider value:
+messages, setMessages, chatInput, setChatInput
 ```
 
-### Componente do Player
+### ChatArea - remocao de estado local
 
 ```text
-Secao colapsavel "Musicas de Fundo" com icone Music:
-  - Fecha por default (defaultOpen=false)
-  - Dentro: iframe do Spotify embed
-  - Estilo: rounded-xl, overflow-hidden, border
-  - Altura: 152px (compact mode com lista)
-  - URL: https://open.spotify.com/embed/playlist/{playlistId}?utm_source=generator&theme=0
-  - allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+// REMOVER estas linhas:
+const [messages, setMessages] = useState<Msg[]>([]);
+const [input, setInput] = useState('');
+
+// SUBSTITUIR por:
+const { ..., messages, setMessages, chatInput, setChatInput } = useApp();
+
+// Trocar todas as ocorrencias de "input" por "chatInput"
+// Trocar todas as ocorrencias de "setInput" por "setChatInput"
 ```
 
-### Logica de Selecao
-
-```text
-const activeSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
-const playlistId = SPOTIFY_PLAYLISTS[activeSelection] || SPOTIFY_PLAYLISTS.default;
-```
-
-A secao so aparece se houver alguma selecao (religiao ou filosofia). Ao trocar de selecao, o iframe atualiza automaticamente pois o `src` muda.
+A carga inicial de mensagens do banco (useEffect com user) permanece no ChatArea, mas agora grava no estado global em vez do local.
 
