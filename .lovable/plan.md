@@ -1,188 +1,86 @@
 
+# Correcoes e Melhorias na Aba "Praticando a Religiao"
 
-# Nova Aba: Praticando a Religiao
+## Problemas Identificados
 
-## Resumo
-
-Criar uma nova pagina/aba chamada **"Praticando"** que funciona como um checklist diario personalizado por religiao. Ao selecionar a afiliacao religiosa, o usuario ve uma lista de praticas diarias recomendadas com checkboxes, alem de conteudo educativo como a parasha do dia (Judaismo), leitura do Evangelho (Catolicismo), etc. Todas as praticas sao positivas e voltadas ao bem.
+1. **Traducoes nao aparecem** - Na screenshot, vemos textos como "practice.gender", "practice.item.tefilin" em vez dos textos traduzidos. As traducoes existem no i18n.ts mas nao estao sendo resolvidas corretamente.
+2. **Conteudo gerado em ingles** apesar do idioma selecionado ser portugues - o `religionPrompts` esta em portugues fixo mas o prompt de sistema para cada idioma nao esta alinhado.
+3. **Conteudo judaico superficial** - precisa incluir interpretacoes do Talmud, Mishna e Guemara.
+4. **Falta narracao ElevenLabs** no conteudo sagrado do dia.
+5. **Demais religioes precisam de conteudo mais profundo** (fontes primarias, interpretacoes tradicionais).
 
 ---
 
-## 1. Nova rota e navegacao
+## 1. Corrigir traducoes que nao aparecem
 
-- Criar pagina `src/pages/Practice.tsx`
-- Adicionar rota `/practice` no `App.tsx`
-- Adicionar aba "Praticando" no `BottomNav.tsx` (icone: `CheckSquare`) e no `Header.tsx`
-- Adicionar traducoes no `i18n.ts`
+**Arquivo:** `src/lib/i18n.ts`
 
-## 2. Estrutura da pagina Practice.tsx
+O problema e que a funcao `t()` retorna a chave quando nao encontra a traducao. Vou verificar se a funcao `t` esta correta e se as chaves batem. Pelo screenshot, parece que o componente esta renderizando as chaves brutas - possivelmente a funcao `t()` nao esta encontrando as chaves. Preciso verificar a implementacao da funcao `t()`.
 
-A pagina tera:
-1. **Seletor de religiao** (chips, como no ContextPanel) - usa `chatContext.religion` como padrao
-2. **Pergunta de genero** (opcional, so aparece para religioes onde faz diferenca, ex: Judaismo com tefilin)
-3. **Checklist diario** - lista de praticas com checkbox, gerada conforme religiao e genero
-4. **Conteudo do dia** - texto educativo gerado por IA (ex: parasha da semana, evangelho do dia, sura do dia)
+## 2. Refinar prompts da edge function `daily-practice`
 
-## 3. Checklists por religiao
+**Arquivo:** `supabase/functions/daily-practice/index.ts`
 
-Todas as praticas serao sempre positivas, voltadas ao bem, nunca incentivando atos que prejudiquem pessoas ou animais.
+Mudancas principais:
+- Os `religionPrompts` serao escritos no idioma correto de cada bloco (en/es/pt-BR) em vez de fixos em portugues
+- Para **Judaismo**: o prompt pedira a Parasha correta da semana com interpretacao do Talmud (Bavli), Mishna e Guemara, citando tratados especificos, sem inventar
+- Para **Catolicismo**: pedir leitura liturgica do dia conforme o lecionario, com interpretacao dos Padres da Igreja
+- Para **Isla**: pedir Sura com tafsir (interpretacao classica), citando Ibn Kathir ou Al-Tabari
+- Para **Budismo**: pedir sutra com comentario de mestres tradicionais
+- Para **Hinduismo**: pedir verso do Gita com comentario de Shankaracharya ou Ramanuja
+- Para **Espiritismo**: pedir capitulo especifico do Evangelho Segundo o Espiritismo com comentario de Kardec
+- Para **Umbanda/Candomble**: pedir ensinamento com referencia a tradicao oral dos terreiros
+- Para **Protestantismo**: pedir devocional com exegese biblica
+- Para **Mormon**: pedir passagem com comentario da Doutrina e Convenios
+- Para **Agnostico**: pedir reflexao filosofica com citacao de filosofo real
 
-**Judaismo (masculino):**
-- Colocou o Tefilin
-- Fez a reza da manha (Shacharit)
-- Leu a parasha do dia
-- Fez uma boa acao (Mitzvah)
-- Recitou o Shema
-- Estudou Tora
+O formato JSON sera expandido para incluir um campo `sources` (fontes consultadas) e `scholarly_note` (nota academica/teologica).
 
-**Judaismo (feminino):**
-- Acendeu velas do Shabat (quando aplicavel)
-- Fez a reza da manha
-- Leu a parasha do dia
-- Fez uma boa acao (Mitzvah)
-- Recitou o Shema
-- Estudou Tora
+## 3. Adicionar narracao ElevenLabs ao conteudo do dia
 
-**Catolicismo:**
-- Fez a oracao da manha
-- Leu o Evangelho do dia
-- Rezou o Terco/Rosario
-- Praticou um ato de caridade
-- Exame de consciencia
-- Agradeceu a Deus
+**Arquivo:** `src/pages/Practice.tsx`
 
-**Protestantismo:**
-- Devocional matinal
-- Leitura biblica do dia
-- Oracao pessoal
-- Praticou bondade com alguem
-- Reflexao sobre a Palavra
-- Agradeceu a Deus
+- Adicionar botao "Ouvir" ao lado do titulo do conteudo sagrado
+- Ao clicar, concatenar titulo + explicacao + reflexao e enviar ao `elevenlabs-tts`
+- Usar velocidade 1.15x (padrao acelerado conforme solicitado)
+- Reutilizar o mesmo padrao de audio do ChatArea (fetch direto com blob)
+- Adicionar icone de Volume2/VolumeX para controlar play/stop
+- Adicionar traducoes para `practice.listen` e `practice.stop`
 
-**Isla:**
-- Fez a oracao do Fajr (amanhecer)
-- Fez a oracao do Dhuhr (meio-dia)
-- Fez a oracao do Asr (tarde)
-- Fez a oracao do Maghrib (por do sol)
-- Fez a oracao do Isha (noite)
-- Leu uma passagem do Alcorao
-- Praticou um ato de caridade (Sadaqah)
+## 4. Corrigir renderizacao das labels i18n
 
-**Budismo:**
-- Meditacao matinal
-- Praticou atenção plena (mindfulness)
-- Leu um ensinamento do Dharma
-- Praticou compaixao com um ser vivo
-- Reflexao sobre as Quatro Nobres Verdades
-- Evitou causar sofrimento
+**Arquivo:** `src/lib/i18n.ts`
 
-**Hinduismo:**
-- Puja (oracao matinal)
-- Leu um verso do Bhagavad Gita
-- Praticou Yoga ou meditacao
-- Praticou um ato de Seva (servico)
-- Recitou um mantra
-- Reflexao sobre o Dharma
+Verificar e garantir que a funcao `t()` retorna fallback correto. Possivelmente as chaves do `en` e `es` para practice items nao estao sendo encontradas. Vou verificar a funcao `t()`.
 
-**Espiritismo:**
-- Prece matinal
-- Leitura do Evangelho Segundo o Espiritismo
-- Praticou caridade
-- Passou vibracao positiva a alguem
-- Estudou uma obra de Kardec
-- Reflexao sobre a reforma intima
-
-**Umbanda:**
-- Prece ao Pai Oxala
-- Banho de ervas ou defumacao (se aplicavel)
-- Praticou caridade
-- Meditacao ou concentracao espiritual
-- Agradeceu aos guias espirituais
-- Ajudou alguem necessitado
-
-**Candomble:**
-- Saudacao aos Orixas
-- Oferenda ou agradecimento
-- Praticou respeito a natureza
-- Meditacao ou concentracao
-- Ajudou a comunidade
-- Estudou a tradicao oral
-
-**Mormon:**
-- Oracao matinal
-- Leitura do Livro de Mormon
-- Servico ao proximo
-- Estudo das escrituras
-- Reflexao sobre revelacao pessoal
-- Agradeceu a Deus
-
-**Agnostico:**
-- Reflexao matinal
-- Leitura de filosofia ou sabedoria universal
-- Praticou um ato de bondade
-- Meditacao ou momento de silencio
-- Gratidao consciente
-- Contribuiu para o bem comum
-
-## 4. Conteudo do dia (gerado por IA)
-
-Criar uma **edge function** `daily-practice` que, recebendo a religiao e a data, retorna:
-- O conteudo sagrado do dia (ex: parasha, evangelho, sura) com titulo correto
-- Uma breve explicacao/interpretacao (3-5 linhas)
-- Uma reflexao pratica
-
-A funcao usara o gateway Lovable AI (`openai/gpt-5-mini`) com um prompt especifico para retornar o conteudo correto de cada dia.
-
-## 5. Persistencia do checklist
-
-- Salvar progresso do checklist no `localStorage` (chave por dia + religiao)
-- Nao precisa de tabela no banco por enquanto (feature leve e pessoal)
-- Ao mudar de dia, o checklist reseta automaticamente
-
-## 6. Traducoes (i18n.ts)
-
-Adicionar em pt-BR, en, es:
-- `nav.practice`: "Praticando" / "Practicing" / "Practicando"
-- `practice.title`: "Praticando a Religiao" / "Practicing Religion" / "Practicando la Religion"
-- `practice.subtitle`: "Checklist diario da sua jornada espiritual"
-- `practice.gender`: "Genero" (para religioes que precisam)
-- `practice.male` / `practice.female`
-- `practice.daily_content`: "Conteudo Sagrado do Dia"
-- `practice.loading`: "Carregando conteudo do dia..."
-- Nomes de cada item do checklist por religiao
+---
 
 ## Detalhes Tecnicos
 
-### Arquivos criados
-1. `src/pages/Practice.tsx` - Pagina principal com seletor de religiao, checklist e conteudo do dia
-2. `supabase/functions/daily-practice/index.ts` - Edge function que gera o conteudo sagrado do dia
-
-### Arquivos modificados
-1. `src/App.tsx` - Adicionar rota `/practice`
-2. `src/components/BottomNav.tsx` - Adicionar aba "Praticando"
-3. `src/components/Header.tsx` - Adicionar link na nav desktop
-4. `src/lib/i18n.ts` - Adicionar todas as traducoes
-
-### Fluxo do usuario
+### Prompt refinado para Judaismo (exemplo pt-BR)
 
 ```text
-Aba "Praticando" -> Seleciona religiao -> (Se Judaismo: seleciona genero)
--> Ve checklist diario personalizado -> Marca itens conforme pratica
--> Abaixo do checklist: "Conteudo Sagrado do Dia"
--> Ex: "Parasha da Semana: Bereshit (Genesis 1:1-6:8)"
--> Explicacao e interpretacao em 3-5 linhas
--> Progresso salvo localmente por dia
+Judaismo. Voce e um Sumo Sacerdote e rabino erudito.
+Retorne a Parasha da semana CORRETA para a data [date] conforme o calendario judaico.
+Inclua: nome hebraico da parasha, referencia na Tora (livro, capitulo e versiculos),
+interpretacao do Talmud Bavli (cite o tratado especifico),
+referencia relevante da Mishna e Guemara.
+NAO INVENTE citacoes. Se nao tiver certeza do tratado especifico, mencione apenas o tema geral.
+[Se feminino: considere perspectiva feminina na halacha]
 ```
 
-### Edge function daily-practice
+### Arquivos modificados
 
-Recebe: `{ religion, date, language, gender? }`
+1. `supabase/functions/daily-practice/index.ts` - Prompts refinados por religiao e idioma, formato JSON expandido
+2. `src/pages/Practice.tsx` - Botao de narracao ElevenLabs, correcao de renderizacao
+3. `src/lib/i18n.ts` - Verificar/corrigir funcao t() e adicionar traducoes de "Ouvir"/"Parar"
 
-Prompt para a IA:
-- "Voce e um especialista em [religiao]. Retorne o conteudo sagrado correto para o dia [data]. Para Judaismo: a parasha da semana com nome hebraico, referencia e interpretacao. Para Catolicismo: o evangelho do dia. Para Isla: uma sura recomendada. Etc. Formato JSON com title, reference, explanation, reflection. Maximo 5 linhas por campo."
+### Fluxo da narracao
 
-### Regras de seguranca
-- Todos os itens do checklist serao apenas praticas positivas
-- Nenhuma pratica que incentive violencia, discriminacao ou dano a pessoas ou animais
-- Conteudo focado em amor, compaixao, estudo, oracao e servico ao proximo
-
+```text
+Usuario clica "Ouvir" no conteudo sagrado
+-> Concatena: titulo + ". " + explicacao + ". " + reflexao
+-> Envia ao elevenlabs-tts com speed: 1.15
+-> Reproduz audio via Audio API
+-> Botao muda para "Parar" durante reproducao
+```
