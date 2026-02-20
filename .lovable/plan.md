@@ -1,114 +1,101 @@
 
 
-# Gerar Oracao com IA, Copiar e Enviar por Email
+# Landing Page Emotiva + Logout Limpa o Chat + Redirecionamento
 
 ## Resumo
 
-A pagina "Enviar Oracao" atualmente apenas salva a intencao no banco. O usuario quer que a IA **gere uma oracao completa** baseada na intencao, religiao/filosofia selecionada. Depois de gerada, o usuario pode copiar e enviar por email para si mesmo ou para destinatarios.
+Tres problemas a resolver:
+1. **Logout nao limpa o chat** - ao sair, as mensagens permanecem visiveis na tela
+2. **Nao existe landing page** - visitantes sem login veem direto o chat, sem explicacao do app
+3. **Apos logout, deve redirecionar para landing page** com opcoes claras de entrar/assinar
 
 ---
 
-## 1. Nova Edge Function: `generate-prayer`
+## 1. Nova pagina: Landing Page (`src/pages/Landing.tsx`)
 
-**Arquivo:** `supabase/functions/generate-prayer/index.ts`
+Uma pagina emotiva e respeitosa que apresenta o Templo Sagrado. Estrutura:
 
-Uma funcao dedicada que recebe a intencao, religiao/filosofia e idioma, e retorna uma oracao completa gerada pela IA.
+### Hero Section
+- Emoji grande (icone sagrado) + titulo "Templo Sagrado" em font-display dourado
+- Subtitulo emotivo: "Seu santuario digital de sabedoria, oracao e paz interior"
+- Descricao: texto breve explicando que o app conecta o usuario com orientacao espiritual de todas as tradicoes religiosas e filosoficas
+- 3 botoes CTA: **"Experimente Gratis"** (vai para `/` como visitante), **"Entrar"** (vai para `/auth` como login), **"Assinar"** (vai para `/pricing`)
 
-- Usa o mesmo mapa `SACRED_TEXTS` e `PHILOSOPHY_TEXTS` do sacred-chat
-- System prompt especifico: "Voce e um mestre de oracoes. Gere uma oracao profunda, poetica e emocionante baseada na intencao do fiel, dentro da tradicao [religiao/filosofia]"
-- Modelo: `openai/gpt-5-mini` via Lovable AI gateway
-- Resposta nao-streaming (JSON com o texto da oracao)
-- Maximo ~20 linhas de oracao
+### Secao de Features (3-4 cards)
+- **Chat com o Sacerdote**: Converse com IA guiada por textos sagrados de 12+ tradicoes
+- **Oracoes Personalizadas**: Gere oracoes tocantes baseadas na sua intencao e fe
+- **Versiculo do Dia**: Receba diariamente inspiracao de textos sagrados
+- **Pratica Diaria**: Checklist espiritual personalizado para sua jornada
 
-## 2. Nova Edge Function: `send-prayer-email`
+### Secao de Tradicoes Suportadas
+- Grid com chips mostrando as religioes e filosofias suportadas (Cristao, Hindu, Budista, Judaico, Estoicismo, etc.)
+- Visual leve e inclusivo
 
-**Arquivo:** `supabase/functions/send-prayer-email/index.ts`
+### Footer simples
+- "Todas as tradicoes. Uma sabedoria." ou similar
 
-Envia a oracao gerada por email usando a API de email integrada do backend (Supabase Auth `admin.sendRawEmail` ou via Resend/SMTP). Como nao temos um servico de email configurado, usaremos a IA para gerar o conteudo e enviaremos via a API do Resend (precisaremos configurar uma API key) OU usaremos uma abordagem mais simples: abrir o cliente de email do usuario via `mailto:` com o conteudo pre-preenchido.
+### Cores e estilo
+- Manter a paleta amber/dourada existente
+- Fundo com gradiente suave
+- Cards com bordas e sombras sutis
+- Font-display (Cinzel) para titulos
+- Totalmente responsiva
 
-**Abordagem escolhida:** `mailto:` link — nao requer API key adicional, funciona em qualquer dispositivo, e o usuario controla o envio.
+## 2. Logout limpa o chat e redireciona
 
-## 3. Atualizar `src/pages/Prayers.tsx`
+### `src/components/Header.tsx`
+- No `handleLogout`, apos `supabase.auth.signOut()`, redirecionar para `/landing` (nao `/`)
 
-Novo fluxo:
+### `src/components/ChatArea.tsx`
+- Quando `user` muda para `null`, limpar `messages` (setState para [])
+- Limpar tambem o cache de audio
 
-```text
-1. Usuario escolhe religiao/filosofia
-2. Escreve o nome (opcional) e a intencao
-3. Clica "Gerar Oracao" -> IA gera a oracao
-4. Oracao aparece num card bonito abaixo do formulario
-5. Botoes: [Copiar] [Enviar por Email] [Gerar Novamente]
-6. "Enviar por Email" abre campo para digitar emails ou usa o email do usuario logado
-7. Clica enviar -> abre mailto: com a oracao formatada
-```
+### `src/contexts/AppContext.tsx`
+- Quando user vira null (logout), resetar `chatContext` para valores vazios e `questionsRemaining` para 10
 
-### Mudancas no componente:
+## 3. Roteamento
 
-- Novo estado `generatedPrayer: string` para guardar a oracao gerada
-- Novo estado `recipientEmails: string` para emails destinatarios
-- Botao "Gerar Oracao" chama a edge function `generate-prayer`
-- Apos gerar, exibe a oracao num card com fundo suave
-- Botao "Copiar" copia a oracao gerada (nao a intencao)
-- Botao "Enviar por Email" com opcoes:
-  - Para mim (email do usuario logado)
-  - Para outros (campo de input para emails separados por virgula)
-  - Abre `mailto:` com subject e body formatados
-- Botao "Gerar Novamente" para pedir outra versao
-- A oracao tambem e salva na tabela `prayers` com o campo `generated_text`
+### `src/App.tsx`
+- Adicionar rota `/landing` para a Landing page
+- A rota `/` continua sendo o chat (para visitantes anonimos que clicaram "Experimente Gratis")
+- Apos logout, redireciona para `/landing`
 
-## 4. Migracao SQL: adicionar coluna `generated_text`
+## 4. Traducoes (`src/lib/i18n.ts`)
 
-```sql
-ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS generated_text text;
-```
-
-Para armazenar a oracao gerada junto com a intencao original.
-
-## 5. Traducoes novas em `src/lib/i18n.ts`
-
-- `prayers.generate`: "Gerar Oracao" / "Generate Prayer" / "Generar Oracion"
-- `prayers.generated`: "Oracao Gerada" / "Generated Prayer" / "Oracion Generada"
-- `prayers.regenerate`: "Gerar Novamente" / "Generate Again" / "Generar de Nuevo"
-- `prayers.send_email`: "Enviar por Email" / "Send by Email" / "Enviar por Email"
-- `prayers.email_to_me`: "Para meu email" / "To my email" / "A mi email"
-- `prayers.email_others`: "Outros destinatarios" / "Other recipients" / "Otros destinatarios"
-- `prayers.email_placeholder`: "Emails separados por virgula" / "Emails separated by comma" / "Emails separados por coma"
-- `prayers.generating`: "Gerando oracao..." / "Generating prayer..." / "Generando oracion..."
+Novas chaves para os 3 idiomas:
+- `landing.hero_title`: "Seu santuario de sabedoria e paz"
+- `landing.hero_desc`: Descricao emotiva do app
+- `landing.try_free`: "Experimente Gratis"
+- `landing.sign_in`: "Entrar"
+- `landing.subscribe`: "Assinar"
+- `landing.feature_chat`: titulo e descricao do chat
+- `landing.feature_prayer`: titulo e descricao das oracoes
+- `landing.feature_verse`: titulo e descricao do versiculo
+- `landing.feature_practice`: titulo e descricao da pratica
+- `landing.traditions`: "Todas as tradicoes, uma sabedoria"
+- `landing.footer`: texto do footer
 
 ---
 
 ## Detalhes Tecnicos
 
-### Edge Function `generate-prayer`
-
-```typescript
-// Recebe: { intention, religion, philosophy, language, name }
-// Retorna: { prayer: "texto da oracao gerada" }
-
-const systemPrompt = `You are a master of prayers and sacred words.
-Generate a beautiful, profound, and moving prayer based on the faithful's intention.
-The prayer must be within the ${tradition} tradition, citing ${sources}.
-Write in ${language}. Maximum 20 lines. Be poetic and touching.`;
-
-const userMessage = `Intention: ${intention}${name ? `\nName: ${name}` : ''}`;
+### Logout flow
+```text
+Usuario clica "Sair"
+  -> supabase.auth.signOut()
+  -> onAuthStateChange dispara, user = null
+  -> AppContext reseta chatContext
+  -> ChatArea detecta user=null, limpa messages
+  -> navigate('/landing')
 ```
-
-### Email via mailto:
-
-```typescript
-const handleSendEmail = (emails: string[]) => {
-  const subject = encodeURIComponent(t('prayers.generated', language));
-  const body = encodeURIComponent(generatedPrayer);
-  window.open(`mailto:${emails.join(',')}?subject=${subject}&body=${body}`);
-};
-```
-
-### Arquivos modificados
-1. `supabase/functions/generate-prayer/index.ts` — Nova edge function
-2. `src/pages/Prayers.tsx` — Fluxo completo de gerar, copiar, enviar
-3. `src/lib/i18n.ts` — Traducoes novas
-4. Migracao SQL — Coluna `generated_text` na tabela `prayers`
 
 ### Arquivos criados
-1. `supabase/functions/generate-prayer/index.ts`
+1. `src/pages/Landing.tsx` - Landing page emotiva
+
+### Arquivos modificados
+1. `src/App.tsx` - Nova rota /landing
+2. `src/components/Header.tsx` - Logout redireciona para /landing
+3. `src/components/ChatArea.tsx` - Limpa mensagens no logout
+4. `src/contexts/AppContext.tsx` - Reset do contexto no logout
+5. `src/lib/i18n.ts` - Traducoes da landing page
 
