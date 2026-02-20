@@ -1,75 +1,134 @@
 
-# Correcoes no Chat + Nova Aba "Post" para Redes Sociais
+# Plano de Melhorias do Templo Sagrado
 
-## 1. Corrigir "Limpar Conversa" (Clear Chat)
+## Resumo das Mudancas
 
-**Problema atual:** Ao clicar em "Limpar conversa", as mensagens sao deletadas do banco mas continuam visiveis na tela ate recarregar.
+Este plano cobre 7 melhorias solicitadas para tornar o app mais inteligente, contextual e facil de usar.
 
-**Correcao:** Garantir que o `setMessages([])` limpa a UI imediatamente e que o historico no banco tambem e apagado. Atualmente o codigo ja faz isso (linhas 337-344 do ChatArea), mas vamos adicionar uma RLS policy para permitir DELETE na tabela `chat_messages` (atualmente falta essa policy, o que impede a delecao real do banco).
+---
 
-**Acoes:**
-- Adicionar RLS policy de DELETE na tabela `chat_messages` para `auth.uid() = user_id`
-- Manter o comportamento atual de limpar a UI localmente
+## 1. Topicos dinamicos por religiao
 
-## 2. Historico de Mensagens com Delecao Individual e Total
+Atualmente os topicos de discussao sao os mesmos para todas as religioes (ex: "Jesus" aparece para Judaismo). Isso sera corrigido criando um mapa de topicos por religiao.
 
-**Nova funcionalidade:** Permitir que o usuario veja seu historico de conversas salvas e delete mensagens individualmente ou todas de uma vez.
+**Arquivo:** `src/components/ContextPanel.tsx`
 
-**Acoes:**
-- Adicionar botao "Historico" discreto no header do chat (icone `History`)
-- Criar um dialog/sheet que mostra todas as mensagens salvas no banco
-- Cada par pergunta/resposta tera um botao de deletar individual (icone `X` pequeno)
-- Botao "Apagar tudo" no topo do historico
-- Ao deletar, remove do banco e atualiza a lista
+- Criar um objeto `TOPICS_BY_RELIGION` que mapeia cada religiao a seus topicos relevantes
+- Topicos universais (familia, saude, carreira, financas, relacionamento, futuro) ficam em todas
+- Topicos especificos: "Jesus" so para cristao/catolico/protestante/mormon; "Orixas" para umbanda/candomble; "Karma/Nirvana" para budista; "Tora/Shabat" para judeu; "Alcorão/Ramadã" para isla, etc.
+- O `CollapsibleChipGroup` de topicos recebera a lista filtrada com base na religiao selecionada
+- Adicionar traducoes dos novos topicos no `i18n.ts`
 
-## 3. Nova Aba "Post" para Redes Sociais
+## 2. Versiculo do Dia com selecao de religiao
 
-**Nova pagina `/posts`** onde o usuario pode transformar respostas do chat em posts formatados para redes sociais.
+A pagina de Versiculo do Dia usara a religiao do contexto mas tambem permitira selecionar diretamente na pagina.
 
-**Fluxo:**
-1. Usuario acessa a aba "Post" (icone discreto - `Share2` ou `FileText`)
-2. Ve uma lista das suas conversas recentes (carregadas do banco)
-3. Seleciona qual resposta do assistente quer transformar em post
-4. Escolhe uma ou mais redes: X (Twitter), Instagram, TikTok, Facebook
-5. Uma edge function gera o texto formatado para cada rede selecionada
-6. Usuario ve os posts gerados e pode copiar cada um com um botao "Copiar"
+**Arquivo:** `src/pages/Verse.tsx`
 
-**Design discreto:** O icone na barra inferior sera `FileText` ou `Feather` (pena de escrever), mantendo a sobriedade do site religioso. O label sera "Compartilhar" ou "Post".
+- Adicionar um seletor de religiao (chips ou dropdown) acima do versiculo
+- Ao mudar a religiao, buscar automaticamente um novo versiculo
+- Usar `chatContext.religion` como valor inicial
+
+## 3. Botao "Gerar Resposta" apos selecionar contexto
+
+Apos o usuario selecionar religiao, necessidade, mood e topico, um botao "Gerar Resposta" envia automaticamente uma mensagem contextual sem precisar digitar nada.
+
+**Arquivo:** `src/components/ContextPanel.tsx` e `src/pages/Index.tsx`
+
+- Adicionar um botao "Gerar Resposta" no final do ContextPanel
+- Ao clicar, compor uma mensagem automatica baseada no contexto selecionado (ex: "Sou [religiao], estou me sentindo [mood], preciso de [need] sobre [topico]") e enviar ao chat
+- O ChatArea expora uma funcao `sendAutoMessage` via callback prop ou ref
+
+## 4. Despedida "Estou satisfeito" / "Va com o Senhor"
+
+Detectar quando o usuario diz "estou satisfeito" (ou variacoes) e o sacerdote responder com uma bencao de despedida conforme a religiao.
+
+**Arquivo:** `supabase/functions/sacred-chat/index.ts`
+
+- Adicionar ao system prompt: "Quando o fiel disser que esta satisfeito, encerre com uma bencao de despedida propria da tradicao [religiao]. Exemplos: cristao='Va com Deus', judeu='Shalom', isla='As-salamu alaykum', budista='Que a paz do Dharma o acompanhe', etc."
+
+## 5. Posts integrados ao Historico (remover aba separada)
+
+A funcionalidade de criar posts sera integrada dentro do Historico, tornando-a mais acessivel. Cada conversa no historico tera um botao para gerar posts.
+
+**Arquivos:** `src/components/ChatHistory.tsx`, `src/components/BottomNav.tsx`, `src/App.tsx`
+
+- Remover a rota `/posts` e a aba "Post" do BottomNav
+- No ChatHistory, agrupar mensagens por sessao/conversa
+- Adicionar botao "Criar Post" em cada conversa do historico
+- Ao clicar, abrir um mini-formulario inline (escolher redes, gerar) usando a mesma logica do `generate-post`
+- Mover a logica de geracao de posts para dentro do ChatHistory
+
+## 6. Historico com limite de 20 conversas
+
+O historico mantara as ultimas 20 conversas (pares user+assistant) na memoria.
+
+**Arquivo:** `src/components/ChatHistory.tsx`
+
+- Limitar a query a `.limit(40)` (20 pares de mensagens)
+- Agrupar mensagens por sessao (pares consecutivos user+assistant)
+- Permitir deletar conversas individuais ou em lote
+- Cada "conversa" mostra preview do conteudo
+
+## 7. Tornar funcionalidades mais visiveis
+
+Melhorar a visibilidade geral das funcionalidades no app.
+
+**Arquivos:** `src/components/ChatArea.tsx`, `src/components/ChatHistory.tsx`
+
+- O botao de Historico ficara mais destacado (icone maior, label visivel)
+- O botao "Criar Post" dentro do historico tera destaque visual (cor primaria, icone)
+
+---
 
 ## Detalhes Tecnicos
 
-### Migracao de Banco de Dados
-- Adicionar RLS policy DELETE em `chat_messages` para `auth.uid() = user_id`
+### Novos topicos por religiao (ContextPanel.tsx)
 
-### Arquivos Novos
-1. **`src/pages/Posts.tsx`** - Pagina principal da aba Post
-   - Lista de conversas do usuario (query `chat_messages` onde `role = 'assistant'`)
-   - Selecao de mensagem + checkboxes de redes sociais
-   - Botao "Gerar Post"
-   - Area de resultado com botao "Copiar" por rede
-   
-2. **`supabase/functions/generate-post/index.ts`** - Edge function que recebe o texto e as redes selecionadas, usa Lovable AI (openai/gpt-5-mini) para gerar posts formatados para cada rede com limites de caracteres, hashtags e emojis apropriados
+```text
+TOPICS_BY_RELIGION = {
+  christian/catholic/protestant/mormon: [jesus, heaven, hell, salvation, prayer, sacrifices, ...]
+  jewish: [torah, shabbat, tikkun_olam, prophets, covenant, ...]
+  islam: [quran, ramadan, pilgrimage, prophets, charity, ...]
+  buddhist: [nirvana, karma, dharma, meditation, suffering, ...]
+  hindu: [dharma, karma, moksha, vedas, yoga, ...]
+  spiritist: [spirits, reincarnation, charity, mediumship, ...]
+  umbanda/candomble: [orishas, rituals, ancestors, offerings, ...]
+  agnostic: [ethics, philosophy, meaning, nature, ...]
+  (todos): [future, deceased, animals, career, health, finances, relationship, family, politics, other]
+}
+```
 
-### Arquivos Modificados
-1. **`src/components/ChatArea.tsx`**
-   - Adicionar botao "Historico" ao lado de "Limpar conversa"
-   - Criar componente de dialog para historico com delecao individual/total
+### Fluxo do botao "Gerar Resposta"
 
-2. **`src/components/BottomNav.tsx`**
-   - Adicionar item para a aba Post (icone `Feather`, label "Post")
+```text
+Usuario seleciona contexto -> Clica "Gerar Resposta"
+-> Compoe mensagem: "Me de orientacao como [religiao] sobre [topico], estou [mood] e preciso de [need]"
+-> Envia ao chat automaticamente (sem digitar)
+-> Chat processa normalmente com streaming
+```
 
-3. **`src/App.tsx`**
-   - Adicionar rota `/posts`
+### Integracao Posts no Historico
 
-4. **`src/lib/i18n.ts`**
-   - Adicionar traducoes para: `nav.posts`, `posts.title`, `posts.select`, `posts.generate`, `posts.copy`, `posts.copied`, `posts.networks`, `history.title`, `history.delete_all`, `history.empty`
+```text
+Historico (Sheet lateral)
+  |-- Conversa 1 (preview + data)
+  |     |-- [Criar Post] -> Abre selecao de redes inline
+  |     |-- [Deletar]
+  |-- Conversa 2
+  |     |-- [Criar Post]
+  |     |-- [Deletar]
+  |-- [Apagar tudo]
+```
 
-### Edge Function `generate-post`
-- Recebe: `{ text: string, networks: string[] }`
-- Para cada rede, gera um post com formato adequado:
-  - **X (Twitter):** max 280 caracteres, hashtags relevantes
-  - **Instagram:** texto mais longo, emojis, 5-10 hashtags
-  - **TikTok:** texto curto e impactante, hashtags virais
-  - **Facebook:** texto medio, tom conversacional
-- Usa Lovable AI (openai/gpt-5-mini) para gerar
-- Retorna: `{ posts: { network: string, content: string }[] }`
+### Arquivos modificados
+
+1. `src/components/ContextPanel.tsx` - Topicos dinamicos + botao Gerar Resposta
+2. `src/pages/Verse.tsx` - Seletor de religiao
+3. `src/components/ChatHistory.tsx` - Limite 20 conversas + Posts integrados
+4. `src/components/ChatArea.tsx` - Callback para mensagem automatica
+5. `src/pages/Index.tsx` - Passar callback do chat ao ContextPanel
+6. `src/components/BottomNav.tsx` - Remover aba Posts
+7. `src/App.tsx` - Remover rota /posts
+8. `src/lib/i18n.ts` - Novas traducoes (topicos por religiao, botao gerar)
+9. `supabase/functions/sacred-chat/index.ts` - Instrucao de despedida no prompt
