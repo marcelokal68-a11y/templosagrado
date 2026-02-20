@@ -94,7 +94,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // Logout: clear messages and audio cache
+      setMessages([]);
+      stopAudio();
+      audioCacheRef.current.forEach(url => URL.revokeObjectURL(url));
+      audioCacheRef.current.clear();
+      return;
+    }
     supabase
       .from('chat_messages')
       .select('role, content, created_at')
