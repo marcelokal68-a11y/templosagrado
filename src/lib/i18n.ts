@@ -405,6 +405,7 @@ const translations: Record<Language, Record<string, string>> = {
     'prayers.send_email': 'Enviar',
     'prayers.email_to_me': 'Para meu email',
     'prayers.email_others': 'Outros destinatários',
+    'prayers.email_sent': 'Email enviado com sucesso!',
     'prayers.email_placeholder': 'Emails separados por vírgula',
     
     // Verse
@@ -801,6 +802,7 @@ const translations: Record<Language, Record<string, string>> = {
     'prayers.send_email': 'Send',
     'prayers.email_to_me': 'To my email',
     'prayers.email_others': 'Other recipients',
+    'prayers.email_sent': 'Email sent successfully!',
     'prayers.email_placeholder': 'Emails separated by comma',
     
     'verse.title': 'Verse of the Day',
@@ -1195,6 +1197,7 @@ const translations: Record<Language, Record<string, string>> = {
     'prayers.send_email': 'Enviar',
     'prayers.email_to_me': 'A mi email',
     'prayers.email_others': 'Otros destinatarios',
+    'prayers.email_sent': '¡Email enviado con éxito!',
     'prayers.email_placeholder': 'Emails separados por coma',
     
     'verse.title': 'Versículo del Día',
