@@ -3,7 +3,7 @@ import ContextPanel from '@/components/ContextPanel';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SlidersHorizontal } from 'lucide-react';
 import {
@@ -17,6 +17,7 @@ import {
 export default function Index() {
   const { language, chatContext } = useApp();
   const chatRef = useRef<{ sendAutoMessage: (msg: string) => void }>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleGenerate = () => {
     const parts: string[] = [];
@@ -34,6 +35,7 @@ export default function Index() {
 
     const msg = langMap[language] || langMap['pt-BR'];
     chatRef.current?.sendAutoMessage(msg);
+    setDrawerOpen(false);
   };
 
   return (
@@ -43,7 +45,7 @@ export default function Index() {
       </div>
 
       <div className="md:hidden">
-        <Drawer>
+        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
             <Button
               variant="outline"
@@ -58,7 +60,7 @@ export default function Index() {
               <DrawerTitle className="font-display text-lg">{t('chat.subtitle', language)}</DrawerTitle>
             </DrawerHeader>
             <ScrollArea className="overflow-y-auto px-1 pb-6" style={{ maxHeight: 'calc(85vh - 60px)' }}>
-              <ContextPanel onGenerate={handleGenerate} />
+              <ContextPanel onGenerate={handleGenerate} onClose={() => setDrawerOpen(false)} />
             </ScrollArea>
           </DrawerContent>
         </Drawer>
