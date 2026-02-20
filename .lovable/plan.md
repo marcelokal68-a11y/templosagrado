@@ -1,76 +1,63 @@
 
-# CRM Completo de Usuarios no Painel Admin
+
+# Confidencialidade Total: Remover Perguntas do CRM e Destacar na Landing
 
 ## Resumo
 
-Transformar o painel admin atual (que so gerencia convites) em um CRM completo inspirado nos melhores do mercado (HubSpot, Intercom). Toda a logica de listagem de usuarios roda no backend (edge function) usando service_role, garantindo que apenas admins tenham acesso.
+Duas mudancas principais:
+1. Remover todas as referencias a "perguntas usadas" do painel admin (CRM), garantindo que nenhum administrador veja o conteudo ou contagem de perguntas dos usuarios
+2. Adicionar uma secao de confidencialidade na landing page, transmitindo confianca ao usuario de que pode abrir seu coracao sem medo
 
 ---
 
-## O que sera adicionado
+## Mudancas
 
-### Dashboard com KPIs (topo)
-Cards com metricas rapidas:
-- Total de usuarios
-- Assinantes ativos
-- Usuarios online (ultimo acesso < 5min) -- baseado em `last_sign_in_at` do auth
-- Perguntas usadas (total)
+### 1. Painel Admin (`src/pages/Admin.tsx`)
 
-### Tabela CRM de Usuarios
-Colunas da tabela:
+**Remover do CRM:**
+- Remover a coluna "Perguntas" da tabela de usuarios (a coluna com Progress bar mostrando questions_used/questions_limit)
+- Remover o card de KPI "Perguntas feitas" (totalQuestions) do dashboard
+- Remover o icone HelpCircle dos imports (se nao for mais usado)
 
-| Coluna | Fonte | Descricao |
-|--------|-------|-----------|
-| Nome | profiles.display_name | Nome do usuario |
-| Email | auth.users.email | Email de cadastro |
-| Status | auth.users.last_sign_in_at | "Online" se < 5min, "Offline" com data |
-| Assinante | profiles.is_subscriber | Badge verde/cinza |
-| Perguntas | profiles.questions_used / questions_limit | Barra de progresso |
-| Cadastro | auth.users.created_at | Data de criacao |
-| Ultimo acesso | auth.users.last_sign_in_at | Data formatada |
-| Acoes | - | Botao para promover admin |
+**O que permanece:**
+- Nome, Email, Status (Online/Offline), Tipo (Assinante/Gratuito/Admin), Cadastro, Ultimo acesso, Acoes
+- KPIs: Total usuarios, Assinantes, Online agora (3 cards em vez de 4)
 
-### Funcionalidades da tabela
-- Busca por nome ou email (filtro client-side)
-- Ordenacao por coluna (nome, cadastro, ultimo acesso)
-- Badge colorido para status (Online = verde, Offline = cinza)
-- Badge para tipo (Assinante = verde, Gratuito = amarelo, Admin = roxo)
-- Contador de resultados
+### 2. Edge Function (`supabase/functions/admin/index.ts`)
 
----
+**Remover do `get-stats`:**
+- Remover o campo `totalQuestions` do retorno
+- Remover a soma de `questions_used` dos profiles
 
-## Mudancas Tecnicas
+**Remover do `list-users`:**
+- Remover os campos `questions_used` e `questions_limit` do retorno de cada usuario
 
-### 1. Edge Function: `supabase/functions/admin/index.ts`
+### 3. Landing Page (`src/pages/Landing.tsx`)
 
-Nova action `list-users`:
-- Usa `supabase.auth.admin.listUsers()` para obter todos os usuarios com email, created_at, last_sign_in_at
-- Cruza com tabela `profiles` para obter display_name, is_subscriber, questions_used, questions_limit
-- Cruza com tabela `user_roles` para identificar admins
-- Retorna array consolidado com todos os campos necessarios
-- Protegido pela verificacao de admin existente
+**Adicionar secao de Confidencialidade** entre as Features e as Traditions:
+- Icone de cadeado/escudo
+- Titulo: "Confidencialidade Total" (traduzido)
+- Texto principal: "Abra seu coracao com total seguranca. Suas perguntas, conversas e oracoes sao completamente privadas. Ninguem -- nem mesmo os administradores -- tera acesso ao que voce compartilha com o Sacerdote."
+- Subtexto: "Seu espaco sagrado. Suas palavras. Seu sigilo."
 
-Nova action `get-stats`:
-- Conta total de usuarios, assinantes, ativos recentes
-- Soma total de perguntas usadas
-- Retorna objeto com as metricas
+### 4. Traducoes (`src/lib/i18n.ts`)
 
-### 2. Frontend: `src/pages/Admin.tsx`
+Novas chaves em pt-BR, en e es:
 
-Reestruturar com abas (Tabs):
-- **Aba "Usuarios"**: Dashboard KPIs + Tabela CRM
-- **Aba "Convites"**: Funcionalidade existente de criar/gerenciar convites
-- **Aba "Admin"**: Promover admin (funcionalidade existente)
+**pt-BR:**
+- `landing.privacy_title`: "Confidencialidade Total"
+- `landing.privacy_desc`: "Abra seu coracao com total seguranca. Suas perguntas, conversas e oracoes sao completamente privadas. Ninguem -- nem mesmo os administradores -- tera acesso ao que voce compartilha com o Sacerdote."
+- `landing.privacy_note`: "Seu espaco sagrado. Suas palavras. Seu sigilo."
 
-Componentes usados:
-- `Tabs` / `TabsList` / `TabsTrigger` / `TabsContent` (ja disponivel no projeto)
-- `Table` / `TableHeader` / `TableRow` / `TableCell` (ja disponivel)
-- `Badge` (ja disponivel)
-- `Input` para busca
-- `Progress` para barra de uso de perguntas
+**en:**
+- `landing.privacy_title`: "Total Confidentiality"
+- `landing.privacy_desc`: "Open your heart with complete security. Your questions, conversations and prayers are completely private. No one -- not even administrators -- will have access to what you share with the Priest."
+- `landing.privacy_note`: "Your sacred space. Your words. Your privacy."
 
-### 3. Sem mudancas no banco de dados
-Todos os dados necessarios ja existem nas tabelas `profiles`, `user_roles` e `auth.users`. Nenhuma migracao necessaria.
+**es:**
+- `landing.privacy_title`: "Confidencialidad Total"
+- `landing.privacy_desc`: "Abre tu corazon con total seguridad. Tus preguntas, conversaciones y oraciones son completamente privadas. Nadie -- ni siquiera los administradores -- tendra acceso a lo que compartas con el Sacerdote."
+- `landing.privacy_note`: "Tu espacio sagrado. Tus palabras. Tu privacidad."
 
 ---
 
@@ -78,5 +65,8 @@ Todos os dados necessarios ja existem nas tabelas `profiles`, `user_roles` e `au
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `supabase/functions/admin/index.ts` | Novas actions: `list-users` e `get-stats` |
-| `src/pages/Admin.tsx` | Reescrever com tabs, KPIs, tabela CRM, busca e filtros |
+| `src/pages/Admin.tsx` | Remover coluna "Perguntas" e KPI "Perguntas feitas" |
+| `supabase/functions/admin/index.ts` | Remover questions_used/questions_limit do list-users e totalQuestions do get-stats |
+| `src/pages/Landing.tsx` | Nova secao de confidencialidade com icone de escudo |
+| `src/lib/i18n.ts` | 3 novas chaves de traducao em 3 idiomas |
+
