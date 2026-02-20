@@ -1,169 +1,131 @@
 
-
-# Adicionar Filosofias de Vida ao Sistema
+# Melhorias UX/UI: Filosofia vs Religiao, Cores, Logo e SignOut
 
 ## Resumo
 
-Adicionar uma nova secao **"Filosofias que me inspiram"** abaixo dos topicos de discussao no painel de contexto. Quando selecionada, a filosofia influenciara o chat (o Sacerdote responde como Grao Mestre da filosofia), oracoes, versiculos e praticas diarias. As filosofias funcionam como alternativa/complemento a religiao -- o usuario pode selecionar uma religiao E uma filosofia, ou apenas uma filosofia.
-
-## Filosofias disponíveis
-
-Estoicismo, Logosofia, Humanismo, Epicurismo, Transumanismo, Panteismo, Existencialismo, Objetivismo, Transcendentalismo, Altruismo, Racionalismo, Niilismo Otimista, Absurdismo, Utilitarismo, Pragmatismo
+1. **Escolha exclusiva** entre Afiliacao Religiosa OU Filosofia de Vida (nao ambas ao mesmo tempo) com orientacao clara ao usuario
+2. **Cores diferenciadas** por grupo de chips no ContextPanel
+3. **Logo e nome do app** na pagina de Sign In
+4. **Botao de Sign Out** visivel na pagina logada (header e mobile)
 
 ---
 
-## 1. Adicionar `philosophy` ao ChatContext
+## 1. Escolha exclusiva: Religiao OU Filosofia
 
-**Arquivo:** `src/contexts/AppContext.tsx`
+**Arquivos:** `src/components/ContextPanel.tsx`, `src/pages/Practice.tsx`, `src/pages/Prayers.tsx`
 
-- Adicionar campo `philosophy: string` na interface `ChatContext`
-- Inicializar com `''`
+Quando o usuario seleciona uma religiao, a filosofia e limpa automaticamente (e vice-versa). Adicionar uma mensagem de orientacao entre os dois grupos:
 
-## 2. Nova secao no ContextPanel
+- No ContextPanel: ao clicar numa religiao, `philosophy` vira `''`. Ao clicar numa filosofia, `religion` vira `''`
+- Texto orientativo: "Escolha uma afiliacao religiosa OU uma filosofia de vida para orientar suas respostas" (traduzido)
+- Mesma logica em Practice.tsx e Prayers.tsx
+
+## 2. Cores diferenciadas por grupo
 
 **Arquivo:** `src/components/ContextPanel.tsx`
 
-- Adicionar array `philosophies` com as opcoes listadas
-- Adicionar um novo `CollapsibleChipGroup` abaixo dos topicos, com label "Filosofias de Vida" e prefix `philosophy`
-- Ao selecionar uma filosofia, salvar em `chatContext.philosophy`
-- Incluir `chatContext.philosophy` no calculo de `hasContext`
+Cada grupo de chips tera uma cor propria no `CollapsibleChipGroup`:
 
-## 3. Atualizar o chat (sacred-chat) para reconhecer filosofias
+- **Religiao**: `bg-amber-500` (dourado/ambar) quando selecionado
+- **Filosofia**: `bg-violet-500` (violeta) quando selecionado
+- **O que preciso**: `bg-emerald-500` (verde esmeralda) quando selecionado
+- **Mood**: `bg-rose-400` (rosa) quando selecionado
+- **Topicos**: `bg-sky-500` (azul celeste) quando selecionado
 
-**Arquivo:** `supabase/functions/sacred-chat/index.ts`
+O `CollapsibleChipGroup` recebera uma prop `activeColor` para definir a cor do chip selecionado em vez de usar `bg-primary` sempre.
 
-- Adicionar mapa `PHILOSOPHY_TEXTS` com as fontes de cada filosofia (ex: Estoicismo = "Meditacoes de Marco Aurelio, Cartas de Seneca, Discursos de Epicteto")
-- Quando `context.philosophy` estiver presente:
-  - Se tambem ha religiao: mesclar a persona ("Sacerdote que incorpora a sabedoria de [filosofia]")
-  - Se so filosofia: persona muda para "Grao Mestre da Filosofia de Vida" baseado exclusivamente na filosofia
-- Adicionar instrucao de filosofia ao system prompt
+Aplicar as mesmas cores nos seletores de Practice.tsx e Prayers.tsx.
 
-## 4. Atualizar praticas diarias (daily-practice)
+## 3. Logo e nome no Sign In
 
-**Arquivo:** `supabase/functions/daily-practice/index.ts`
+**Arquivo:** `src/pages/Auth.tsx`
 
-- Receber `philosophy` no body
-- Quando filosofia presente (sem religiao), gerar conteudo do dia baseado na filosofia (ex: para Estoicismo, uma meditacao de Marco Aurelio)
-- Quando ambos presentes, mesclar conteudo
+Substituir o emoji solto por um header mais polido:
+- Manter o emoji `🕉️` em tamanho grande
+- Adicionar o nome "Templo Sagrado" abaixo do emoji com `font-display`
+- Subtitulo: "Seu guia espiritual e filosofico" (traduzido)
 
-## 5. Atualizar pagina Practice.tsx
+## 4. Sign Out na pagina logada
 
-**Arquivo:** `src/pages/Practice.tsx`
+**Arquivo:** `src/components/Header.tsx`
 
-- Adicionar checklists por filosofia (ex: Estoicismo = "Meditacao matinal", "Journaling estoico", "Praticou a dicotomia do controle", "Leu Marco Aurelio/Seneca/Epicteto", "Praticou virtude", "Reflexao noturna")
-- Mostrar seletor de filosofias alem de religioes
-- Permitir selecionar religiao OU filosofia (ou ambos)
+O botao de logout ja existe no desktop (`hidden md:flex`). Preciso:
+- Garantir que o botao de logout apareca tambem no header mobile (dentro do menu hamburger, ja esta)
+- Adicionar um avatar/iniciais do usuario ao lado do botao de logout no desktop para melhor UX
 
-## 6. Atualizar oracoes (Prayers.tsx)
+**Arquivo:** `src/components/BottomNav.tsx`
 
-**Arquivo:** `src/pages/Prayers.tsx`
-
-- Adicionar seletor de filosofias alem de religioes
-- Permitir enviar oracao/intencao vinculada a uma filosofia
-
-## 7. Atualizar Index.tsx (handleGenerate)
-
-**Arquivo:** `src/pages/Index.tsx`
-
-- Incluir `chatContext.philosophy` na mensagem auto-gerada
-
-## 8. Traducoes (i18n.ts)
-
-**Arquivo:** `src/lib/i18n.ts`
-
-Adicionar em pt-BR, en, es:
-- `panel.philosophy`: "Filosofias de Vida" / "Life Philosophies" / "Filosofias de Vida"
-- `philosophy.stoicism`: "Estoicismo" / "Stoicism" / "Estoicismo"
-- `philosophy.logosophy`: "Logosofia" / "Logosophy" / "Logosofía"
-- `philosophy.humanism`: "Humanismo" / "Humanism" / "Humanismo"
-- `philosophy.epicureanism`: "Epicurismo" / "Epicureanism" / "Epicureísmo"
-- `philosophy.transhumanism`: "Transumanismo" / "Transhumanism" / "Transhumanismo"
-- `philosophy.pantheism`: "Panteismo" / "Pantheism" / "Panteísmo"
-- `philosophy.existentialism`: "Existencialismo" / "Existentialism" / "Existencialismo"
-- `philosophy.objectivism`: "Objetivismo" / "Objectivism" / "Objetivismo"
-- `philosophy.transcendentalism`: "Transcendentalismo" / "Transcendentalism" / "Trascendentalismo"
-- `philosophy.altruism`: "Altruismo" / "Altruism" / "Altruismo"
-- `philosophy.rationalism`: "Racionalismo" / "Rationalism" / "Racionalismo"
-- `philosophy.optimistic_nihilism`: "Niilismo Otimista" / "Optimistic Nihilism" / "Nihilismo Optimista"
-- `philosophy.absurdism`: "Absurdismo" / "Absurdism" / "Absurdismo"
-- `philosophy.utilitarianism`: "Utilitarismo" / "Utilitarianism" / "Utilitarismo"
-- `philosophy.pragmatism`: "Pragmatismo" / "Pragmatism" / "Pragmatismo"
-- Itens de checklist por filosofia para practice
+O BottomNav nao tem botao de logout. Nao e necessario adicionar la pois ja existe no header mobile (menu hamburger).
 
 ---
 
 ## Detalhes Tecnicos
 
-### Fontes por filosofia (para o chat e daily-practice)
+### Prop `activeColor` no CollapsibleChipGroup
 
-```text
-Estoicismo: Meditacoes de Marco Aurelio, Cartas a Lucilio de Seneca, Discursos de Epicteto, Enquiridion
-Logosofia: Obras de Carlos Bernardo Gonzalez Pecotche (Raumsol)
-Humanismo: Obras de Erasmo de Roterdao, Pico della Mirandola, Declaracao Universal dos Direitos Humanos
-Epicurismo: Carta a Meneceu de Epicuro, De Rerum Natura de Lucrecio
-Transumanismo: Obras de Nick Bostrom, Ray Kurzweil, Max More
-Panteismo: Etica de Spinoza, obras de Giordano Bruno
-Existencialismo: O Ser e o Nada (Sartre), O Mito de Sisifo (Camus), Ser e Tempo (Heidegger), Kierkegaard
-Objetivismo: A Revolta de Atlas e A Nascente de Ayn Rand
-Transcendentalismo: Walden de Thoreau, Ensaios de Emerson
-Altruismo: Altruismo Eficaz de Peter Singer, obras de Auguste Comte
-Racionalismo: Meditacoes de Descartes, Etica de Spinoza, Monadologia de Leibniz
+```typescript
+function CollapsibleChipGroup({ 
+  label, items, prefix, selected, onSelect, defaultOpen, 
+  activeColor = "bg-primary text-primary-foreground border-primary"
+}: {
+  // ...existing props
+  activeColor?: string;
+}) {
+  // No chip selecionado, usar activeColor em vez de "bg-primary..."
+}
 ```
 
-### Checklists por filosofia (exemplos)
+### Uso com cores:
 
-**Estoicismo:**
-- Meditacao matinal (premeditatio malorum)
-- Praticou a dicotomia do controle
-- Journaling estoico
-- Leu Marco Aurelio, Seneca ou Epicteto
-- Praticou uma virtude (coragem, justica, temperanca, sabedoria)
-- Reflexao noturna
+```typescript
+<CollapsibleChipGroup activeColor="bg-amber-500 text-white border-amber-500" ... /> // Religiao
+<CollapsibleChipGroup activeColor="bg-emerald-500 text-white border-emerald-500" ... /> // Necessidade
+<CollapsibleChipGroup activeColor="bg-rose-400 text-white border-rose-400" ... /> // Mood
+<CollapsibleChipGroup activeColor="bg-sky-500 text-white border-sky-500" ... /> // Topicos
+<CollapsibleChipGroup activeColor="bg-violet-500 text-white border-violet-500" ... /> // Filosofia
+```
 
-**Humanismo:**
-- Reflexao sobre dignidade humana
-- Ato de empatia ou servico
-- Leitura humanista
-- Praticou pensamento critico
-- Contribuiu para o bem comum
-- Gratidao consciente
+### Exclusividade religiao/filosofia
 
-**Existencialismo:**
-- Reflexao sobre autenticidade
-- Exercicio de liberdade consciente
-- Leitura existencialista
-- Confrontou uma ansiedade com coragem
-- Praticou presenca no momento
-- Reflexao sobre proposito pessoal
+```typescript
+// No ContextPanel
+onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '', philosophy: '' }))}
+// ...
+onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v, religion: '', topic: '' }))}
+```
 
-(Padrao similar para todas as demais filosofias)
+### Orientacao ao usuario
 
-### Arquivos criados
-Nenhum
+Texto entre os dois grupos:
+```typescript
+<p className="text-xs text-muted-foreground text-center py-2 italic">
+  {t('panel.choose_one', language)}
+</p>
+```
+
+Traducoes:
+- pt-BR: "Escolha uma afiliacao religiosa ou uma filosofia de vida"
+- en: "Choose a religious affiliation or a life philosophy"
+- es: "Elige una afiliacion religiosa o una filosofia de vida"
+
+### Auth.tsx - Logo melhorado
+
+```typescript
+<CardHeader className="text-center">
+  <span className="text-5xl mb-2">🕉️</span>
+  <CardTitle className="font-display text-2xl">{t('chat.title', language)}</CardTitle>
+  <p className="text-sm text-muted-foreground">{t('auth.subtitle', language)}</p>
+  <p className="text-xs text-muted-foreground mt-1">
+    {isLogin ? t('auth.login', language) : t('auth.signup', language)}
+  </p>
+</CardHeader>
+```
 
 ### Arquivos modificados
-1. `src/contexts/AppContext.tsx` - Adicionar `philosophy` ao ChatContext
-2. `src/components/ContextPanel.tsx` - Nova secao de filosofias
-3. `supabase/functions/sacred-chat/index.ts` - Suporte a filosofias no prompt
-4. `supabase/functions/daily-practice/index.ts` - Conteudo diario por filosofia
-5. `src/pages/Practice.tsx` - Checklists por filosofia
-6. `src/pages/Prayers.tsx` - Seletor de filosofia nas oracoes
-7. `src/pages/Index.tsx` - Incluir filosofia na mensagem auto-gerada
-8. `src/lib/i18n.ts` - Todas as traducoes
 
-### Fluxo
-
-```text
-Painel de Contexto:
-  Religiao -> Necessidade -> Humor -> Topicos -> [NOVO] Filosofias de Vida
-  
-Ao selecionar "Estoicismo":
-  Chat: "Eu sou o Grao Mestre do Estoicismo. Falo com base em Marco Aurelio, Seneca..."
-  Practice: Checklist estoico + conteudo do dia baseado em filosofia estoica
-  Prayers: Intencao vinculada ao Estoicismo
-  
-Ao selecionar "Judaismo" + "Estoicismo":
-  Chat: Sacerdote judaico que incorpora sabedoria estoica
-  Practice: Checklist judaico + conteudo mesclado
-```
-
+1. `src/components/ContextPanel.tsx` - Cores diferenciadas, exclusividade, texto orientativo
+2. `src/pages/Auth.tsx` - Logo e nome do app
+3. `src/pages/Practice.tsx` - Exclusividade religiao/filosofia, cores
+4. `src/pages/Prayers.tsx` - Exclusividade religiao/filosofia, cores
+5. `src/lib/i18n.ts` - Traducoes novas (panel.choose_one, auth.subtitle)
+6. `supabase/functions/sacred-chat/index.ts` - Sem mudancas (ja suporta ambos)
