@@ -1,66 +1,84 @@
 
 
-# Tutorial na Landing Page + Quick Tutorial no App
+# Redirecionar usuarios nao autenticados para a Landing Page
 
-## Resumo
+## Problema Atual
 
-Adicionar uma secao de tutorial visual passo-a-passo na Landing Page (hero section) e um Quick Tutorial acessivel dentro do app (botao de ajuda flutuante ou dialog).
+Quando o usuario nao esta logado (ou apos logout), ele pode acessar qualquer pagina do app diretamente, incluindo o chat (`/`), oracoes, versiculo, pratica, etc. O correto e que usuarios sem sessao sejam sempre redirecionados para `/landing`.
 
----
+## Solucao
 
-## 1. Secao de Tutorial na Landing Page
+Criar um componente `ProtectedRoute` que verifica autenticacao e redireciona para `/landing` se o usuario nao estiver logado.
 
-**Arquivo:** `src/pages/Landing.tsx`
+### Mudancas
 
-Adicionar uma nova secao entre o Hero e os Features com um tutorial visual de 4 passos numerados, usando cards com icones e descricoes curtas:
+**1. Novo componente: `src/components/ProtectedRoute.tsx`**
 
-| Passo | Icone | Titulo (pt-BR) | Descricao |
-|-------|-------|-----------------|-----------|
-| 1 | SlidersHorizontal | Escolha seu caminho | Selecione sua religiao ou filosofia de vida no painel lateral |
-| 2 | MessageCircle | Converse com o Sacerdote | Faca perguntas e receba orientacao personalizada por texto ou voz |
-| 3 | Heart | Gere oracoes e pensamentos | Crie oracoes ou pensamentos do dia com referencias das fontes sagradas |
-| 4 | CheckSquare | Pratique diariamente | Use o checklist espiritual para nutrir sua jornada interior |
+- Componente wrapper que usa `useApp()` para verificar `user` e `loading`
+- Se `loading` esta true, mostra um spinner/skeleton
+- Se `user` e null, redireciona para `/landing` via `<Navigate to="/landing" replace />`
+- Se `user` existe, renderiza o conteudo filho
 
-Design: cards horizontais numerados com um circulo colorido "1, 2, 3, 4", titulo em negrito e descricao abaixo. Layout em grid 1x4 (desktop) ou 1x1 (mobile).
+**2. Atualizar `src/App.tsx`**
 
-### Traducoes necessarias em `src/lib/i18n.ts`
+- Envolver as rotas protegidas com `ProtectedRoute`:
+  - `/` (Index/Chat)
+  - `/prayers`
+  - `/verse`
+  - `/practice`
+  - `/posts`
+  - `/admin`
+- Rotas publicas que NAO precisam de protecao:
+  - `/landing`
+  - `/auth`
+  - `/pricing`
+  - `/invite/:code`
 
-Novas chaves para os 3 idiomas:
-- `landing.tutorial_title`: "Como usar o Templo Sagrado" / "How to use Sacred Temple" / "Como usar el Templo Sagrado"
-- `landing.step1_title`, `landing.step1_desc`
-- `landing.step2_title`, `landing.step2_desc`
-- `landing.step3_title`, `landing.step3_desc`
-- `landing.step4_title`, `landing.step4_desc`
+**3. Atualizar `src/components/BottomNav.tsx`**
 
----
+- Esconder o BottomNav quando o usuario nao esta logado (nao faz sentido mostrar navegacao para paginas protegidas)
 
-## 2. Quick Tutorial dentro do App
+**4. Atualizar `src/components/QuickTutorial.tsx`**
 
-**Novo componente:** `src/components/QuickTutorial.tsx`
-
-- Um botao flutuante com icone `HelpCircle` (lucide) no canto inferior direito (acima do BottomNav no mobile)
-- Ao clicar, abre um Dialog/Drawer com os mesmos 4 passos do tutorial da Landing, mas em formato compacto
-- Cada passo com icone, titulo e descricao curta
-- Botao "Entendi!" para fechar
-- Salva no localStorage (`tutorial_dismissed`) para nao aparecer automaticamente toda vez, mas o botao de ajuda permanece sempre visivel
-
-**Arquivo:** `src/App.tsx`
-
-- Importar e renderizar o `QuickTutorial` dentro do layout principal
-
-### Traducoes adicionais em `src/lib/i18n.ts`
-
-- `tutorial.quick_title`: "Quick Tutorial" / "Tutorial Rapido" / "Tutorial Rapido"
-- `tutorial.got_it`: "Entendi!" / "Got it!" / "Entendido!"
+- Esconder o botao de tutorial quando o usuario nao esta logado (ele ja ve o tutorial na landing)
 
 ---
 
-## Resumo de Arquivos
+## Detalhes Tecnicos
 
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/lib/i18n.ts` | Novas chaves de traducao para tutorial (3 idiomas) |
-| `src/pages/Landing.tsx` | Nova secao de tutorial com 4 passos visuais |
-| `src/components/QuickTutorial.tsx` | Novo componente com botao flutuante + dialog de tutorial |
-| `src/App.tsx` | Renderizar QuickTutorial no layout |
+### ProtectedRoute
+
+```text
+- Importa useApp() para acessar user e loading
+- Importa Navigate de react-router-dom
+- Se loading: renderiza div centralizada com spinner
+- Se !user: retorna <Navigate to="/landing" replace />
+- Se user: retorna children
+```
+
+### Rotas no App.tsx
+
+```text
+Protegidas (envolvidas com ProtectedRoute):
+  / -> Index
+  /prayers -> Prayers
+  /verse -> Verse
+  /practice -> Practice
+  /posts -> Posts
+  /admin -> Admin
+
+Publicas (sem ProtectedRoute):
+  /landing -> Landing
+  /auth -> Auth
+  /pricing -> Pricing
+  /invite/:code -> InviteRedeem
+  * -> NotFound
+```
+
+### BottomNav e QuickTutorial
+
+```text
+Ambos verificam useApp().user
+Se user == null, retornam null (nao renderizam nada)
+```
 
