@@ -1,81 +1,51 @@
 
-# Adicionar 5 Novas Filosofias de Vida
+
+# Ajustar Estilo de Citacoes no Chat do Sacerdote
 
 ## Resumo
 
-Adicionar as seguintes filosofias baseadas na imagem de referencia:
-1. **Xamanismo** (shamanism) - Conexao com a Terra e Ancestrais
-2. **Taoismo** (taoism) - O fluxo do Tao e a Nao-Acao (Wu Wei)
-3. **Antroposofia** (anthroposophy) - Educacao e saude integrada ao espirito
-4. **Cosmismo** (cosmism) - Superacao das limitacoes biologicas (complementa o transhumanismo existente)
-5. **Ubuntu** (ubuntu) - "Eu sou porque nos somos" (Etica Comunitaria)
+Alterar o prompt do sistema na edge function `sacred-chat` para que as respostas da IA sejam mais diretas, com menos citacoes (maximo 2 por resposta), sempre contextualizadas com frases introdutorias como "de acordo com...", "como nos ensina...", e nunca entre parentesis.
 
 ---
 
-## Arquivos a modificar
+## Arquivo a Modificar
 
-### 1. `src/components/ContextPanel.tsx`
-- Adicionar as 5 novas filosofias ao array `philosophies`
+### `supabase/functions/sacred-chat/index.ts`
 
-### 2. `src/pages/Landing.tsx`
-- Adicionar as novas filosofias ao array `philosophies` da landing page
+Alterar as regras de citacao no `systemPrompt`. Substituir a regra atual:
 
-### 3. `src/pages/Practice.tsx`
-- Adicionar as 5 novas filosofias ao array `philosophies`
-- Adicionar checklists em `PHILOSOPHY_CHECKLISTS` para cada nova filosofia (6 itens cada)
+```text
+ATUAL:
+- When citing scripture or philosophical works, use: "text" -- Source Book Chapter:Verse (when applicable).
 
-### 4. `src/lib/i18n.ts` (3 idiomas: pt-BR, en, es)
-Para cada nova filosofia, adicionar:
-- `philosophy.{key}` - Nome traduzido
-- `practice.item.*` - Itens do checklist diario (6 por filosofia = 30 novos itens)
+NOVO:
+- Use NO MORE than 2 citations per response. Less is more.
+- NEVER use parentheses for citations. Instead, weave them naturally into your prose with introductory phrases like "de acordo com...", "como nos ensina...", "conforme escrito em...", "nas palavras de...", "according to...", "as taught in...".
+- Example: Instead of '"Be still" (Psalm 46:10)', write 'Como nos ensina o Salmo 46:10, "Aquietai-vos"'.
+- Be MORE DIRECT and concise. Speak from the heart, not from a bibliography.
+```
 
-**Novas traducoes de nome:**
-| Key | pt-BR | en | es |
-|-----|-------|-----|-----|
-| shamanism | Xamanismo | Shamanism | Chamanismo |
-| taoism | Taoismo | Taoism | Taoismo |
-| anthroposophy | Antroposofia | Anthroposophy | Antroposofia |
-| cosmism | Cosmismo | Cosmism | Cosmismo |
-| ubuntu | Ubuntu | Ubuntu | Ubuntu |
-
-**Novos itens de pratica (exemplos):**
-- Xamanismo: conexao com a terra, ritual de passagem, meditacao ancestral, oferenda a natureza, caminhada contemplativa, gratidao aos ancestrais
-- Taoismo: meditacao Wu Wei, leitura do Tao Te Ching, pratica de nao-acao, contemplacao da natureza, tai chi/chi kung, equiibrio yin-yang
-- Antroposofia: exercicio euritimico, leitura de Steiner, meditacao antroposofica, contato com a natureza, atividade artistica, reflexao corpo-alma-espirito
-- Cosmismo: reflexao cosmica, leitura de Fedorov, contemplacao do universo, acao de superacao, reflexao sobre imortalidade, conexao ciencia-espirito
-- Ubuntu: ato de comunidade, leitura Ubuntu, ajudou alguem, reflexao "eu sou porque nos somos", dialogo comunitario, gratidao coletiva
-
-### 5. `supabase/functions/sacred-chat/index.ts`
-- Adicionar as 5 novas filosofias ao `PHILOSOPHY_TEXTS` com seus livros de referencia:
-  - shamanism: "Caminhado com os Curadores Mundiais, Historias Orais, tradicoes xamanicas"
-  - taoism: "Tao Te Ching (Laozi), Zhuangzi"
-  - anthroposophy: "A Ciencia Oculta (Steiner), obras sobre Pedagogia Waldorf"
-  - cosmism: "Filosofia da Causa Comum (Fedorov), O Homem Imortal"
-  - ubuntu: "Pilares Ubuntu, Escritos de Desmond Tutu, Nelson Mandela"
-
-### 6. `supabase/functions/daily-practice/index.ts`
-- Adicionar as 5 novas filosofias ao `PHILOSOPHY_SOURCES` (3 idiomas)
+Tambem reforcar no prompt geral:
+- Remover a regra `Do NOT use bullet points or lists` (ja existe) e adicionar enfase em ser direto e poetico sem excesso academico.
 
 ---
 
 ## Detalhes Tecnicos
 
-### Checklist keys para cada filosofia:
+A mudanca e apenas no bloco `systemPrompt` dentro da funcao `sacred-chat/index.ts`, nas linhas das CRITICAL RULES. Nenhum outro arquivo precisa ser alterado. A edge function sera reimplantada automaticamente apos a edicao.
 
-**shamanism:**
-`['earth_connection', 'ancestor_meditation', 'nature_offering', 'shamanic_reading', 'passage_ritual', 'ancestral_gratitude']`
+### Regras atualizadas no systemPrompt:
 
-**taoism:**
-`['wu_wei_meditation', 'tao_te_ching_reading', 'non_action_practice', 'nature_contemplation', 'tai_chi', 'yin_yang_balance']`
+```text
+CRITICAL RULES:
+- Your responses must have AT MOST 12 lines. Be direct, profound, and impactful.
+- Every word must carry weight. Be poetic, empathetic, and deeply moving.
+- Use AT MOST 2 citations per response. Fewer is better.
+- NEVER place citations in parentheses. Weave them naturally into your prose using introductory phrases such as "de acordo com", "como nos ensina", "conforme escrito em", "nas palavras de".
+- Example: Instead of '"Be still" (Psalm 46:10)', write 'Como nos ensina o Salmo 46:10, "Aquietai-vos e sabei que eu sou Deus"'.
+- Be DIRECT and heartfelt. Speak as a wise elder sharing from lived experience, not as an academic listing references.
+- [sourceInstruction mantido]
+- Never judge or condemn...
+- [demais regras mantidas]
+```
 
-**anthroposophy:**
-`['eurythmy_exercise', 'steiner_reading', 'anthroposophic_meditation', 'artistic_activity', 'body_soul_spirit', 'nature_connection']`
-
-**cosmism:**
-`['cosmic_reflection', 'fedorov_reading', 'universe_contemplation', 'self_transcendence', 'immortality_reflection', 'science_spirit_connection']`
-
-**ubuntu:**
-`['community_act', 'ubuntu_reading', 'help_others', 'i_am_because_we_are', 'community_dialogue', 'collective_gratitude']`
-
-### Nenhuma mudanca no banco de dados
-Todas as mudancas sao em codigo frontend e edge functions.
