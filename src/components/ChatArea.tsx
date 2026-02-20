@@ -383,6 +383,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       )}
       {messages.length === 0 && (
         <div className="p-4 space-y-3 animate-fade-in">
+          {user && (
+            <div className="flex justify-end">
+              <ChatHistory />
+            </div>
+          )}
           <h3 className="font-display text-sm font-semibold text-muted-foreground">{t('chat.recommended', language)}</h3>
           <div className="space-y-2">
             {questions.map((q, i) => (

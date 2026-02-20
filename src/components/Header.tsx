@@ -4,7 +4,7 @@ import { t, Language, languageNames } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, LogIn, LogOut, Menu, X, Shield } from 'lucide-react';
+import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, LogIn, LogOut, Menu, X, Shield, Feather } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Header() {
@@ -33,6 +33,7 @@ export default function Header() {
   const navItems = [
     { to: '/', label: t('nav.chat', language), icon: MessageCircle },
     { to: '/pricing', label: t('nav.pricing', language), icon: DollarSign },
+    { to: '/posts', label: t('nav.posts', language), icon: Feather },
     { to: '/prayers', label: t('nav.prayers', language), icon: Heart },
     { to: '/verse', label: t('nav.verse', language), icon: BookOpen },
     { to: '/practice', label: t('nav.practice', language), icon: CheckSquare },
