@@ -36,6 +36,11 @@ const PHILOSOPHY_TEXTS: Record<string, string> = {
   absurdism: "The Myth of Sisyphus and The Stranger by Albert Camus, The Plague",
   utilitarianism: "Utilitarianism by John Stuart Mill, An Introduction to the Principles of Morals by Jeremy Bentham",
   pragmatism: "Pragmatism by William James, Democracy and Education by John Dewey, works of Charles Sanders Peirce",
+  shamanism: "Walking with World Healers, Oral Histories, shamanic traditions, The Way of the Shaman by Michael Harner",
+  taoism: "Tao Te Ching (Laozi), Zhuangzi, The Book of the Way and Its Virtue",
+  anthroposophy: "Occult Science (Rudolf Steiner), Philosophy of Freedom, Waldorf Pedagogy works",
+  cosmism: "Philosophy of the Common Cause (Nikolai Fedorov), The Immortal Man, works of Konstantin Tsiolkovsky",
+  ubuntu: "Ubuntu Pillars, writings of Desmond Tutu, Nelson Mandela, African philosophy of community",
 };
 
 const MOOD_INSTRUCTIONS: Record<string, string> = {

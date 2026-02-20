@@ -11,7 +11,7 @@ import { BookOpen, Loader2, Sparkles, Volume2, VolumeX, BookMarked, GraduationCa
 import { Button } from '@/components/ui/button';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
-const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism'];
+const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism', 'shamanism', 'taoism', 'anthroposophy', 'cosmism', 'ubuntu'];
 
 const CHECKLISTS: Record<string, { items: string[]; genderSpecific?: boolean }> = {
   jewish: { genderSpecific: true, items: [] },
@@ -44,6 +44,11 @@ const PHILOSOPHY_CHECKLISTS: Record<string, string[]> = {
   absurdism: ['joyful_acceptance', 'absurdist_reading', 'create_meaning', 'present_moment', 'conscious_freedom', 'simple_joy'],
   utilitarianism: ['utility_analysis', 'utilitarian_reading', 'maximize_wellbeing', 'empathy_act', 'common_good_phil', 'critical_thinking'],
   pragmatism: ['pragmatic_action', 'pragmatist_reading', 'practical_result', 'critical_thinking', 'self_improvement', 'conscious_gratitude'],
+  shamanism: ['earth_connection', 'ancestor_meditation', 'nature_offering', 'shamanic_reading', 'passage_ritual', 'ancestral_gratitude'],
+  taoism: ['wu_wei_meditation', 'tao_te_ching_reading', 'non_action_practice', 'nature_contemplation', 'tai_chi', 'yin_yang_balance'],
+  anthroposophy: ['eurythmy_exercise', 'steiner_reading', 'anthroposophic_meditation', 'artistic_activity', 'body_soul_spirit', 'nature_connection'],
+  cosmism: ['cosmic_reflection', 'fedorov_reading', 'universe_contemplation', 'self_transcendence', 'immortality_reflection', 'science_spirit_connection'],
+  ubuntu: ['community_act', 'ubuntu_reading', 'help_others', 'i_am_because_we_are', 'community_dialogue', 'collective_gratitude'],
 };
 
 const JEWISH_MALE = ['tefilin', 'shacharit', 'parasha', 'mitzvah', 'shema', 'torah_study'];
