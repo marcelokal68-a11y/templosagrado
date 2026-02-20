@@ -37,12 +37,37 @@ serve(async (req) => {
 
     const religionPrompt = religionPrompts[religion] || 'Retorne uma reflexão espiritual universal do dia.';
 
-    const systemPrompt = `Você é um especialista religioso e espiritual. Responda APENAS em ${langName}. 
-Retorne o conteúdo sagrado correto para a data ${date}. 
+    const instructions: Record<string, { respond: string; format: string }> = {
+      'en': {
+        respond: `You are a religious and spiritual expert. Respond ONLY in English.
+Return the correct sacred content for the date ${date}.
+Religion: ${religionPrompt}
+IMPORTANT: All content must be positive, focused on love, compassion, study and service. Never encourage violence or discrimination.
+Respond ONLY with valid JSON (no markdown), in the format:
+{"title": "content title", "reference": "sacred source reference", "explanation": "explanation in 3-5 lines", "reflection": "practical reflection in 2-3 lines"}`,
+        format: `Sacred content for ${date}, religion: ${religion}`
+      },
+      'es': {
+        respond: `Eres un experto religioso y espiritual. Responde SOLO en español.
+Devuelve el contenido sagrado correcto para la fecha ${date}.
+Religión: ${religionPrompt}
+IMPORTANTE: Todo contenido debe ser positivo, enfocado en amor, compasión, estudio y servicio al prójimo. Nunca incentives violencia o discriminación.
+Responde SOLO con JSON válido (sin markdown), en el formato:
+{"title": "título del contenido", "reference": "referencia de la fuente sagrada", "explanation": "explicación en 3-5 líneas", "reflection": "reflexión práctica en 2-3 líneas"}`,
+        format: `Contenido sagrado para ${date}, religión: ${religion}`
+      },
+      'pt-BR': {
+        respond: `Você é um especialista religioso e espiritual. Responda APENAS em português brasileiro.
+Retorne o conteúdo sagrado correto para a data ${date}.
 Religião: ${religionPrompt}
 IMPORTANTE: Todo conteúdo deve ser positivo, focado em amor, compaixão, estudo e serviço ao próximo. Nunca incentive violência ou discriminação.
 Responda APENAS com JSON válido (sem markdown), no formato:
-{"title": "título do conteúdo", "reference": "referência da fonte sagrada", "explanation": "explicação em 3-5 linhas", "reflection": "reflexão prática em 2-3 linhas"}`;
+{"title": "título do conteúdo", "reference": "referência da fonte sagrada", "explanation": "explicação em 3-5 linhas", "reflection": "reflexão prática em 2-3 linhas"}`,
+        format: `Conteúdo sagrado para ${date}, religião: ${religion}`
+      },
+    };
+
+    const lang = instructions[language] || instructions['pt-BR'];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -53,8 +78,8 @@ Responda APENAS com JSON válido (sem markdown), no formato:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Conteúdo sagrado para ${date}, religião: ${religion}` },
+          { role: "system", content: lang.respond },
+          { role: "user", content: lang.format },
         ],
       }),
     });
