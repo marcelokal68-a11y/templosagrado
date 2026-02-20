@@ -200,6 +200,12 @@ const translations: Record<Language, Record<string, string>> = {
     'panel.generate': 'Gerar Resposta',
     'panel.philosophy': 'Filosofias de Vida',
     'panel.choose_one': 'Escolha uma afiliação religiosa OU uma filosofia de vida',
+    'panel.mode_religion': 'Afiliação Religiosa',
+    'panel.mode_philosophy': 'Filosofia de Vida',
+    'panel.switch_title': 'Mudar caminho?',
+    'panel.switch_message': 'Para essa conversa com nosso sábio sacerdote, você já escolheu {current}. Deseja mudar para {target}? Se desejar, faça {current} agora e {target} depois! Decida em paz.',
+    'panel.keep': 'Manter',
+    'panel.switch': 'Mudar',
     
     // Philosophies
     'philosophy.stoicism': 'Estoicismo',
@@ -672,6 +678,12 @@ const translations: Record<Language, Record<string, string>> = {
     'panel.generate': 'Generate Response',
     'panel.philosophy': 'Life Philosophies',
     'panel.choose_one': 'Choose a religious affiliation OR a life philosophy',
+    'panel.mode_religion': 'Religious Affiliation',
+    'panel.mode_philosophy': 'Life Philosophy',
+    'panel.switch_title': 'Change path?',
+    'panel.switch_message': 'For this conversation with our wise priest, you already chose {current}. Do you want to switch to {target}? If so, do {current} now and {target} later! Decide in peace.',
+    'panel.keep': 'Keep',
+    'panel.switch': 'Switch',
     
     'philosophy.stoicism': 'Stoicism',
     'philosophy.logosophy': 'Logosophy',
@@ -1124,6 +1136,12 @@ const translations: Record<Language, Record<string, string>> = {
     'panel.generate': 'Generar Respuesta',
     'panel.philosophy': 'Filosofías de Vida',
     'panel.choose_one': 'Elige una afiliación religiosa O una filosofía de vida',
+    'panel.mode_religion': 'Afiliación Religiosa',
+    'panel.mode_philosophy': 'Filosofía de Vida',
+    'panel.switch_title': '¿Cambiar camino?',
+    'panel.switch_message': 'Para esta conversación con nuestro sabio sacerdote, ya elegiste {current}. ¿Deseas cambiar a {target}? Si lo deseas, haz {current} ahora y {target} después. ¡Decide en paz!',
+    'panel.keep': 'Mantener',
+    'panel.switch': 'Cambiar',
     
     'philosophy.stoicism': 'Estoicismo',
     'philosophy.logosophy': 'Logosofía',

@@ -2,9 +2,19 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles, Church, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
 const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
@@ -70,8 +80,14 @@ function CollapsibleChipGroup({ label, items, prefix, selected, onSelect, defaul
   );
 }
 
-export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }) {
+export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
   const { language, chatContext, setChatContext } = useApp();
+  const [activeMode, setActiveMode] = useState<'religion' | 'philosophy'>(
+    chatContext.philosophy ? 'philosophy' : 'religion'
+  );
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingMode, setPendingMode] = useState<'religion' | 'philosophy' | null>(null);
+
   const topics = getTopicsForReligion(chatContext.religion);
 
   // Reset topic if current one is not in the new religion's list
@@ -82,31 +98,106 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
 
   const hasContext = chatContext.religion || chatContext.need || chatContext.mood || chatContext.topic || chatContext.philosophy;
 
+  const handleModeSwitch = (newMode: 'religion' | 'philosophy') => {
+    if (newMode === activeMode) return;
+
+    const hasSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
+    if (hasSelection) {
+      setPendingMode(newMode);
+      setShowConfirm(true);
+    } else {
+      setActiveMode(newMode);
+    }
+  };
+
+  const confirmSwitch = () => {
+    setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
+    setActiveMode(pendingMode!);
+    setShowConfirm(false);
+    setPendingMode(null);
+  };
+
+  const cancelSwitch = () => {
+    setShowConfirm(false);
+    setPendingMode(null);
+  };
+
+  const getCurrentLabel = () => {
+    if (activeMode === 'religion' && chatContext.religion) {
+      return t(`religion.${chatContext.religion}`, language);
+    }
+    if (activeMode === 'philosophy' && chatContext.philosophy) {
+      return t(`philosophy.${chatContext.philosophy}`, language);
+    }
+    return '';
+  };
+
+  const getTargetLabel = () => {
+    return pendingMode === 'religion'
+      ? t('panel.mode_religion', language)
+      : t('panel.mode_philosophy', language);
+  };
+
+  const handleGenerate = () => {
+    onGenerate?.();
+    onClose?.();
+  };
+
   return (
     <div className="space-y-1 p-4">
-      <CollapsibleChipGroup
-        label={t('panel.religion', language)}
-        items={religions}
-        prefix="religion"
-        selected={chatContext.religion}
-        onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '', philosophy: '' }))}
-        defaultOpen={true}
-        activeColor="bg-amber-500 text-white border-amber-500"
-      />
+      {/* Mode Selector */}
+      <div className="flex gap-2 pb-3 mb-2 border-b border-amber-200">
+        <button
+          onClick={() => handleModeSwitch('religion')}
+          className={cn(
+            "flex-1 rounded-xl px-4 py-2.5 font-semibold text-sm flex items-center justify-center gap-2 border transition-all",
+            activeMode === 'religion'
+              ? "bg-gradient-to-b from-amber-700 to-amber-900 text-amber-50 shadow-lg shadow-amber-900/30 border-amber-600"
+              : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+          )}
+        >
+          <Church className="h-4 w-4" />
+          {t('panel.mode_religion', language)}
+        </button>
+        <button
+          onClick={() => handleModeSwitch('philosophy')}
+          className={cn(
+            "flex-1 rounded-xl px-4 py-2.5 font-semibold text-sm flex items-center justify-center gap-2 border transition-all",
+            activeMode === 'philosophy'
+              ? "bg-gradient-to-b from-amber-700 to-amber-900 text-amber-50 shadow-lg shadow-amber-900/30 border-amber-600"
+              : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+          )}
+        >
+          <BookOpen className="h-4 w-4" />
+          {t('panel.mode_philosophy', language)}
+        </button>
+      </div>
 
-      <p className="text-xs text-muted-foreground text-center py-1 italic">
-        {t('panel.choose_one', language)}
-      </p>
+      {/* Religion section */}
+      {activeMode === 'religion' && (
+        <CollapsibleChipGroup
+          label={t('panel.religion', language)}
+          items={religions}
+          prefix="religion"
+          selected={chatContext.religion}
+          onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '' }))}
+          defaultOpen={true}
+          activeColor="bg-amber-500 text-white border-amber-500"
+        />
+      )}
 
-      <CollapsibleChipGroup
-        label={t('panel.philosophy', language)}
-        items={philosophies}
-        prefix="philosophy"
-        selected={chatContext.philosophy}
-        onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v, religion: '', topic: '' }))}
-        defaultOpen={false}
-        activeColor="bg-violet-500 text-white border-violet-500"
-      />
+      {/* Philosophy section */}
+      {activeMode === 'philosophy' && (
+        <CollapsibleChipGroup
+          label={t('panel.philosophy', language)}
+          items={philosophies}
+          prefix="philosophy"
+          selected={chatContext.philosophy}
+          onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v, topic: '' }))}
+          defaultOpen={true}
+          activeColor="bg-violet-500 text-white border-violet-500"
+        />
+      )}
 
       <CollapsibleChipGroup
         label={t('panel.need', language)}
@@ -138,12 +229,30 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
 
       {onGenerate && hasContext && (
         <div className="pt-3">
-          <Button onClick={onGenerate} className="w-full gap-2">
+          <Button onClick={handleGenerate} className="w-full gap-2">
             <Sparkles className="h-4 w-4" />
             {t('panel.generate', language)}
           </Button>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('panel.switch_title', language)}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('panel.switch_message', language)
+                .replace(/\{current\}/g, getCurrentLabel())
+                .replace(/\{target\}/g, getTargetLabel())}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelSwitch}>{t('panel.keep', language)}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSwitch}>{t('panel.switch', language)}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
