@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import ChatHistory from '@/components/ChatHistory';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +15,7 @@ type Msg = { role: 'user' | 'assistant'; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
+const STT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-stt`;
 
 function TypingDots() {
   return (
@@ -86,8 +87,12 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<number | null>(null);
   const [ttsSpeed, setTtsSpeed] = useState(1.15);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -228,7 +233,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMsg],
+          messages: [...messages, userMsg].slice(-40),
           context: chatContext,
           language,
           userId: user?.id,
@@ -329,6 +334,71 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
+
+  const toggleRecording = useCallback(async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        if (blob.size === 0) return;
+
+        setIsTranscribing(true);
+        try {
+          const formData = new FormData();
+          formData.append('audio', blob, `recording.${mimeType === 'audio/webm' ? 'webm' : 'mp4'}`);
+          formData.append('language', language);
+
+          const resp = await fetch(STT_URL, {
+            method: 'POST',
+            headers: {
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: formData,
+          });
+
+          if (!resp.ok) throw new Error('STT failed');
+          const { text } = await resp.json();
+          if (text) setChatInput(chatInput ? `${chatInput} ${text}` : text);
+        } catch (e) {
+          console.error(e);
+          toast({ title: 'Erro na transcrição', variant: 'destructive' });
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+
+      // Auto-stop after 60 seconds
+      setTimeout(() => {
+        if (recorder.state === 'recording') {
+          recorder.stop();
+          setIsRecording(false);
+        }
+      }, 60000);
+    } catch (e) {
+      console.error(e);
+      toast({ title: 'Erro ao acessar microfone', variant: 'destructive' });
+    }
+  }, [isRecording, language, toast, setChatInput]);
 
   const questions = [
     t(`rec.${chatContext.religion || 'default'}.1`, language),
@@ -435,6 +505,15 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             className="min-h-[44px] max-h-[120px] resize-none"
             rows={1}
           />
+          <Button
+            onClick={toggleRecording}
+            disabled={isTranscribing}
+            size="icon"
+            variant={isRecording ? "destructive" : "outline"}
+            className={cn("shrink-0", isRecording && "animate-pulse")}
+          >
+            {isTranscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
           <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0">
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
