@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ADMIN_EMAILS = ["marcelokal68@gmail.com"];
+const ADMIN_EMAILS = ["marcelokal68@gmail.com", "kalichsztein.marcelo@gmail.com"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -30,7 +30,6 @@ serve(async (req) => {
 
     // Auto-seed admin on login
     if (action === "check-role") {
-      // Auto-assign admin role for known admin emails
       if (ADMIN_EMAILS.includes(user.email!)) {
         await supabase.from("user_roles").upsert(
           { user_id: user.id, role: "admin" },
@@ -55,6 +54,66 @@ serve(async (req) => {
       .eq("role", "admin")
       .single();
     if (!adminCheck) throw new Error("Forbidden");
+
+    if (action === "list-users") {
+      const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const authUsers = authData?.users ?? [];
+
+      const { data: profiles } = await supabase.from("profiles").select("*");
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+
+      const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
+      const roleMap = new Map<string, string[]>();
+      for (const r of roles ?? []) {
+        const existing = roleMap.get(r.user_id) ?? [];
+        existing.push(r.role);
+        roleMap.set(r.user_id, existing);
+      }
+
+      const now = Date.now();
+      const users = authUsers.map((u: any) => {
+        const profile = profileMap.get(u.id);
+        const userRoles = roleMap.get(u.id) ?? [];
+        const lastSignIn = u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() : 0;
+        const isOnline = lastSignIn > 0 && (now - lastSignIn) < 5 * 60 * 1000;
+
+        return {
+          id: u.id,
+          email: u.email ?? "",
+          display_name: profile?.display_name ?? u.email ?? "",
+          is_subscriber: profile?.is_subscriber ?? false,
+          questions_used: profile?.questions_used ?? 0,
+          questions_limit: profile?.questions_limit ?? 10,
+          is_admin: userRoles.includes("admin"),
+          is_online: isOnline,
+          created_at: u.created_at,
+          last_sign_in_at: u.last_sign_in_at,
+        };
+      });
+
+      return new Response(JSON.stringify(users), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "get-stats") {
+      const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const authUsers = authData?.users ?? [];
+      const { data: profiles } = await supabase.from("profiles").select("is_subscriber, questions_used");
+
+      const now = Date.now();
+      const totalUsers = authUsers.length;
+      const onlineUsers = authUsers.filter((u: any) => {
+        const t = u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() : 0;
+        return t > 0 && (now - t) < 5 * 60 * 1000;
+      }).length;
+      const subscribers = (profiles ?? []).filter((p: any) => p.is_subscriber).length;
+      const totalQuestions = (profiles ?? []).reduce((sum: number, p: any) => sum + (p.questions_used ?? 0), 0);
+
+      return new Response(JSON.stringify({ totalUsers, onlineUsers, subscribers, totalQuestions }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (action === "create-invite") {
       const { label, questions_limit, max_uses, expires_at } = body;
@@ -95,12 +154,6 @@ serve(async (req) => {
 
     if (action === "promote-admin") {
       const { target_email } = body;
-      const { data: targetUser } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("display_name", target_email)
-        .single();
-      // Try finding by auth email
       const { data: authUsers } = await supabase.auth.admin.listUsers();
       const target = authUsers?.users?.find((u: any) => u.email === target_email);
       if (!target) throw new Error("User not found");
