@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare } from 'lucide-react';
+import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, Feather } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 const items = [
   { to: '/', icon: MessageCircle, labelKey: 'nav.chat' },
   { to: '/pricing', icon: DollarSign, labelKey: 'nav.pricing' },
+  { to: '/posts', icon: Feather, labelKey: 'nav.posts' },
   { to: '/prayers', icon: Heart, labelKey: 'nav.prayers' },
   { to: '/verse', icon: BookOpen, labelKey: 'nav.verse' },
   { to: '/practice', icon: CheckSquare, labelKey: 'nav.practice' },

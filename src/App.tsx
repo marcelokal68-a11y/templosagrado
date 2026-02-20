@@ -13,7 +13,7 @@ import Verse from "./pages/Verse";
 import Practice from "./pages/Practice";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
-// Posts integrated into ChatHistory
+import Posts from "./pages/Posts";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
@@ -37,6 +37,7 @@ const App = () => (
               <Route path="/prayers" element={<Prayers />} />
               <Route path="/verse" element={<Verse />} />
               <Route path="/practice" element={<Practice />} />
+              <Route path="/posts" element={<Posts />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/invite/:code" element={<InviteRedeem />} />
               <Route path="*" element={<NotFound />} />
