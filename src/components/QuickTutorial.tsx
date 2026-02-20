@@ -28,10 +28,10 @@ export default function QuickTutorial() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center md:bottom-6"
+        className="fixed top-3 right-14 z-40 w-9 h-9 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center justify-center md:right-16"
         aria-label="Tutorial"
       >
-        <HelpCircle className="h-6 w-6" />
+        <HelpCircle className="h-5 w-5" />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
