@@ -22,6 +22,11 @@ const PHILOSOPHY_SOURCES: Record<string, Record<string, string>> = {
     absurdism: 'O Mito de Sísifo e O Estrangeiro de Albert Camus',
     utilitarianism: 'Utilitarismo de John Stuart Mill, Introdução aos Princípios da Moral de Bentham',
     pragmatism: 'Pragmatismo de William James, Democracia e Educação de John Dewey',
+    shamanism: 'Tradições xamânicas, O Caminho do Xamã de Michael Harner, histórias orais ancestrais',
+    taoism: 'Tao Te Ching de Laozi, Zhuangzi, O Livro do Caminho e da Virtude',
+    anthroposophy: 'A Ciência Oculta de Rudolf Steiner, A Filosofia da Liberdade, Pedagogia Waldorf',
+    cosmism: 'Filosofia da Causa Comum de Nikolai Fedorov, O Homem Imortal, Konstantin Tsiolkovsky',
+    ubuntu: 'Pilares Ubuntu, Escritos de Desmond Tutu, Nelson Mandela, filosofia africana comunitária',
   },
   'en': {
     stoicism: 'Meditations by Marcus Aurelius, Letters to Lucilius by Seneca, Discourses by Epictetus',
@@ -39,6 +44,11 @@ const PHILOSOPHY_SOURCES: Record<string, Record<string, string>> = {
     absurdism: 'The Myth of Sisyphus and The Stranger by Albert Camus',
     utilitarianism: 'Utilitarianism by John Stuart Mill, Introduction to the Principles of Morals by Bentham',
     pragmatism: 'Pragmatism by William James, Democracy and Education by John Dewey',
+    shamanism: 'Shamanic traditions, The Way of the Shaman by Michael Harner, ancestral oral histories',
+    taoism: 'Tao Te Ching by Laozi, Zhuangzi, The Book of the Way and Its Virtue',
+    anthroposophy: 'Occult Science by Rudolf Steiner, Philosophy of Freedom, Waldorf Pedagogy',
+    cosmism: 'Philosophy of the Common Cause by Nikolai Fedorov, The Immortal Man, Konstantin Tsiolkovsky',
+    ubuntu: 'Ubuntu Pillars, writings of Desmond Tutu, Nelson Mandela, African community philosophy',
   },
   'es': {
     stoicism: 'Meditaciones de Marco Aurelio, Cartas a Lucilio de Séneca, Discursos de Epicteto',
@@ -56,6 +66,11 @@ const PHILOSOPHY_SOURCES: Record<string, Record<string, string>> = {
     absurdism: 'El Mito de Sísifo y El Extranjero de Albert Camus',
     utilitarianism: 'Utilitarismo de John Stuart Mill, Introducción a los Principios de la Moral de Bentham',
     pragmatism: 'Pragmatismo de William James, Democracia y Educación de John Dewey',
+    shamanism: 'Tradiciones chamánicas, El Camino del Chamán de Michael Harner, historias orales ancestrales',
+    taoism: 'Tao Te Ching de Laozi, Zhuangzi, El Libro del Camino y la Virtud',
+    anthroposophy: 'La Ciencia Oculta de Rudolf Steiner, La Filosofía de la Libertad, Pedagogía Waldorf',
+    cosmism: 'Filosofía de la Causa Común de Nikolai Fedorov, El Hombre Inmortal, Konstantin Tsiolkovsky',
+    ubuntu: 'Pilares Ubuntu, Escritos de Desmond Tutu, Nelson Mandela, filosofía africana comunitaria',
   },
 };
 

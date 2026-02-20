@@ -217,6 +217,11 @@ const translations: Record<Language, Record<string, string>> = {
     'philosophy.absurdism': 'Absurdismo',
     'philosophy.utilitarianism': 'Utilitarismo',
     'philosophy.pragmatism': 'Pragmatismo',
+    'philosophy.shamanism': 'Xamanismo',
+    'philosophy.taoism': 'Taoísmo',
+    'philosophy.anthroposophy': 'Antroposofia',
+    'philosophy.cosmism': 'Cosmismo',
+    'philosophy.ubuntu': 'Ubuntu',
     
     // Philosophy practice items
     'practice.item.stoic_morning': 'Meditação matinal (premeditatio malorum)',
@@ -279,6 +284,38 @@ const translations: Record<Language, Record<string, string>> = {
     'practice.item.nihilist_reading': 'Leitura niilista otimista',
     'practice.item.freedom_meaning': 'Reflexão sobre liberdade de significado',
     'practice.item.create_own_value': 'Criou seus próprios valores',
+    // Shamanism
+    'practice.item.earth_connection': 'Conexão com a terra (pés descalços, abraçar árvore)',
+    'practice.item.ancestor_meditation': 'Meditação ancestral',
+    'practice.item.nature_offering': 'Oferenda à natureza',
+    'practice.item.shamanic_reading': 'Leitura sobre tradições xamânicas',
+    'practice.item.passage_ritual': 'Ritual de passagem ou intenção',
+    'practice.item.ancestral_gratitude': 'Gratidão aos ancestrais',
+    // Taoism
+    'practice.item.wu_wei_meditation': 'Meditação Wu Wei (não-ação)',
+    'practice.item.tao_te_ching_reading': 'Leitura do Tao Te Ching',
+    'practice.item.non_action_practice': 'Praticou a não-ação consciente',
+    'practice.item.tai_chi': 'Tai Chi ou Chi Kung',
+    'practice.item.yin_yang_balance': 'Reflexão sobre equilíbrio Yin-Yang',
+    // Anthroposophy
+    'practice.item.eurythmy_exercise': 'Exercício de euritmia',
+    'practice.item.steiner_reading': 'Leitura de Rudolf Steiner',
+    'practice.item.anthroposophic_meditation': 'Meditação antroposófica',
+    'practice.item.artistic_activity': 'Atividade artística consciente',
+    'practice.item.body_soul_spirit': 'Reflexão corpo-alma-espírito',
+    // Cosmism
+    'practice.item.cosmic_reflection': 'Reflexão cósmica',
+    'practice.item.fedorov_reading': 'Leitura de Fedorov ou cosmistas',
+    'practice.item.universe_contemplation': 'Contemplação do universo',
+    'practice.item.self_transcendence': 'Ação de superação pessoal',
+    'practice.item.immortality_reflection': 'Reflexão sobre imortalidade',
+    'practice.item.science_spirit_connection': 'Conexão ciência-espírito',
+    // Ubuntu
+    'practice.item.community_act': 'Ato de comunidade',
+    'practice.item.ubuntu_reading': 'Leitura sobre filosofia Ubuntu',
+    'practice.item.i_am_because_we_are': 'Reflexão "Eu sou porque nós somos"',
+    'practice.item.community_dialogue': 'Diálogo comunitário',
+    'practice.item.collective_gratitude': 'Gratidão coletiva',
     
     'practice.select_philosophy': 'Selecione uma filosofia ou religião acima',
     
@@ -651,6 +688,11 @@ const translations: Record<Language, Record<string, string>> = {
     'philosophy.absurdism': 'Absurdism',
     'philosophy.utilitarianism': 'Utilitarianism',
     'philosophy.pragmatism': 'Pragmatism',
+    'philosophy.shamanism': 'Shamanism',
+    'philosophy.taoism': 'Taoism',
+    'philosophy.anthroposophy': 'Anthroposophy',
+    'philosophy.cosmism': 'Cosmism',
+    'philosophy.ubuntu': 'Ubuntu',
     
     'practice.item.stoic_morning': 'Morning meditation (premeditatio malorum)',
     'practice.item.dichotomy_control': 'Practiced dichotomy of control',
@@ -712,6 +754,38 @@ const translations: Record<Language, Record<string, string>> = {
     'practice.item.nihilist_reading': 'Optimistic nihilist reading',
     'practice.item.freedom_meaning': 'Reflected on freedom of meaning',
     'practice.item.create_own_value': 'Created own values',
+    // Shamanism
+    'practice.item.earth_connection': 'Earth connection (barefoot, hug a tree)',
+    'practice.item.ancestor_meditation': 'Ancestral meditation',
+    'practice.item.nature_offering': 'Offering to nature',
+    'practice.item.shamanic_reading': 'Reading about shamanic traditions',
+    'practice.item.passage_ritual': 'Passage or intention ritual',
+    'practice.item.ancestral_gratitude': 'Gratitude to ancestors',
+    // Taoism
+    'practice.item.wu_wei_meditation': 'Wu Wei meditation (non-action)',
+    'practice.item.tao_te_ching_reading': 'Tao Te Ching reading',
+    'practice.item.non_action_practice': 'Practiced conscious non-action',
+    'practice.item.tai_chi': 'Tai Chi or Qi Gong',
+    'practice.item.yin_yang_balance': 'Yin-Yang balance reflection',
+    // Anthroposophy
+    'practice.item.eurythmy_exercise': 'Eurythmy exercise',
+    'practice.item.steiner_reading': 'Rudolf Steiner reading',
+    'practice.item.anthroposophic_meditation': 'Anthroposophic meditation',
+    'practice.item.artistic_activity': 'Conscious artistic activity',
+    'practice.item.body_soul_spirit': 'Body-soul-spirit reflection',
+    // Cosmism
+    'practice.item.cosmic_reflection': 'Cosmic reflection',
+    'practice.item.fedorov_reading': 'Fedorov or cosmist reading',
+    'practice.item.universe_contemplation': 'Universe contemplation',
+    'practice.item.self_transcendence': 'Self-transcendence action',
+    'practice.item.immortality_reflection': 'Immortality reflection',
+    'practice.item.science_spirit_connection': 'Science-spirit connection',
+    // Ubuntu
+    'practice.item.community_act': 'Community act',
+    'practice.item.ubuntu_reading': 'Ubuntu philosophy reading',
+    'practice.item.i_am_because_we_are': '"I am because we are" reflection',
+    'practice.item.community_dialogue': 'Community dialogue',
+    'practice.item.collective_gratitude': 'Collective gratitude',
     
     'practice.select_philosophy': 'Select a philosophy or religion above',
     
@@ -1066,6 +1140,11 @@ const translations: Record<Language, Record<string, string>> = {
     'philosophy.absurdism': 'Absurdismo',
     'philosophy.utilitarianism': 'Utilitarismo',
     'philosophy.pragmatism': 'Pragmatismo',
+    'philosophy.shamanism': 'Chamanismo',
+    'philosophy.taoism': 'Taoísmo',
+    'philosophy.anthroposophy': 'Antroposofía',
+    'philosophy.cosmism': 'Cosmismo',
+    'philosophy.ubuntu': 'Ubuntu',
     
     'practice.item.stoic_morning': 'Meditación matutina (premeditatio malorum)',
     'practice.item.dichotomy_control': 'Practicó la dicotomía del control',
@@ -1127,6 +1206,38 @@ const translations: Record<Language, Record<string, string>> = {
     'practice.item.nihilist_reading': 'Lectura nihilista optimista',
     'practice.item.freedom_meaning': 'Reflexión sobre libertad de significado',
     'practice.item.create_own_value': 'Creó sus propios valores',
+    // Shamanism
+    'practice.item.earth_connection': 'Conexión con la tierra (descalzo, abrazar árbol)',
+    'practice.item.ancestor_meditation': 'Meditación ancestral',
+    'practice.item.nature_offering': 'Ofrenda a la naturaleza',
+    'practice.item.shamanic_reading': 'Lectura sobre tradiciones chamánicas',
+    'practice.item.passage_ritual': 'Ritual de paso o intención',
+    'practice.item.ancestral_gratitude': 'Gratitud a los ancestros',
+    // Taoism
+    'practice.item.wu_wei_meditation': 'Meditación Wu Wei (no-acción)',
+    'practice.item.tao_te_ching_reading': 'Lectura del Tao Te Ching',
+    'practice.item.non_action_practice': 'Practicó la no-acción consciente',
+    'practice.item.tai_chi': 'Tai Chi o Chi Kung',
+    'practice.item.yin_yang_balance': 'Reflexión sobre equilibrio Yin-Yang',
+    // Anthroposophy
+    'practice.item.eurythmy_exercise': 'Ejercicio de euritmia',
+    'practice.item.steiner_reading': 'Lectura de Rudolf Steiner',
+    'practice.item.anthroposophic_meditation': 'Meditación antroposófica',
+    'practice.item.artistic_activity': 'Actividad artística consciente',
+    'practice.item.body_soul_spirit': 'Reflexión cuerpo-alma-espíritu',
+    // Cosmism
+    'practice.item.cosmic_reflection': 'Reflexión cósmica',
+    'practice.item.fedorov_reading': 'Lectura de Fedorov o cosmistas',
+    'practice.item.universe_contemplation': 'Contemplación del universo',
+    'practice.item.self_transcendence': 'Acción de superación personal',
+    'practice.item.immortality_reflection': 'Reflexión sobre inmortalidad',
+    'practice.item.science_spirit_connection': 'Conexión ciencia-espíritu',
+    // Ubuntu
+    'practice.item.community_act': 'Acto de comunidad',
+    'practice.item.ubuntu_reading': 'Lectura sobre filosofía Ubuntu',
+    'practice.item.i_am_because_we_are': 'Reflexión "Soy porque somos"',
+    'practice.item.community_dialogue': 'Diálogo comunitario',
+    'practice.item.collective_gratitude': 'Gratitud colectiva',
     
     'practice.select_philosophy': 'Selecciona una filosofía o religión arriba',
     

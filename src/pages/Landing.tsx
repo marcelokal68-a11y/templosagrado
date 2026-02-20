@@ -14,6 +14,7 @@ const traditions = [
 const philosophies = [
   'stoicism', 'humanism', 'existentialism', 'epicureanism', 'logosophy',
   'pantheism', 'rationalism', 'absurdism', 'pragmatism',
+  'shamanism', 'taoism', 'anthroposophy', 'cosmism', 'ubuntu',
 ];
 
 const features = [
