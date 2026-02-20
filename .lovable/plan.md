@@ -1,134 +1,188 @@
 
-# Plano de Melhorias do Templo Sagrado
 
-## Resumo das Mudancas
+# Nova Aba: Praticando a Religiao
 
-Este plano cobre 7 melhorias solicitadas para tornar o app mais inteligente, contextual e facil de usar.
+## Resumo
 
----
-
-## 1. Topicos dinamicos por religiao
-
-Atualmente os topicos de discussao sao os mesmos para todas as religioes (ex: "Jesus" aparece para Judaismo). Isso sera corrigido criando um mapa de topicos por religiao.
-
-**Arquivo:** `src/components/ContextPanel.tsx`
-
-- Criar um objeto `TOPICS_BY_RELIGION` que mapeia cada religiao a seus topicos relevantes
-- Topicos universais (familia, saude, carreira, financas, relacionamento, futuro) ficam em todas
-- Topicos especificos: "Jesus" so para cristao/catolico/protestante/mormon; "Orixas" para umbanda/candomble; "Karma/Nirvana" para budista; "Tora/Shabat" para judeu; "Alcorão/Ramadã" para isla, etc.
-- O `CollapsibleChipGroup` de topicos recebera a lista filtrada com base na religiao selecionada
-- Adicionar traducoes dos novos topicos no `i18n.ts`
-
-## 2. Versiculo do Dia com selecao de religiao
-
-A pagina de Versiculo do Dia usara a religiao do contexto mas tambem permitira selecionar diretamente na pagina.
-
-**Arquivo:** `src/pages/Verse.tsx`
-
-- Adicionar um seletor de religiao (chips ou dropdown) acima do versiculo
-- Ao mudar a religiao, buscar automaticamente um novo versiculo
-- Usar `chatContext.religion` como valor inicial
-
-## 3. Botao "Gerar Resposta" apos selecionar contexto
-
-Apos o usuario selecionar religiao, necessidade, mood e topico, um botao "Gerar Resposta" envia automaticamente uma mensagem contextual sem precisar digitar nada.
-
-**Arquivo:** `src/components/ContextPanel.tsx` e `src/pages/Index.tsx`
-
-- Adicionar um botao "Gerar Resposta" no final do ContextPanel
-- Ao clicar, compor uma mensagem automatica baseada no contexto selecionado (ex: "Sou [religiao], estou me sentindo [mood], preciso de [need] sobre [topico]") e enviar ao chat
-- O ChatArea expora uma funcao `sendAutoMessage` via callback prop ou ref
-
-## 4. Despedida "Estou satisfeito" / "Va com o Senhor"
-
-Detectar quando o usuario diz "estou satisfeito" (ou variacoes) e o sacerdote responder com uma bencao de despedida conforme a religiao.
-
-**Arquivo:** `supabase/functions/sacred-chat/index.ts`
-
-- Adicionar ao system prompt: "Quando o fiel disser que esta satisfeito, encerre com uma bencao de despedida propria da tradicao [religiao]. Exemplos: cristao='Va com Deus', judeu='Shalom', isla='As-salamu alaykum', budista='Que a paz do Dharma o acompanhe', etc."
-
-## 5. Posts integrados ao Historico (remover aba separada)
-
-A funcionalidade de criar posts sera integrada dentro do Historico, tornando-a mais acessivel. Cada conversa no historico tera um botao para gerar posts.
-
-**Arquivos:** `src/components/ChatHistory.tsx`, `src/components/BottomNav.tsx`, `src/App.tsx`
-
-- Remover a rota `/posts` e a aba "Post" do BottomNav
-- No ChatHistory, agrupar mensagens por sessao/conversa
-- Adicionar botao "Criar Post" em cada conversa do historico
-- Ao clicar, abrir um mini-formulario inline (escolher redes, gerar) usando a mesma logica do `generate-post`
-- Mover a logica de geracao de posts para dentro do ChatHistory
-
-## 6. Historico com limite de 20 conversas
-
-O historico mantara as ultimas 20 conversas (pares user+assistant) na memoria.
-
-**Arquivo:** `src/components/ChatHistory.tsx`
-
-- Limitar a query a `.limit(40)` (20 pares de mensagens)
-- Agrupar mensagens por sessao (pares consecutivos user+assistant)
-- Permitir deletar conversas individuais ou em lote
-- Cada "conversa" mostra preview do conteudo
-
-## 7. Tornar funcionalidades mais visiveis
-
-Melhorar a visibilidade geral das funcionalidades no app.
-
-**Arquivos:** `src/components/ChatArea.tsx`, `src/components/ChatHistory.tsx`
-
-- O botao de Historico ficara mais destacado (icone maior, label visivel)
-- O botao "Criar Post" dentro do historico tera destaque visual (cor primaria, icone)
+Criar uma nova pagina/aba chamada **"Praticando"** que funciona como um checklist diario personalizado por religiao. Ao selecionar a afiliacao religiosa, o usuario ve uma lista de praticas diarias recomendadas com checkboxes, alem de conteudo educativo como a parasha do dia (Judaismo), leitura do Evangelho (Catolicismo), etc. Todas as praticas sao positivas e voltadas ao bem.
 
 ---
+
+## 1. Nova rota e navegacao
+
+- Criar pagina `src/pages/Practice.tsx`
+- Adicionar rota `/practice` no `App.tsx`
+- Adicionar aba "Praticando" no `BottomNav.tsx` (icone: `CheckSquare`) e no `Header.tsx`
+- Adicionar traducoes no `i18n.ts`
+
+## 2. Estrutura da pagina Practice.tsx
+
+A pagina tera:
+1. **Seletor de religiao** (chips, como no ContextPanel) - usa `chatContext.religion` como padrao
+2. **Pergunta de genero** (opcional, so aparece para religioes onde faz diferenca, ex: Judaismo com tefilin)
+3. **Checklist diario** - lista de praticas com checkbox, gerada conforme religiao e genero
+4. **Conteudo do dia** - texto educativo gerado por IA (ex: parasha da semana, evangelho do dia, sura do dia)
+
+## 3. Checklists por religiao
+
+Todas as praticas serao sempre positivas, voltadas ao bem, nunca incentivando atos que prejudiquem pessoas ou animais.
+
+**Judaismo (masculino):**
+- Colocou o Tefilin
+- Fez a reza da manha (Shacharit)
+- Leu a parasha do dia
+- Fez uma boa acao (Mitzvah)
+- Recitou o Shema
+- Estudou Tora
+
+**Judaismo (feminino):**
+- Acendeu velas do Shabat (quando aplicavel)
+- Fez a reza da manha
+- Leu a parasha do dia
+- Fez uma boa acao (Mitzvah)
+- Recitou o Shema
+- Estudou Tora
+
+**Catolicismo:**
+- Fez a oracao da manha
+- Leu o Evangelho do dia
+- Rezou o Terco/Rosario
+- Praticou um ato de caridade
+- Exame de consciencia
+- Agradeceu a Deus
+
+**Protestantismo:**
+- Devocional matinal
+- Leitura biblica do dia
+- Oracao pessoal
+- Praticou bondade com alguem
+- Reflexao sobre a Palavra
+- Agradeceu a Deus
+
+**Isla:**
+- Fez a oracao do Fajr (amanhecer)
+- Fez a oracao do Dhuhr (meio-dia)
+- Fez a oracao do Asr (tarde)
+- Fez a oracao do Maghrib (por do sol)
+- Fez a oracao do Isha (noite)
+- Leu uma passagem do Alcorao
+- Praticou um ato de caridade (Sadaqah)
+
+**Budismo:**
+- Meditacao matinal
+- Praticou atenção plena (mindfulness)
+- Leu um ensinamento do Dharma
+- Praticou compaixao com um ser vivo
+- Reflexao sobre as Quatro Nobres Verdades
+- Evitou causar sofrimento
+
+**Hinduismo:**
+- Puja (oracao matinal)
+- Leu um verso do Bhagavad Gita
+- Praticou Yoga ou meditacao
+- Praticou um ato de Seva (servico)
+- Recitou um mantra
+- Reflexao sobre o Dharma
+
+**Espiritismo:**
+- Prece matinal
+- Leitura do Evangelho Segundo o Espiritismo
+- Praticou caridade
+- Passou vibracao positiva a alguem
+- Estudou uma obra de Kardec
+- Reflexao sobre a reforma intima
+
+**Umbanda:**
+- Prece ao Pai Oxala
+- Banho de ervas ou defumacao (se aplicavel)
+- Praticou caridade
+- Meditacao ou concentracao espiritual
+- Agradeceu aos guias espirituais
+- Ajudou alguem necessitado
+
+**Candomble:**
+- Saudacao aos Orixas
+- Oferenda ou agradecimento
+- Praticou respeito a natureza
+- Meditacao ou concentracao
+- Ajudou a comunidade
+- Estudou a tradicao oral
+
+**Mormon:**
+- Oracao matinal
+- Leitura do Livro de Mormon
+- Servico ao proximo
+- Estudo das escrituras
+- Reflexao sobre revelacao pessoal
+- Agradeceu a Deus
+
+**Agnostico:**
+- Reflexao matinal
+- Leitura de filosofia ou sabedoria universal
+- Praticou um ato de bondade
+- Meditacao ou momento de silencio
+- Gratidao consciente
+- Contribuiu para o bem comum
+
+## 4. Conteudo do dia (gerado por IA)
+
+Criar uma **edge function** `daily-practice` que, recebendo a religiao e a data, retorna:
+- O conteudo sagrado do dia (ex: parasha, evangelho, sura) com titulo correto
+- Uma breve explicacao/interpretacao (3-5 linhas)
+- Uma reflexao pratica
+
+A funcao usara o gateway Lovable AI (`openai/gpt-5-mini`) com um prompt especifico para retornar o conteudo correto de cada dia.
+
+## 5. Persistencia do checklist
+
+- Salvar progresso do checklist no `localStorage` (chave por dia + religiao)
+- Nao precisa de tabela no banco por enquanto (feature leve e pessoal)
+- Ao mudar de dia, o checklist reseta automaticamente
+
+## 6. Traducoes (i18n.ts)
+
+Adicionar em pt-BR, en, es:
+- `nav.practice`: "Praticando" / "Practicing" / "Practicando"
+- `practice.title`: "Praticando a Religiao" / "Practicing Religion" / "Practicando la Religion"
+- `practice.subtitle`: "Checklist diario da sua jornada espiritual"
+- `practice.gender`: "Genero" (para religioes que precisam)
+- `practice.male` / `practice.female`
+- `practice.daily_content`: "Conteudo Sagrado do Dia"
+- `practice.loading`: "Carregando conteudo do dia..."
+- Nomes de cada item do checklist por religiao
 
 ## Detalhes Tecnicos
 
-### Novos topicos por religiao (ContextPanel.tsx)
-
-```text
-TOPICS_BY_RELIGION = {
-  christian/catholic/protestant/mormon: [jesus, heaven, hell, salvation, prayer, sacrifices, ...]
-  jewish: [torah, shabbat, tikkun_olam, prophets, covenant, ...]
-  islam: [quran, ramadan, pilgrimage, prophets, charity, ...]
-  buddhist: [nirvana, karma, dharma, meditation, suffering, ...]
-  hindu: [dharma, karma, moksha, vedas, yoga, ...]
-  spiritist: [spirits, reincarnation, charity, mediumship, ...]
-  umbanda/candomble: [orishas, rituals, ancestors, offerings, ...]
-  agnostic: [ethics, philosophy, meaning, nature, ...]
-  (todos): [future, deceased, animals, career, health, finances, relationship, family, politics, other]
-}
-```
-
-### Fluxo do botao "Gerar Resposta"
-
-```text
-Usuario seleciona contexto -> Clica "Gerar Resposta"
--> Compoe mensagem: "Me de orientacao como [religiao] sobre [topico], estou [mood] e preciso de [need]"
--> Envia ao chat automaticamente (sem digitar)
--> Chat processa normalmente com streaming
-```
-
-### Integracao Posts no Historico
-
-```text
-Historico (Sheet lateral)
-  |-- Conversa 1 (preview + data)
-  |     |-- [Criar Post] -> Abre selecao de redes inline
-  |     |-- [Deletar]
-  |-- Conversa 2
-  |     |-- [Criar Post]
-  |     |-- [Deletar]
-  |-- [Apagar tudo]
-```
+### Arquivos criados
+1. `src/pages/Practice.tsx` - Pagina principal com seletor de religiao, checklist e conteudo do dia
+2. `supabase/functions/daily-practice/index.ts` - Edge function que gera o conteudo sagrado do dia
 
 ### Arquivos modificados
+1. `src/App.tsx` - Adicionar rota `/practice`
+2. `src/components/BottomNav.tsx` - Adicionar aba "Praticando"
+3. `src/components/Header.tsx` - Adicionar link na nav desktop
+4. `src/lib/i18n.ts` - Adicionar todas as traducoes
 
-1. `src/components/ContextPanel.tsx` - Topicos dinamicos + botao Gerar Resposta
-2. `src/pages/Verse.tsx` - Seletor de religiao
-3. `src/components/ChatHistory.tsx` - Limite 20 conversas + Posts integrados
-4. `src/components/ChatArea.tsx` - Callback para mensagem automatica
-5. `src/pages/Index.tsx` - Passar callback do chat ao ContextPanel
-6. `src/components/BottomNav.tsx` - Remover aba Posts
-7. `src/App.tsx` - Remover rota /posts
-8. `src/lib/i18n.ts` - Novas traducoes (topicos por religiao, botao gerar)
-9. `supabase/functions/sacred-chat/index.ts` - Instrucao de despedida no prompt
+### Fluxo do usuario
+
+```text
+Aba "Praticando" -> Seleciona religiao -> (Se Judaismo: seleciona genero)
+-> Ve checklist diario personalizado -> Marca itens conforme pratica
+-> Abaixo do checklist: "Conteudo Sagrado do Dia"
+-> Ex: "Parasha da Semana: Bereshit (Genesis 1:1-6:8)"
+-> Explicacao e interpretacao em 3-5 linhas
+-> Progresso salvo localmente por dia
+```
+
+### Edge function daily-practice
+
+Recebe: `{ religion, date, language, gender? }`
+
+Prompt para a IA:
+- "Voce e um especialista em [religiao]. Retorne o conteudo sagrado correto para o dia [data]. Para Judaismo: a parasha da semana com nome hebraico, referencia e interpretacao. Para Catolicismo: o evangelho do dia. Para Isla: uma sura recomendada. Etc. Formato JSON com title, reference, explanation, reflection. Maximo 5 linhas por campo."
+
+### Regras de seguranca
+- Todos os itens do checklist serao apenas praticas positivas
+- Nenhuma pratica que incentive violencia, discriminacao ou dano a pessoas ou animais
+- Conteudo focado em amor, compaixao, estudo, oracao e servico ao proximo
+
