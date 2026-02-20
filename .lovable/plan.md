@@ -1,72 +1,42 @@
 
 
-# Confidencialidade Total: Remover Perguntas do CRM e Destacar na Landing
+# Melhorar UI/UX da area de auxilio no Chat
 
-## Resumo
+## Problema atual
+O contador de perguntas restantes e os links de login/upgrade estao logo abaixo do botao de enviar, ocupando espaco visual e criando uma area congestionada. Isso prejudica a experiencia do usuario.
 
-Duas mudancas principais:
-1. Remover todas as referencias a "perguntas usadas" do painel admin (CRM), garantindo que nenhum administrador veja o conteudo ou contagem de perguntas dos usuarios
-2. Adicionar uma secao de confidencialidade na landing page, transmitindo confianca ao usuario de que pode abrir seu coracao sem medo
+## Solucao
 
----
+### Mover informacoes de auxilio para uma barra sutil no topo da area de input
 
-## Mudancas
+Em vez de uma linha extra abaixo do textarea, integrar as informacoes como um indicador discreto **acima** da area de digitacao, dentro do border-top, como fazem apps modernos de chat (WhatsApp, Telegram).
 
-### 1. Painel Admin (`src/pages/Admin.tsx`)
+### Layout proposto
 
-**Remover do CRM:**
-- Remover a coluna "Perguntas" da tabela de usuarios (a coluna com Progress bar mostrando questions_used/questions_limit)
-- Remover o card de KPI "Perguntas feitas" (totalQuestions) do dashboard
-- Remover o icone HelpCircle dos imports (se nao for mais usado)
+```text
++--------------------------------------------------+
+| Area de mensagens (scroll)                        |
++--------------------------------------------------+
+| [5 perguntas restantes]        [Login / Upgrade]  |  <-- barra sutil acima do input
++--------------------------------------------------+
+| [Textarea...............] [Mic] [Enviar]          |  <-- area de input limpa
++--------------------------------------------------+
+```
 
-**O que permanece:**
-- Nome, Email, Status (Online/Offline), Tipo (Assinante/Gratuito/Admin), Cadastro, Ultimo acesso, Acoes
-- KPIs: Total usuarios, Assinantes, Online agora (3 cards em vez de 4)
+### Mudancas de UI/UX
 
-### 2. Edge Function (`supabase/functions/admin/index.ts`)
+1. **Mover o contador + links** para uma barra fina acima do textarea (dentro do mesmo container `border-t`)
+2. **Estilizar** com fundo levemente diferente (`bg-muted/30`), padding menor, e tipografia mais discreta
+3. **Badge colorido** para o contador: verde (>5), amarelo (3-5), vermelho (<=2) -- feedback visual instantaneo
+4. **Animacao sutil** quando perguntas ficam baixas (pulse no badge vermelho)
+5. **Remover margem inferior** (`mt-2`) que desperdicava espaco
 
-**Remover do `get-stats`:**
-- Remover o campo `totalQuestions` do retorno
-- Remover a soma de `questions_used` dos profiles
+### Detalhes tecnicos
 
-**Remover do `list-users`:**
-- Remover os campos `questions_used` e `questions_limit` do retorno de cada usuario
+**Arquivo:** `src/components/ChatArea.tsx`
 
-### 3. Landing Page (`src/pages/Landing.tsx`)
-
-**Adicionar secao de Confidencialidade** entre as Features e as Traditions:
-- Icone de cadeado/escudo
-- Titulo: "Confidencialidade Total" (traduzido)
-- Texto principal: "Abra seu coracao com total seguranca. Suas perguntas, conversas e oracoes sao completamente privadas. Ninguem -- nem mesmo os administradores -- tera acesso ao que voce compartilha com o Sacerdote."
-- Subtexto: "Seu espaco sagrado. Suas palavras. Seu sigilo."
-
-### 4. Traducoes (`src/lib/i18n.ts`)
-
-Novas chaves em pt-BR, en e es:
-
-**pt-BR:**
-- `landing.privacy_title`: "Confidencialidade Total"
-- `landing.privacy_desc`: "Abra seu coracao com total seguranca. Suas perguntas, conversas e oracoes sao completamente privadas. Ninguem -- nem mesmo os administradores -- tera acesso ao que voce compartilha com o Sacerdote."
-- `landing.privacy_note`: "Seu espaco sagrado. Suas palavras. Seu sigilo."
-
-**en:**
-- `landing.privacy_title`: "Total Confidentiality"
-- `landing.privacy_desc`: "Open your heart with complete security. Your questions, conversations and prayers are completely private. No one -- not even administrators -- will have access to what you share with the Priest."
-- `landing.privacy_note`: "Your sacred space. Your words. Your privacy."
-
-**es:**
-- `landing.privacy_title`: "Confidencialidad Total"
-- `landing.privacy_desc`: "Abre tu corazon con total seguridad. Tus preguntas, conversaciones y oraciones son completamente privadas. Nadie -- ni siquiera los administradores -- tendra acceso a lo que compartas con el Sacerdote."
-- `landing.privacy_note`: "Tu espacio sagrado. Tus palabras. Tu privacidad."
-
----
-
-## Resumo de Arquivos
-
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/pages/Admin.tsx` | Remover coluna "Perguntas" e KPI "Perguntas feitas" |
-| `supabase/functions/admin/index.ts` | Remover questions_used/questions_limit do list-users e totalQuestions do get-stats |
-| `src/pages/Landing.tsx` | Nova secao de confidencialidade com icone de escudo |
-| `src/lib/i18n.ts` | 3 novas chaves de traducao em 3 idiomas |
+- Reorganizar o JSX do container inferior (linhas 498-539)
+- Mover o bloco de `questionsRemaining` e links para **antes** do `div.flex.gap-2` com textarea/botoes
+- Aplicar classes de badge colorido baseado no valor de `questionsRemaining`
+- Manter toda a logica existente intacta (links condicionais, contagem anonima)
 
