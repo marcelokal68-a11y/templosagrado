@@ -1,67 +1,133 @@
 
-# Botao Dinamico: Oracao ou Pensamento do Dia + Referencia da Fonte
+# Persistencia de Login + Memoria Prolongada + Entrada por Voz + Deteccao de Idioma
 
-## Resumo
+## 1. Persistencia de Login (nunca deslogar automaticamente)
 
-O botao e os textos mudam dinamicamente conforme a selecao do usuario:
-- **Religiao selecionada**: "Gerar Oracao", titulo "Oracao Gerada"
-- **Filosofia selecionada**: "Gerar Pensamento do Dia", titulo "Pensamento do Dia"
+A autenticacao ja usa `persistSession: true` e `autoRefreshToken: true` no cliente. O Supabase ja persiste a sessao no localStorage. Nao ha nenhum codigo que faca logout automatico. O unico ponto de logout e o botao "Sair" no Header -- isso ja funciona corretamente.
 
-Ao final do texto gerado, a IA inclui automaticamente uma breve referencia da fonte (ex: "Inspirado na Biblia, Salmo 23" ou "Baseado em Meditacoes de Marco Aurelio").
+**Nenhuma mudanca necessaria.** A sessao ja persiste entre recarregamentos e fechamento de aba. O usuario so perde a sessao ao clicar "Sair".
 
 ---
 
-## Mudancas
+## 2. Memoria Prolongada do Usuario
 
-### 1. `src/lib/i18n.ts` - Novas chaves de traducao
+Atualmente, o chat envia todas as mensagens da sessao atual como contexto para a IA, mas nao carrega conversas anteriores como "memoria". Para que o sacerdote lembre de interacoes passadas:
 
-Adicionar chaves alternativas para o modo "pensamento":
+### 2a. Carregar ultimas mensagens do banco ao iniciar o chat
 
-| Chave | pt-BR | en | es |
-|-------|-------|----|----|
-| `prayers.title_thought` | Gerar Pensamento do Dia | Generate Thought of the Day | Generar Pensamiento del Dia |
-| `prayers.subtitle_thought` | A IA gera um pensamento filosofico baseado na sua intencao | AI generates a philosophical thought based on your intention | La IA genera un pensamiento filosofico basado en tu intencion |
-| `prayers.intention_thought` | Sua intencao para o pensamento | Your thought intention | Tu intencion para el pensamiento |
-| `prayers.generate_thought` | Gerar Pensamento | Generate Thought | Generar Pensamiento |
-| `prayers.generated_thought` | Pensamento do Dia | Thought of the Day | Pensamiento del Dia |
-| `prayers.generating_thought` | Gerando pensamento... | Generating thought... | Generando pensamiento... |
-| `prayers.regenerate_thought` | Gerar Novamente | Generate Again | Generar de Nuevo |
-| `prayers.success_thought` | Seu pensamento foi gerado com sabedoria | Your thought was generated with wisdom | Tu pensamiento fue generado con sabiduria |
+**Arquivo:** `src/components/ChatArea.tsx`
 
-### 2. `src/pages/Prayers.tsx` - Labels dinamicos
+- No useEffect que carrega mensagens do banco (linha ~103), ja carrega as mensagens existentes. Isso ja funciona.
+- Garantir que ao enviar para a IA, as ultimas N mensagens salvas sejam incluidas como contexto.
 
-Criar uma variavel `isPhilosophy = !!philosophy && !religion` e usar para alternar entre as chaves de traducao:
+### 2b. Enviar historico resumido para a IA
 
-- Titulo do card: `prayers.title` ou `prayers.title_thought`
-- Subtitulo: `prayers.subtitle` ou `prayers.subtitle_thought`
-- Placeholder da intencao: `prayers.intention` ou `prayers.intention_thought`
-- Botao gerar: `prayers.generate` ou `prayers.generate_thought`
-- Texto "gerando": `prayers.generating` ou `prayers.generating_thought`
-- Titulo do resultado: `prayers.generated` ou `prayers.generated_thought`
-- Botao regenerar: `prayers.regenerate` ou `prayers.regenerate_thought`
-- Toast de sucesso: `prayers.success` ou `prayers.success_thought`
-- Icone do resultado: `Heart` para religiao, `Lightbulb` (de lucide-react) para filosofia
+**Arquivo:** `supabase/functions/sacred-chat/index.ts`
 
-### 3. `supabase/functions/generate-prayer/index.ts` - Prompt atualizado
+- Adicionar ao system prompt uma instrucao para a IA tratar as mensagens recebidas como um historico continuo e lembrar do que o usuario ja perguntou.
+- Adicionar instrucao: "You have memory of previous conversations with this faithful. Reference past topics naturally when relevant. Never repeat the same answer -- always offer fresh perspectives."
 
-Modificar o system prompt para:
+### 2c. Limitar contexto enviado
 
-- Quando for **filosofia**: pedir "pensamento do dia" em vez de "oracao"
-- Adicionar instrucao para incluir ao final uma breve referencia da fonte, no formato:
-  - Religiao: "-- Inspirado em [livro/passagem], [tradicao]"
-  - Filosofia: "-- Baseado em [obra], de [autor]"
+**Arquivo:** `src/components/ChatArea.tsx`
 
-O prompt tera uma linha adicional:
-```
-At the very end, add a brief source reference on a new line starting with "—" (em dash), 
-citing the specific sacred text, book, chapter, or philosophical work that inspired this [prayer/thought].
-Example: "— Inspired by Philippians 4:6-7" or "— Based on Meditations, Book V, Marcus Aurelius"
-```
+- Ao enviar mensagens para a IA, incluir ate as ultimas 40 mensagens (20 pares user/assistant) para manter contexto sem estourar o limite de tokens.
 
 ---
 
-## Resultado Esperado
+## 3. Entrada por Voz (Speech-to-Text) com ElevenLabs
 
-- Ao selecionar "Estoicismo" e clicar no botao, ele dira "Gerar Pensamento" e o output sera um "Pensamento do Dia" com referencia ao final
-- Ao selecionar "Cristao", o botao dira "Gerar Oracao" e o output sera uma "Oracao Gerada" com referencia biblica ao final
-- A referencia aparece naturalmente ao final do texto, separada por um traco longo (—)
+O conector ElevenLabs ja esta configurado com a secret `ELEVENLABS_API_KEY`.
+
+### 3a. Nova Edge Function para STT
+
+**Arquivo:** `supabase/functions/elevenlabs-stt/index.ts`
+
+- Criar edge function que recebe audio via FormData
+- Chama a API `https://api.elevenlabs.io/v1/speech-to-text` com model `scribe_v2`
+- Passa `language_code` baseado no idioma selecionado (por/eng/spa)
+- Retorna o texto transcrito
+
+### 3b. Botao de microfone no ChatArea
+
+**Arquivo:** `src/components/ChatArea.tsx`
+
+- Adicionar botao de microfone (icone `Mic`) ao lado do botao de enviar
+- Ao clicar, usa `navigator.mediaDevices.getUserMedia({ audio: true })` com MediaRecorder
+- Grava ate o usuario clicar novamente (toggle) ou ate 60 segundos
+- Envia o audio para a edge function `elevenlabs-stt`
+- O texto transcrito e inserido no campo de input
+
+### 3c. Configuracao
+
+**Arquivo:** `supabase/config.toml`
+
+- Adicionar `[functions.elevenlabs-stt]` com `verify_jwt = false`
+
+---
+
+## 4. Deteccao Automatica de Idioma e Troca de Output
+
+### 4a. Deteccao no sacred-chat
+
+**Arquivo:** `supabase/functions/sacred-chat/index.ts`
+
+- Adicionar instrucao ao system prompt: "IMPORTANT: If the user writes or speaks in a language different from the configured language ({responseLang}), immediately detect their language and respond in THAT language instead. Always match the language the user is actually using."
+
+### 4b. Deteccao no cliente (opcional, para mudar a UI)
+
+**Arquivo:** `src/components/ChatArea.tsx`
+
+- Apos receber a resposta da IA, nao mudar o idioma da UI automaticamente (isso seria confuso). A IA simplesmente responde no idioma que o usuario usou.
+
+---
+
+## Resumo das Mudancas
+
+| Arquivo | Mudanca |
+|---------|---------|
+| `src/components/ChatArea.tsx` | Botao de microfone, limitar contexto a 40 msgs |
+| `supabase/functions/sacred-chat/index.ts` | Instrucoes de memoria e deteccao de idioma no prompt |
+| `supabase/functions/elevenlabs-stt/index.ts` | Nova edge function para speech-to-text |
+| `supabase/config.toml` | Registro da nova function |
+
+## Detalhes Tecnicos
+
+### Edge Function STT
+
+```text
+- Recebe: FormData com campo "audio" (Blob) e campo "language" (string)
+- Mapeamento de idioma: pt-BR -> por, en -> eng, es -> spa
+- Chama ElevenLabs API /v1/speech-to-text com model_id "scribe_v2"
+- Retorna JSON { text: string }
+```
+
+### Botao Microfone no ChatArea
+
+```text
+- Estado: isRecording (boolean)
+- Icone: Mic (parado) / MicOff com animacao pulsante (gravando)
+- MediaRecorder com mimeType "audio/webm" (ou fallback)
+- Ao parar, cria Blob, envia via FormData para elevenlabs-stt
+- Texto retornado e adicionado ao chatInput
+- Cor vermelha pulsante durante gravacao
+```
+
+### Prompt de Memoria
+
+```text
+Adicionar ao systemPrompt:
+"You have continuous memory of this conversation. The messages include previous interactions. 
+Reference past topics naturally when relevant — for example, 'As you mentioned earlier about...' 
+or 'Building on our previous discussion about...'. 
+NEVER repeat the same answer verbatim. Always offer fresh, unique perspectives."
+```
+
+### Prompt de Deteccao de Idioma
+
+```text
+Adicionar ao systemPrompt:
+"LANGUAGE DETECTION: If the user writes in a language different from ${responseLang}, 
+immediately detect their language and respond in THAT language instead. 
+Always match the language the user is actually using, regardless of the configured setting."
+```
