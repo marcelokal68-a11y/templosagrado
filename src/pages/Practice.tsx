@@ -11,6 +11,7 @@ import { BookOpen, Loader2, Sparkles, Volume2, VolumeX, BookMarked, GraduationCa
 import { Button } from '@/components/ui/button';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
+const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism'];
 
 const CHECKLISTS: Record<string, { items: string[]; genderSpecific?: boolean }> = {
   jewish: { genderSpecific: true, items: [] },
@@ -25,6 +26,24 @@ const CHECKLISTS: Record<string, { items: string[]; genderSpecific?: boolean }> 
   candomble: { items: ['orixas_greeting', 'offering', 'nature_respect', 'meditation_cand', 'community_help', 'oral_tradition'] },
   mormon: { items: ['morning_prayer_m', 'book_of_mormon_reading', 'service', 'scripture_study', 'revelation_reflection', 'thank_god'] },
   agnostic: { items: ['morning_reflection', 'philosophy_reading', 'kindness_act', 'meditation_silence', 'gratitude', 'common_good'] },
+};
+
+const PHILOSOPHY_CHECKLISTS: Record<string, string[]> = {
+  stoicism: ['stoic_morning', 'dichotomy_control', 'stoic_journal', 'read_stoics', 'practice_virtue', 'stoic_evening'],
+  logosophy: ['logosophy_study', 'self_knowledge', 'deficiency_work', 'logosophy_reading', 'conscious_evolution', 'stoic_evening'],
+  humanism: ['human_dignity', 'empathy_act', 'humanist_reading', 'critical_thinking', 'common_good_phil', 'conscious_gratitude'],
+  epicureanism: ['pleasure_moderation', 'epicurean_reading', 'friendship', 'simple_joy', 'avoid_pain', 'nature_contemplation'],
+  transhumanism: ['tech_reflection', 'transhumanist_reading', 'self_improvement', 'future_thinking', 'critical_thinking', 'conscious_evolution'],
+  pantheism: ['spinoza_reflection', 'pantheist_reading', 'nature_connection', 'nature_contemplation', 'conscious_gratitude', 'stoic_evening'],
+  existentialism: ['authenticity', 'conscious_freedom', 'existentialist_reading', 'face_anxiety', 'present_moment', 'personal_purpose'],
+  objectivism: ['objective_thinking', 'objectivist_reading', 'self_interest', 'practice_virtue', 'critical_thinking', 'stoic_evening'],
+  transcendentalism: ['walden_reflection', 'transcendentalist_reading', 'intuition_exercise', 'nature_connection', 'nature_contemplation', 'conscious_gratitude'],
+  altruism: ['effective_altruism', 'altruist_reading', 'help_others', 'empathy_act', 'common_good_phil', 'conscious_gratitude'],
+  rationalism: ['rational_analysis', 'rationalist_reading', 'logical_exercise', 'critical_thinking', 'stoic_journal', 'stoic_evening'],
+  optimistic_nihilism: ['nihilist_reading', 'freedom_meaning', 'create_own_value', 'simple_joy', 'present_moment', 'conscious_gratitude'],
+  absurdism: ['joyful_acceptance', 'absurdist_reading', 'create_meaning', 'present_moment', 'conscious_freedom', 'simple_joy'],
+  utilitarianism: ['utility_analysis', 'utilitarian_reading', 'maximize_wellbeing', 'empathy_act', 'common_good_phil', 'critical_thinking'],
+  pragmatism: ['pragmatic_action', 'pragmatist_reading', 'practical_result', 'critical_thinking', 'self_improvement', 'conscious_gratitude'],
 };
 
 const JEWISH_MALE = ['tefilin', 'shacharit', 'parasha', 'mitzvah', 'shema', 'torah_study'];
@@ -50,6 +69,7 @@ interface DailyContent {
 export default function Practice() {
   const { language, chatContext } = useApp();
   const [religion, setReligion] = useState(chatContext.religion || '');
+  const [philosophy, setPhilosophy] = useState(chatContext.philosophy || '');
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [dailyContent, setDailyContent] = useState<DailyContent | null>(null);
@@ -60,41 +80,47 @@ export default function Practice() {
   const today = getTodayStr();
 
   const getItems = (): string[] => {
-    if (religion === 'jewish') return gender === 'male' ? JEWISH_MALE : JEWISH_FEMALE;
-    return CHECKLISTS[religion]?.items || [];
+    const religionItems = religion === 'jewish' 
+      ? (gender === 'male' ? JEWISH_MALE : JEWISH_FEMALE)
+      : (CHECKLISTS[religion]?.items || []);
+    const philItems = philosophy ? (PHILOSOPHY_CHECKLISTS[philosophy] || []) : [];
+    // Merge: religion items first, then philosophy items (deduplicated)
+    const combined = [...religionItems];
+    philItems.forEach(item => { if (!combined.includes(item)) combined.push(item); });
+    return combined;
   };
 
   // Load from localStorage
   useEffect(() => {
-    if (!religion) return;
-    const key = getStorageKey(today, religion, religion === 'jewish' ? gender : undefined);
+    if (!religion && !philosophy) return;
+    const key = getStorageKey(today, religion || philosophy, religion === 'jewish' ? gender : undefined);
     const saved = localStorage.getItem(key);
     if (saved) {
       try { setChecked(JSON.parse(saved)); } catch { setChecked({}); }
     } else {
       setChecked({});
     }
-  }, [religion, gender, today]);
+  }, [religion, philosophy, gender, today]);
 
   // Save to localStorage
   useEffect(() => {
-    if (!religion) return;
-    const key = getStorageKey(today, religion, religion === 'jewish' ? gender : undefined);
+    if (!religion && !philosophy) return;
+    const key = getStorageKey(today, religion || philosophy, religion === 'jewish' ? gender : undefined);
     localStorage.setItem(key, JSON.stringify(checked));
-  }, [checked, religion, gender, today]);
+  }, [checked, religion, philosophy, gender, today]);
 
   // Fetch daily content
   useEffect(() => {
-    if (!religion) { setDailyContent(null); return; }
+    if (!religion && !philosophy) { setDailyContent(null); return; }
     setLoadingContent(true);
     setDailyContent(null);
     supabase.functions.invoke('daily-practice', {
-      body: { religion, date: today, language, gender: religion === 'jewish' ? gender : undefined },
+      body: { religion, philosophy, date: today, language, gender: religion === 'jewish' ? gender : undefined },
     }).then(({ data, error }) => {
       if (!error && data) setDailyContent(data);
       setLoadingContent(false);
     }).catch(() => setLoadingContent(false));
-  }, [religion, gender, today, language]);
+  }, [religion, philosophy, gender, today, language]);
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -171,7 +197,7 @@ export default function Practice() {
         {religions.map(r => (
           <button
             key={r}
-            onClick={() => { setReligion(r); setChecked({}); }}
+            onClick={() => { setReligion(religion === r ? '' : r); setChecked({}); }}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
               religion === r
@@ -182,6 +208,27 @@ export default function Practice() {
             {t(`religion.${r}`, language)}
           </button>
         ))}
+      </div>
+
+      {/* Philosophy selector */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold text-foreground text-center">{t('panel.philosophy', language)}</h3>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {philosophies.map(p => (
+            <button
+              key={p}
+              onClick={() => { setPhilosophy(philosophy === p ? '' : p); setChecked({}); }}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                philosophy === p
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+              )}
+            >
+              {t(`philosophy.${p}`, language)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Gender selector for Judaism */}
@@ -204,7 +251,7 @@ export default function Practice() {
       )}
 
       {/* Checklist */}
-      {religion && items.length > 0 && (
+      {(religion || philosophy) && items.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
@@ -241,7 +288,7 @@ export default function Practice() {
       )}
 
       {/* Daily sacred content */}
-      {religion && (
+      {(religion || philosophy) && (
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -311,7 +358,7 @@ export default function Practice() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                {t('practice.select_religion', language)}
+                {t('practice.select_philosophy', language)}
               </p>
             )}
           </CardContent>

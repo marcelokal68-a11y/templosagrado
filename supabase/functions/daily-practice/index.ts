@@ -5,6 +5,86 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const PHILOSOPHY_SOURCES: Record<string, Record<string, string>> = {
+  'pt-BR': {
+    stoicism: 'Meditações de Marco Aurélio, Cartas a Lucílio de Sêneca, Discursos de Epicteto',
+    logosophy: 'Obras de Carlos Bernardo González Pecotche (Raumsol)',
+    humanism: 'Obras de Erasmo de Roterdã, Pico della Mirandola',
+    epicureanism: 'Carta a Meneceu de Epicuro, De Rerum Natura de Lucrécio',
+    transhumanism: 'Obras de Nick Bostrom, Ray Kurzweil, Max More',
+    pantheism: 'Ética de Spinoza, obras de Giordano Bruno',
+    existentialism: 'O Ser e o Nada (Sartre), O Mito de Sísifo (Camus), Ser e Tempo (Heidegger)',
+    objectivism: 'A Revolta de Atlas e A Nascente de Ayn Rand',
+    transcendentalism: 'Walden de Thoreau, Ensaios de Emerson',
+    altruism: 'Altruísmo Eficaz de Peter Singer, obras de Auguste Comte',
+    rationalism: 'Meditações de Descartes, Ética de Spinoza, Monadologia de Leibniz',
+    optimistic_nihilism: 'Assim Falou Zaratustra de Nietzsche, A Gaia Ciência',
+    absurdism: 'O Mito de Sísifo e O Estrangeiro de Albert Camus',
+    utilitarianism: 'Utilitarismo de John Stuart Mill, Introdução aos Princípios da Moral de Bentham',
+    pragmatism: 'Pragmatismo de William James, Democracia e Educação de John Dewey',
+  },
+  'en': {
+    stoicism: 'Meditations by Marcus Aurelius, Letters to Lucilius by Seneca, Discourses by Epictetus',
+    logosophy: 'Works of Carlos Bernardo González Pecotche (Raumsol)',
+    humanism: 'Works of Erasmus of Rotterdam, Pico della Mirandola',
+    epicureanism: 'Letter to Menoeceus by Epicurus, De Rerum Natura by Lucretius',
+    transhumanism: 'Works of Nick Bostrom, Ray Kurzweil, Max More',
+    pantheism: 'Ethics by Spinoza, works of Giordano Bruno',
+    existentialism: 'Being and Nothingness (Sartre), The Myth of Sisyphus (Camus), Being and Time (Heidegger)',
+    objectivism: 'Atlas Shrugged and The Fountainhead by Ayn Rand',
+    transcendentalism: 'Walden by Thoreau, Essays by Emerson',
+    altruism: 'Effective Altruism by Peter Singer, works of Auguste Comte',
+    rationalism: 'Meditations by Descartes, Ethics by Spinoza, Monadology by Leibniz',
+    optimistic_nihilism: 'Thus Spoke Zarathustra by Nietzsche, The Gay Science',
+    absurdism: 'The Myth of Sisyphus and The Stranger by Albert Camus',
+    utilitarianism: 'Utilitarianism by John Stuart Mill, Introduction to the Principles of Morals by Bentham',
+    pragmatism: 'Pragmatism by William James, Democracy and Education by John Dewey',
+  },
+  'es': {
+    stoicism: 'Meditaciones de Marco Aurelio, Cartas a Lucilio de Séneca, Discursos de Epicteto',
+    logosophy: 'Obras de Carlos Bernardo González Pecotche (Raumsol)',
+    humanism: 'Obras de Erasmo de Róterdam, Pico della Mirandola',
+    epicureanism: 'Carta a Meneceo de Epicuro, De Rerum Natura de Lucrecio',
+    transhumanism: 'Obras de Nick Bostrom, Ray Kurzweil, Max More',
+    pantheism: 'Ética de Spinoza, obras de Giordano Bruno',
+    existentialism: 'El Ser y la Nada (Sartre), El Mito de Sísifo (Camus), Ser y Tiempo (Heidegger)',
+    objectivism: 'La Rebelión de Atlas y El Manantial de Ayn Rand',
+    transcendentalism: 'Walden de Thoreau, Ensayos de Emerson',
+    altruism: 'Altruismo Eficaz de Peter Singer, obras de Auguste Comte',
+    rationalism: 'Meditaciones de Descartes, Ética de Spinoza, Monadología de Leibniz',
+    optimistic_nihilism: 'Así Habló Zaratustra de Nietzsche, La Gaya Ciencia',
+    absurdism: 'El Mito de Sísifo y El Extranjero de Albert Camus',
+    utilitarianism: 'Utilitarismo de John Stuart Mill, Introducción a los Principios de la Moral de Bentham',
+    pragmatism: 'Pragmatismo de William James, Democracia y Educación de John Dewey',
+  },
+};
+
+function getPhilosophyPrompt(philosophy: string, language: string, date: string): { system: string; user: string } | null {
+  const langInstructions: Record<string, { lang: string; respond: string }> = {
+    'pt-BR': { lang: 'português brasileiro', respond: 'Responda APENAS em português brasileiro.' },
+    'en': { lang: 'English', respond: 'Respond ONLY in English.' },
+    'es': { lang: 'español', respond: 'Responde SOLO en español.' },
+  };
+  const li = langInstructions[language] || langInstructions['pt-BR'];
+  const sources = PHILOSOPHY_SOURCES[language]?.[philosophy] || PHILOSOPHY_SOURCES['pt-BR']?.[philosophy] || '';
+  if (!sources) return null;
+
+  return {
+    system: `You are a Grand Master of Life Philosophy, an erudite scholar of ${philosophy}.
+${li.respond}
+Return a philosophical reflection for ${date} based on ${sources}.
+Include:
+- A REAL quote from a real philosopher/thinker of this tradition with exact work reference
+- Deep interpretation and historical context
+- Practical application for daily life
+- Scholarly note with sources
+DO NOT INVENT citations. Use only real quotes from real works.
+Respond ONLY with valid JSON (no markdown):
+{"title": "reflection title", "reference": "philosopher and work", "explanation": "5-8 lines with interpretation", "reflection": "2-3 lines practical reflection", "sources": "sources consulted", "scholarly_note": "scholarly note"}`,
+    user: `${philosophy} philosophical reflection for ${date}`,
+  };
+}
+
 function getReligionPrompt(religion: string, language: string, date: string, gender?: string): { system: string; user: string } {
   const prompts: Record<string, Record<string, { system: string; user: string }>> = {
     'pt-BR': {
@@ -425,11 +505,27 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { religion, date, language, gender } = await req.json();
+    const { religion, philosophy, date, language, gender } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const prompt = getReligionPrompt(religion, language || 'pt-BR', date, gender);
+    let prompt: { system: string; user: string };
+    
+    if (philosophy && !religion) {
+      // Philosophy only
+      const philPrompt = getPhilosophyPrompt(philosophy, language || 'pt-BR', date);
+      prompt = philPrompt || getReligionPrompt('agnostic', language || 'pt-BR', date, gender);
+    } else if (religion && philosophy) {
+      // Both: use religion prompt but enrich with philosophy
+      const relPrompt = getReligionPrompt(religion, language || 'pt-BR', date, gender);
+      const sources = PHILOSOPHY_SOURCES[language || 'pt-BR']?.[philosophy] || '';
+      prompt = {
+        system: relPrompt.system + `\n\nAdditionally, enrich your response with insights from the ${philosophy} philosophical tradition (${sources}). Weave philosophical wisdom naturally into the sacred content.`,
+        user: relPrompt.user,
+      };
+    } else {
+      prompt = getReligionPrompt(religion || 'christian', language || 'pt-BR', date, gender);
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

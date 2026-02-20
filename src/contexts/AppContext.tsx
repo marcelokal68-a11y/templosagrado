@@ -8,6 +8,7 @@ interface ChatContext {
   need: string;
   mood: string;
   topic: string;
+  philosophy: string;
 }
 
 interface AppContextType {
@@ -33,6 +34,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     need: '',
     mood: '',
     topic: '',
+    philosophy: '',
   });
 
   useEffect(() => {

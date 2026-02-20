@@ -11,6 +11,7 @@ import { Heart, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
+const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism'];
 
 export default function Prayers() {
   const { language, user, chatContext } = useApp();
@@ -19,11 +20,12 @@ export default function Prayers() {
   const [intention, setIntention] = useState('');
   const [loading, setLoading] = useState(false);
   const [religion, setReligion] = useState(chatContext.religion || '');
+  const [philosophy, setPhilosophy] = useState(chatContext.philosophy || '');
   const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!religion) {
+    if (!religion && !philosophy) {
       toast({ title: t('prayers.select_religion', language), variant: 'destructive' });
       return;
     }
@@ -47,8 +49,10 @@ export default function Prayers() {
   };
 
   const handleCopy = async () => {
-    const religionLabel = t(`religion.${religion}`, language);
-    const text = `${name ? name + ' - ' : ''}${religionLabel}\n\n${intention}`;
+    const religionLabel = religion ? t(`religion.${religion}`, language) : '';
+    const philLabel = philosophy ? t(`philosophy.${philosophy}`, language) : '';
+    const label = [religionLabel, philLabel].filter(Boolean).join(' + ');
+    const text = `${name ? name + ' - ' : ''}${label}\n\n${intention}`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -86,6 +90,28 @@ export default function Prayers() {
               </div>
             </div>
 
+            {/* Philosophy selector */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">{t('panel.philosophy', language)}</label>
+              <div className="flex flex-wrap gap-2">
+                {philosophies.map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPhilosophy(philosophy === p ? '' : p)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                      philosophy === p
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+                    )}
+                  >
+                    {t(`philosophy.${p}`, language)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Input placeholder={t('prayers.name', language)} value={name} onChange={e => setName(e.target.value)} />
             <Textarea
               placeholder={t('prayers.intention', language)}
@@ -95,7 +121,7 @@ export default function Prayers() {
               rows={4}
             />
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1" disabled={loading || !intention.trim() || !religion}>
+              <Button type="submit" className="flex-1" disabled={loading || !intention.trim() || (!religion && !philosophy)}>
                 {loading ? '...' : t('prayers.send', language)}
               </Button>
               {intention.trim() && (
