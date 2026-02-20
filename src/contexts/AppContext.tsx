@@ -11,6 +11,8 @@ interface ChatContext {
   philosophy: string;
 }
 
+type Msg = { role: 'user' | 'assistant'; content: string };
+
 interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -20,6 +22,10 @@ interface AppContextType {
   setChatContext: React.Dispatch<React.SetStateAction<ChatContext>>;
   questionsRemaining: number;
   setQuestionsRemaining: (n: number) => void;
+  messages: Msg[];
+  setMessages: React.Dispatch<React.SetStateAction<Msg[]>>;
+  chatInput: string;
+  setChatInput: (v: string) => void;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -29,6 +35,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [questionsRemaining, setQuestionsRemaining] = useState(10);
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [chatInput, setChatInput] = useState('');
   const [chatContext, setChatContext] = useState<ChatContext>({
     religion: '',
     need: '',
@@ -46,6 +54,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // Reset on logout
         setChatContext({ religion: '', need: '', mood: '', topic: '', philosophy: '' });
         setQuestionsRemaining(10);
+        setMessages([]);
+        setChatInput('');
       }
     });
 
@@ -75,7 +85,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput }}>
       {children}
     </AppContext.Provider>
   );

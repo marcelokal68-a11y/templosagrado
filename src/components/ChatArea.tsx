@@ -80,10 +80,8 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining } = useApp();
+  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput } = useApp();
   const religion = chatContext.religion || '';
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<number | null>(null);
@@ -217,7 +215,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
     const userMsg: Msg = { role: 'user', content: text.trim() };
     setMessages(prev => [...prev, userMsg]);
-    setInput('');
+    setChatInput('');
     setIsLoading(true);
 
     let assistantSoFar = '';
@@ -322,7 +320,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
   };
 
-  const sendMessage = () => doSendMessage(input);
+  const sendMessage = () => doSendMessage(chatInput);
 
   useImperativeHandle(ref, () => ({
     sendAutoMessage: (msg: string) => doSendMessage(msg),
@@ -393,7 +391,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             {questions.map((q, i) => (
               <button
                 key={i}
-                onClick={() => setInput(q)}
+                onClick={() => setChatInput(q)}
                 className="block w-full text-left px-4 py-3 rounded-lg border border-border bg-card hover:bg-primary/5 hover:border-primary/30 transition-all text-sm hover-scale"
               >
                 {q}
@@ -430,14 +428,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       <div className="border-t border-border p-4">
         <div className="flex gap-2">
           <Textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
+            value={chatInput}
+            onChange={e => setChatInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('chat.placeholder', language)}
             className="min-h-[44px] max-h-[120px] resize-none"
             rows={1}
           />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()} size="icon" className="shrink-0">
+          <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0">
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
