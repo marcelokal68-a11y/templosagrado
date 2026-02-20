@@ -17,6 +17,7 @@ import Posts from "./pages/Posts";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
+import QuickTutorial from "./components/QuickTutorial";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
+            <QuickTutorial />
           </div>
         </AppProvider>
       </BrowserRouter>
