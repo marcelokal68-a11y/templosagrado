@@ -1,131 +1,114 @@
 
-# Melhorias UX/UI: Filosofia vs Religiao, Cores, Logo e SignOut
+
+# Gerar Oracao com IA, Copiar e Enviar por Email
 
 ## Resumo
 
-1. **Escolha exclusiva** entre Afiliacao Religiosa OU Filosofia de Vida (nao ambas ao mesmo tempo) com orientacao clara ao usuario
-2. **Cores diferenciadas** por grupo de chips no ContextPanel
-3. **Logo e nome do app** na pagina de Sign In
-4. **Botao de Sign Out** visivel na pagina logada (header e mobile)
+A pagina "Enviar Oracao" atualmente apenas salva a intencao no banco. O usuario quer que a IA **gere uma oracao completa** baseada na intencao, religiao/filosofia selecionada. Depois de gerada, o usuario pode copiar e enviar por email para si mesmo ou para destinatarios.
 
 ---
 
-## 1. Escolha exclusiva: Religiao OU Filosofia
+## 1. Nova Edge Function: `generate-prayer`
 
-**Arquivos:** `src/components/ContextPanel.tsx`, `src/pages/Practice.tsx`, `src/pages/Prayers.tsx`
+**Arquivo:** `supabase/functions/generate-prayer/index.ts`
 
-Quando o usuario seleciona uma religiao, a filosofia e limpa automaticamente (e vice-versa). Adicionar uma mensagem de orientacao entre os dois grupos:
+Uma funcao dedicada que recebe a intencao, religiao/filosofia e idioma, e retorna uma oracao completa gerada pela IA.
 
-- No ContextPanel: ao clicar numa religiao, `philosophy` vira `''`. Ao clicar numa filosofia, `religion` vira `''`
-- Texto orientativo: "Escolha uma afiliacao religiosa OU uma filosofia de vida para orientar suas respostas" (traduzido)
-- Mesma logica em Practice.tsx e Prayers.tsx
+- Usa o mesmo mapa `SACRED_TEXTS` e `PHILOSOPHY_TEXTS` do sacred-chat
+- System prompt especifico: "Voce e um mestre de oracoes. Gere uma oracao profunda, poetica e emocionante baseada na intencao do fiel, dentro da tradicao [religiao/filosofia]"
+- Modelo: `openai/gpt-5-mini` via Lovable AI gateway
+- Resposta nao-streaming (JSON com o texto da oracao)
+- Maximo ~20 linhas de oracao
 
-## 2. Cores diferenciadas por grupo
+## 2. Nova Edge Function: `send-prayer-email`
 
-**Arquivo:** `src/components/ContextPanel.tsx`
+**Arquivo:** `supabase/functions/send-prayer-email/index.ts`
 
-Cada grupo de chips tera uma cor propria no `CollapsibleChipGroup`:
+Envia a oracao gerada por email usando a API de email integrada do backend (Supabase Auth `admin.sendRawEmail` ou via Resend/SMTP). Como nao temos um servico de email configurado, usaremos a IA para gerar o conteudo e enviaremos via a API do Resend (precisaremos configurar uma API key) OU usaremos uma abordagem mais simples: abrir o cliente de email do usuario via `mailto:` com o conteudo pre-preenchido.
 
-- **Religiao**: `bg-amber-500` (dourado/ambar) quando selecionado
-- **Filosofia**: `bg-violet-500` (violeta) quando selecionado
-- **O que preciso**: `bg-emerald-500` (verde esmeralda) quando selecionado
-- **Mood**: `bg-rose-400` (rosa) quando selecionado
-- **Topicos**: `bg-sky-500` (azul celeste) quando selecionado
+**Abordagem escolhida:** `mailto:` link — nao requer API key adicional, funciona em qualquer dispositivo, e o usuario controla o envio.
 
-O `CollapsibleChipGroup` recebera uma prop `activeColor` para definir a cor do chip selecionado em vez de usar `bg-primary` sempre.
+## 3. Atualizar `src/pages/Prayers.tsx`
 
-Aplicar as mesmas cores nos seletores de Practice.tsx e Prayers.tsx.
+Novo fluxo:
 
-## 3. Logo e nome no Sign In
+```text
+1. Usuario escolhe religiao/filosofia
+2. Escreve o nome (opcional) e a intencao
+3. Clica "Gerar Oracao" -> IA gera a oracao
+4. Oracao aparece num card bonito abaixo do formulario
+5. Botoes: [Copiar] [Enviar por Email] [Gerar Novamente]
+6. "Enviar por Email" abre campo para digitar emails ou usa o email do usuario logado
+7. Clica enviar -> abre mailto: com a oracao formatada
+```
 
-**Arquivo:** `src/pages/Auth.tsx`
+### Mudancas no componente:
 
-Substituir o emoji solto por um header mais polido:
-- Manter o emoji `🕉️` em tamanho grande
-- Adicionar o nome "Templo Sagrado" abaixo do emoji com `font-display`
-- Subtitulo: "Seu guia espiritual e filosofico" (traduzido)
+- Novo estado `generatedPrayer: string` para guardar a oracao gerada
+- Novo estado `recipientEmails: string` para emails destinatarios
+- Botao "Gerar Oracao" chama a edge function `generate-prayer`
+- Apos gerar, exibe a oracao num card com fundo suave
+- Botao "Copiar" copia a oracao gerada (nao a intencao)
+- Botao "Enviar por Email" com opcoes:
+  - Para mim (email do usuario logado)
+  - Para outros (campo de input para emails separados por virgula)
+  - Abre `mailto:` com subject e body formatados
+- Botao "Gerar Novamente" para pedir outra versao
+- A oracao tambem e salva na tabela `prayers` com o campo `generated_text`
 
-## 4. Sign Out na pagina logada
+## 4. Migracao SQL: adicionar coluna `generated_text`
 
-**Arquivo:** `src/components/Header.tsx`
+```sql
+ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS generated_text text;
+```
 
-O botao de logout ja existe no desktop (`hidden md:flex`). Preciso:
-- Garantir que o botao de logout apareca tambem no header mobile (dentro do menu hamburger, ja esta)
-- Adicionar um avatar/iniciais do usuario ao lado do botao de logout no desktop para melhor UX
+Para armazenar a oracao gerada junto com a intencao original.
 
-**Arquivo:** `src/components/BottomNav.tsx`
+## 5. Traducoes novas em `src/lib/i18n.ts`
 
-O BottomNav nao tem botao de logout. Nao e necessario adicionar la pois ja existe no header mobile (menu hamburger).
+- `prayers.generate`: "Gerar Oracao" / "Generate Prayer" / "Generar Oracion"
+- `prayers.generated`: "Oracao Gerada" / "Generated Prayer" / "Oracion Generada"
+- `prayers.regenerate`: "Gerar Novamente" / "Generate Again" / "Generar de Nuevo"
+- `prayers.send_email`: "Enviar por Email" / "Send by Email" / "Enviar por Email"
+- `prayers.email_to_me`: "Para meu email" / "To my email" / "A mi email"
+- `prayers.email_others`: "Outros destinatarios" / "Other recipients" / "Otros destinatarios"
+- `prayers.email_placeholder`: "Emails separados por virgula" / "Emails separated by comma" / "Emails separados por coma"
+- `prayers.generating`: "Gerando oracao..." / "Generating prayer..." / "Generando oracion..."
 
 ---
 
 ## Detalhes Tecnicos
 
-### Prop `activeColor` no CollapsibleChipGroup
+### Edge Function `generate-prayer`
 
 ```typescript
-function CollapsibleChipGroup({ 
-  label, items, prefix, selected, onSelect, defaultOpen, 
-  activeColor = "bg-primary text-primary-foreground border-primary"
-}: {
-  // ...existing props
-  activeColor?: string;
-}) {
-  // No chip selecionado, usar activeColor em vez de "bg-primary..."
-}
+// Recebe: { intention, religion, philosophy, language, name }
+// Retorna: { prayer: "texto da oracao gerada" }
+
+const systemPrompt = `You are a master of prayers and sacred words.
+Generate a beautiful, profound, and moving prayer based on the faithful's intention.
+The prayer must be within the ${tradition} tradition, citing ${sources}.
+Write in ${language}. Maximum 20 lines. Be poetic and touching.`;
+
+const userMessage = `Intention: ${intention}${name ? `\nName: ${name}` : ''}`;
 ```
 
-### Uso com cores:
+### Email via mailto:
 
 ```typescript
-<CollapsibleChipGroup activeColor="bg-amber-500 text-white border-amber-500" ... /> // Religiao
-<CollapsibleChipGroup activeColor="bg-emerald-500 text-white border-emerald-500" ... /> // Necessidade
-<CollapsibleChipGroup activeColor="bg-rose-400 text-white border-rose-400" ... /> // Mood
-<CollapsibleChipGroup activeColor="bg-sky-500 text-white border-sky-500" ... /> // Topicos
-<CollapsibleChipGroup activeColor="bg-violet-500 text-white border-violet-500" ... /> // Filosofia
-```
-
-### Exclusividade religiao/filosofia
-
-```typescript
-// No ContextPanel
-onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '', philosophy: '' }))}
-// ...
-onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v, religion: '', topic: '' }))}
-```
-
-### Orientacao ao usuario
-
-Texto entre os dois grupos:
-```typescript
-<p className="text-xs text-muted-foreground text-center py-2 italic">
-  {t('panel.choose_one', language)}
-</p>
-```
-
-Traducoes:
-- pt-BR: "Escolha uma afiliacao religiosa ou uma filosofia de vida"
-- en: "Choose a religious affiliation or a life philosophy"
-- es: "Elige una afiliacion religiosa o una filosofia de vida"
-
-### Auth.tsx - Logo melhorado
-
-```typescript
-<CardHeader className="text-center">
-  <span className="text-5xl mb-2">🕉️</span>
-  <CardTitle className="font-display text-2xl">{t('chat.title', language)}</CardTitle>
-  <p className="text-sm text-muted-foreground">{t('auth.subtitle', language)}</p>
-  <p className="text-xs text-muted-foreground mt-1">
-    {isLogin ? t('auth.login', language) : t('auth.signup', language)}
-  </p>
-</CardHeader>
+const handleSendEmail = (emails: string[]) => {
+  const subject = encodeURIComponent(t('prayers.generated', language));
+  const body = encodeURIComponent(generatedPrayer);
+  window.open(`mailto:${emails.join(',')}?subject=${subject}&body=${body}`);
+};
 ```
 
 ### Arquivos modificados
+1. `supabase/functions/generate-prayer/index.ts` — Nova edge function
+2. `src/pages/Prayers.tsx` — Fluxo completo de gerar, copiar, enviar
+3. `src/lib/i18n.ts` — Traducoes novas
+4. Migracao SQL — Coluna `generated_text` na tabela `prayers`
 
-1. `src/components/ContextPanel.tsx` - Cores diferenciadas, exclusividade, texto orientativo
-2. `src/pages/Auth.tsx` - Logo e nome do app
-3. `src/pages/Practice.tsx` - Exclusividade religiao/filosofia, cores
-4. `src/pages/Prayers.tsx` - Exclusividade religiao/filosofia, cores
-5. `src/lib/i18n.ts` - Traducoes novas (panel.choose_one, auth.subtitle)
-6. `supabase/functions/sacred-chat/index.ts` - Sem mudancas (ja suporta ambos)
+### Arquivos criados
+1. `supabase/functions/generate-prayer/index.ts`
+
