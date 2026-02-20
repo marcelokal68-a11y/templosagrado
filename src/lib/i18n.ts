@@ -314,6 +314,7 @@ const translations: Record<Language, Record<string, string>> = {
     'prayers.intention': 'Sua intenção de oração',
     'prayers.send': 'Enviar Oração',
     'prayers.success': 'Sua oração foi enviada com amor ✨',
+    'prayers.select_religion': 'Selecione uma religião para a oração',
     
     // Verse
     'verse.title': 'Versículo do Dia',
@@ -619,6 +620,7 @@ const translations: Record<Language, Record<string, string>> = {
     'prayers.intention': 'Your prayer intention',
     'prayers.send': 'Send Prayer',
     'prayers.success': 'Your prayer was sent with love ✨',
+    'prayers.select_religion': 'Please select a religion for the prayer',
     
     'verse.title': 'Verse of the Day',
     'verse.subtitle': 'A sacred passage to light your day',
@@ -922,6 +924,7 @@ const translations: Record<Language, Record<string, string>> = {
     'prayers.intention': 'Tu intención de oración',
     'prayers.send': 'Enviar Oración',
     'prayers.success': 'Tu oración fue enviada con amor ✨',
+    'prayers.select_religion': 'Selecciona una religión para la oración',
     
     'verse.title': 'Versículo del Día',
     'verse.subtitle': 'Un pasaje sagrado para iluminar tu día',
