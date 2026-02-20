@@ -121,6 +121,7 @@ export type Database = {
       prayers: {
         Row: {
           created_at: string
+          generated_text: string | null
           id: string
           intention: string
           name: string | null
@@ -129,6 +130,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          generated_text?: string | null
           id?: string
           intention: string
           name?: string | null
@@ -137,6 +139,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          generated_text?: string | null
           id?: string
           intention?: string
           name?: string | null
