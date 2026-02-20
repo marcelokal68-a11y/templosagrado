@@ -5,6 +5,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import ReligionIcon from '@/components/ReligionIcon';
 import ChatHistory from '@/components/ChatHistory';
 import { useToast } from '@/hooks/use-toast';
@@ -495,8 +496,42 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         )}
       </div>
 
-      <div className="border-t border-border p-4">
-        <div className="flex gap-2">
+      <div className="border-t border-border">
+        <div className="flex items-center justify-between px-4 py-1.5 bg-muted/30">
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-[11px] font-medium",
+              user
+                ? questionsRemaining > 5
+                  ? "border-green-500/40 text-green-600 bg-green-500/10"
+                  : questionsRemaining > 2
+                    ? "border-yellow-500/40 text-yellow-600 bg-yellow-500/10"
+                    : "border-destructive/40 text-destructive bg-destructive/10 animate-pulse"
+                : (10 - getAnonCount()) > 5
+                  ? "border-green-500/40 text-green-600 bg-green-500/10"
+                  : (10 - getAnonCount()) > 2
+                    ? "border-yellow-500/40 text-yellow-600 bg-yellow-500/10"
+                    : "border-destructive/40 text-destructive bg-destructive/10 animate-pulse"
+            )}
+          >
+            {user
+              ? `${questionsRemaining} ${t('chat.questions_remaining', language)}`
+              : `${Math.max(0, 10 - getAnonCount())} ${t('chat.questions_remaining', language)}`
+            }
+          </Badge>
+          {!user && (
+            <Link to="/auth" className="text-[11px] text-primary hover:underline font-medium">
+              Fazer login
+            </Link>
+          )}
+          {user && questionsRemaining <= 3 && (
+            <Link to="/pricing" className="text-[11px] text-primary hover:underline font-medium">
+              {t('chat.upgrade', language)}
+            </Link>
+          )}
+        </div>
+        <div className="flex gap-2 p-4 pt-3">
           <Textarea
             value={chatInput}
             onChange={e => setChatInput(e.target.value)}
@@ -517,24 +552,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0">
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
-        </div>
-        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {user 
-              ? `${questionsRemaining} ${t('chat.questions_remaining', language)}`
-              : `${Math.max(0, 10 - getAnonCount())} ${t('chat.questions_remaining', language)} (sem login)`
-            }
-          </span>
-          {!user && (
-            <Link to="/auth" className="text-primary hover:underline font-medium">
-              Fazer login
-            </Link>
-          )}
-          {user && questionsRemaining <= 3 && (
-            <Link to="/pricing" className="text-primary hover:underline font-medium">
-              {t('chat.upgrade', language)}
-            </Link>
-          )}
         </div>
       </div>
     </div>
