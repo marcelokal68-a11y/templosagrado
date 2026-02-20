@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,15 +7,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { BookOpen, Loader2, Sparkles } from 'lucide-react';
+import { BookOpen, Loader2, Sparkles, Volume2, VolumeX, BookMarked, GraduationCap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
 
 const CHECKLISTS: Record<string, { items: string[]; genderSpecific?: boolean }> = {
-  jewish: {
-    genderSpecific: true,
-    items: [], // handled by gender
-  },
+  jewish: { genderSpecific: true, items: [] },
   catholic: { items: ['morning_prayer', 'gospel', 'rosary', 'charity_act', 'conscience_exam', 'thank_god'] },
   protestant: { items: ['devotional', 'bible_reading', 'personal_prayer', 'kindness', 'word_reflection', 'thank_god'] },
   christian: { items: ['morning_prayer', 'gospel', 'personal_prayer', 'charity_act', 'word_reflection', 'thank_god'] },
@@ -40,16 +38,27 @@ function getTodayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+interface DailyContent {
+  title: string;
+  reference: string;
+  explanation: string;
+  reflection: string;
+  sources?: string;
+  scholarly_note?: string;
+}
+
 export default function Practice() {
   const { language, chatContext } = useApp();
   const [religion, setReligion] = useState(chatContext.religion || '');
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const [dailyContent, setDailyContent] = useState<{ title: string; reference: string; explanation: string; reflection: string } | null>(null);
+  const [dailyContent, setDailyContent] = useState<DailyContent | null>(null);
   const [loadingContent, setLoadingContent] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loadingAudio, setLoadingAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const today = getTodayStr();
 
-  // Get checklist items
   const getItems = (): string[] => {
     if (religion === 'jewish') return gender === 'male' ? JEWISH_MALE : JEWISH_FEMALE;
     return CHECKLISTS[religion]?.items || [];
@@ -86,6 +95,64 @@ export default function Practice() {
       setLoadingContent(false);
     }).catch(() => setLoadingContent(false));
   }, [religion, gender, today, language]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleNarrate = async () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+      return;
+    }
+
+    if (!dailyContent) return;
+
+    const text = `${dailyContent.title}. ${dailyContent.explanation}. ${dailyContent.reflection}`;
+    setLoadingAudio(true);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text, speed: 1.15 }),
+        }
+      );
+
+      if (!response.ok) throw new Error('TTS failed');
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setIsPlaying(false);
+        audioRef.current = null;
+      };
+
+      await audio.play();
+      setIsPlaying(true);
+    } catch (e) {
+      console.error('TTS error:', e);
+    } finally {
+      setLoadingAudio(false);
+    }
+  };
 
   const items = getItems();
   const checkedCount = items.filter(i => checked[i]).length;
@@ -146,7 +213,6 @@ export default function Practice() {
                 {checkedCount}/{items.length}
               </span>
             </CardTitle>
-            {/* Progress bar */}
             <div className="w-full bg-secondary rounded-full h-2 mt-2">
               <div
                 className="bg-primary h-2 rounded-full transition-all duration-500"
@@ -178,10 +244,32 @@ export default function Practice() {
       {religion && (
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              {t('practice.daily_content', language)}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                {t('practice.daily_content', language)}
+              </CardTitle>
+              {dailyContent && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNarrate}
+                  disabled={loadingAudio}
+                  className="flex items-center gap-1.5"
+                >
+                  {loadingAudio ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isPlaying ? (
+                    <VolumeX className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                  <span className="text-xs">
+                    {isPlaying ? t('practice.stop', language) : t('practice.listen', language)}
+                  </span>
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {loadingContent ? (
@@ -204,6 +292,22 @@ export default function Practice() {
                 <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
                   <p className="text-sm text-foreground italic">✨ {dailyContent.reflection}</p>
                 </div>
+
+                {/* Sources */}
+                {dailyContent.sources && (
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <BookMarked className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                    <p><span className="font-medium">{t('practice.sources', language)}:</span> {dailyContent.sources}</p>
+                  </div>
+                )}
+
+                {/* Scholarly note */}
+                {dailyContent.scholarly_note && (
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <GraduationCap className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                    <p><span className="font-medium">{t('practice.scholarly_note', language)}:</span> {dailyContent.scholarly_note}</p>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
