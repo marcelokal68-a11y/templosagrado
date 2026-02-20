@@ -206,6 +206,7 @@ const translations: Record<Language, Record<string, string>> = {
     'panel.switch_message': 'Para essa conversa com nosso sábio sacerdote, você já escolheu {current}. Deseja mudar para {target}? Se desejar, faça {current} agora e {target} depois! Decida em paz.',
     'panel.keep': 'Manter',
     'panel.switch': 'Mudar',
+    'panel.music': 'Músicas de Fundo',
     
     // Philosophies
     'philosophy.stoicism': 'Estoicismo',
@@ -684,6 +685,7 @@ const translations: Record<Language, Record<string, string>> = {
     'panel.switch_message': 'For this conversation with our wise priest, you already chose {current}. Do you want to switch to {target}? If so, do {current} now and {target} later! Decide in peace.',
     'panel.keep': 'Keep',
     'panel.switch': 'Switch',
+    'panel.music': 'Background Music',
     
     'philosophy.stoicism': 'Stoicism',
     'philosophy.logosophy': 'Logosophy',
@@ -1142,6 +1144,7 @@ const translations: Record<Language, Record<string, string>> = {
     'panel.switch_message': 'Para esta conversación con nuestro sabio sacerdote, ya elegiste {current}. ¿Deseas cambiar a {target}? Si lo deseas, haz {current} ahora y {target} después. ¡Decide en paz!',
     'panel.keep': 'Mantener',
     'panel.switch': 'Cambiar',
+    'panel.music': 'Música de Fondo',
     
     'philosophy.stoicism': 'Estoicismo',
     'philosophy.logosophy': 'Logosofía',
