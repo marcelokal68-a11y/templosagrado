@@ -74,10 +74,15 @@ export default function Header() {
           </Select>
 
           {user ? (
-            <Button variant="outline" size="sm" onClick={handleLogout} className="hidden md:flex gap-1.5">
-              <LogOut className="h-4 w-4" />
-              {t('nav.logout', language)}
-            </Button>
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                {user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5">
+                <LogOut className="h-4 w-4" />
+                {t('nav.logout', language)}
+              </Button>
+            </div>
           ) : (
             <Link to="/auth">
               <Button size="sm" className="hidden md:flex gap-1.5">

@@ -199,6 +199,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     'panel.generate': 'Gerar Resposta',
     'panel.philosophy': 'Filosofias de Vida',
+    'panel.choose_one': 'Escolha uma afiliação religiosa OU uma filosofia de vida',
     
     // Philosophies
     'philosophy.stoicism': 'Estoicismo',
@@ -421,6 +422,7 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.forgot': 'Esqueceu a senha?',
     'auth.no_account': 'Não tem conta?',
     'auth.has_account': 'Já tem conta?',
+    'auth.subtitle': 'Seu guia espiritual e filosófico',
   },
   'en': {
     'nav.chat': 'Chat',
@@ -610,6 +612,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     'panel.generate': 'Generate Response',
     'panel.philosophy': 'Life Philosophies',
+    'panel.choose_one': 'Choose a religious affiliation OR a life philosophy',
     
     'philosophy.stoicism': 'Stoicism',
     'philosophy.logosophy': 'Logosophy',
@@ -813,6 +816,7 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.forgot': 'Forgot password?',
     'auth.no_account': 'Don\'t have an account?',
     'auth.has_account': 'Already have an account?',
+    'auth.subtitle': 'Your spiritual and philosophical guide',
   },
   'es': {
     'nav.chat': 'Chat',
@@ -1002,6 +1006,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     'panel.generate': 'Generar Respuesta',
     'panel.philosophy': 'Filosofías de Vida',
+    'panel.choose_one': 'Elige una afiliación religiosa O una filosofía de vida',
     
     'philosophy.stoicism': 'Estoicismo',
     'philosophy.logosophy': 'Logosofía',
@@ -1205,6 +1210,7 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.forgot': '¿Olvidaste tu contraseña?',
     'auth.no_account': '¿No tienes cuenta?',
     'auth.has_account': '¿Ya tienes cuenta?',
+    'auth.subtitle': 'Tu guía espiritual y filosófico',
   },
 };
 

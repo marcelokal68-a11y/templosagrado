@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
@@ -65,8 +65,12 @@ export default function Auth() {
     <div className="flex-1 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <span className="text-4xl mb-2">🕉️</span>
-          <CardTitle className="font-display text-2xl">{isLogin ? t('auth.login', language) : t('auth.signup', language)}</CardTitle>
+          <span className="text-5xl mb-2 block">🕉️</span>
+          <CardTitle className="font-display text-2xl">{t('chat.title', language)}</CardTitle>
+          <CardDescription>{t('auth.subtitle', language)}</CardDescription>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isLogin ? t('auth.login', language) : t('auth.signup', language)}
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button onClick={handleGoogleLogin} variant="outline" className="w-full flex items-center gap-2">
