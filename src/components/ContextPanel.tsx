@@ -34,11 +34,26 @@ const SPOTIFY_PLAYLISTS: Record<string, string> = {
   umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',
   candomble: '3kg2IhbcbiRE4ZmvYWlUdw',
   agnostic: '1RJKluktWr9Dh7fXhhRkHV',
-  stoicism: '1RJKluktWr9Dh7fXhhRkHV',
-  logosophy: '1RJKluktWr9Dh7fXhhRkHV',
-  humanism: '1RJKluktWr9Dh7fXhhRkHV',
-  taoism: '1RJKluktWr9Dh7fXhhRkHV',
-  shamanism: '1RJKluktWr9Dh7fXhhRkHV',
+  stoicism: '0As0R4eZyxaMKAqZfW9zUL',          // Stoicism Music - Wisdom, Courage
+  logosophy: '5rzRAZvCFie84nUaz0sypb',          // Inspiring Modern Classical & Neo-Classical
+  humanism: '37i9dQZF1DWVFeEut75IAL',           // Calming Classical
+  taoism: '0w3U6XHnNOGKrXdZLH3r2L',            // Taoism Meditation - Chinese meditation
+  shamanism: '5NGZfEoKJlQYDpWfSvBf0F',          // Shamanic Drumming | Healing Drums
+  epicureanism: '37i9dQZF1DWVFeEut75IAL',       // Calming Classical
+  existentialism: '07UPzxWbrgZnIposHWaoXI',     // 50 Best Relaxing Classical
+  transcendentalism: '5rzRAZvCFie84nUaz0sypb',   // Inspiring Modern Classical
+  pantheism: '0w3U6XHnNOGKrXdZLH3r2L',          // Nature/Taoism Meditation
+  absurdism: '07UPzxWbrgZnIposHWaoXI',           // 50 Best Relaxing Classical
+  rationalism: '37i9dQZF1DWVFeEut75IAL',         // Calming Classical
+  optimistic_nihilism: '07UPzxWbrgZnIposHWaoXI', // 50 Best Relaxing Classical
+  utilitarianism: '37i9dQZF1DWVFeEut75IAL',      // Calming Classical
+  pragmatism: '37i9dQZF1DWVFeEut75IAL',          // Calming Classical
+  altruism: '5rzRAZvCFie84nUaz0sypb',            // Inspiring Modern Classical
+  objectivism: '37i9dQZF1DWVFeEut75IAL',         // Calming Classical
+  transhumanism: '5rzRAZvCFie84nUaz0sypb',       // Inspiring Modern Classical
+  anthroposophy: '5rzRAZvCFie84nUaz0sypb',       // Inspiring Modern Classical
+  cosmism: '5rzRAZvCFie84nUaz0sypb',             // Inspiring Modern Classical
+  ubuntu: '3kg2IhbcbiRE4ZmvYWlUdw',             // Meditative/African
   default: '1RJKluktWr9Dh7fXhhRkHV',
 };
 
