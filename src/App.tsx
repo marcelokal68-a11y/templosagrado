@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import Prayers from "./pages/Prayers";
 import Verse from "./pages/Verse";
+import Practice from "./pages/Practice";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
 // Posts integrated into ChatHistory
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/prayers" element={<Prayers />} />
               <Route path="/verse" element={<Verse />} />
+              <Route path="/practice" element={<Practice />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/invite/:code" element={<InviteRedeem />} />
               <Route path="*" element={<NotFound />} />
