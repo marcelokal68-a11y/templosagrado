@@ -76,15 +76,33 @@ export default function Prayers() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const sendEmailViaResend = async (emails: string) => {
+    setSendingEmail(true);
+    try {
+      const tradition = religion ? t(`religion.${religion}`, language) : philosophy ? t(`philosophy.${philosophy}`, language) : '';
+      const { data, error } = await supabase.functions.invoke('send-prayer-email', {
+        body: { to: emails, prayer: generatedPrayer, intention, tradition },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: t('prayers.email_sent', language) || 'Email enviado com sucesso!' });
+      setShowEmailInput(false);
+      setRecipientEmails('');
+    } catch (err: any) {
+      toast({ title: t('chat.error', language), description: err.message, variant: 'destructive' });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const handleSendEmail = () => {
-    const emails = recipientEmails.trim() || user?.email || '';
-    if (!emails) {
+    if (!recipientEmails.trim()) {
       toast({ title: t('prayers.email_others', language), variant: 'destructive' });
       return;
     }
-    const subject = encodeURIComponent(t('prayers.generated', language));
-    const body = encodeURIComponent(generatedPrayer);
-    window.open(`mailto:${emails}?subject=${subject}&body=${body}`);
+    sendEmailViaResend(recipientEmails.trim());
   };
 
   const handleSendToMe = () => {
@@ -92,9 +110,7 @@ export default function Prayers() {
       toast({ title: t('auth.login', language), variant: 'destructive' });
       return;
     }
-    const subject = encodeURIComponent(t('prayers.generated', language));
-    const body = encodeURIComponent(generatedPrayer);
-    window.open(`mailto:${user.email}?subject=${subject}&body=${body}`);
+    sendEmailViaResend(user.email);
   };
 
   return (
@@ -233,7 +249,8 @@ export default function Prayers() {
                   onChange={e => setRecipientEmails(e.target.value)}
                   className="flex-1"
                 />
-                <Button size="sm" onClick={handleSendEmail} disabled={!recipientEmails.trim()}>
+                <Button size="sm" onClick={handleSendEmail} disabled={!recipientEmails.trim() || sendingEmail}>
+                  {sendingEmail ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : null}
                   {t('prayers.send_email', language)}
                 </Button>
               </div>
