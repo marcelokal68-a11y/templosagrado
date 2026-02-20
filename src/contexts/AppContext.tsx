@@ -57,7 +57,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('questions_used, questions_limit, preferred_language, preferred_religion')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
         .then(({ data }) => {
           if (data) {
             setQuestionsRemaining(data.questions_limit - data.questions_used);
