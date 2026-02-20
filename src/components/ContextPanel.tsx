@@ -2,7 +2,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Sparkles, Church, BookOpen } from 'lucide-react';
+import { ChevronDown, Sparkles, Church, BookOpen, Music } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,27 @@ const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protest
 const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
 const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
 const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism', 'shamanism', 'taoism', 'anthroposophy', 'cosmism', 'ubuntu'];
+
+const SPOTIFY_PLAYLISTS: Record<string, string> = {
+  christian: '0Z5jq2YzMqMrqEQWMEVj9T',
+  catholic: '25lg9pkqwUaa7nOcIvd4ta',
+  protestant: '0Z5jq2YzMqMrqEQWMEVj9T',
+  mormon: '37i9dQZF1DX4vth7idTQMe',
+  jewish: '3d8ALeO6Op4V4gBY0JuGcO',
+  islam: '37i9dQZF1DWVYkjGjalkYY',
+  buddhist: '1RJKluktWr9Dh7fXhhRkHV',
+  hindu: '5cqh7Bs1h4z5pzrBZO9LLd',
+  spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',
+  umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',
+  candomble: '3kg2IhbcbiRE4ZmvYWlUdw',
+  agnostic: '1RJKluktWr9Dh7fXhhRkHV',
+  stoicism: '1RJKluktWr9Dh7fXhhRkHV',
+  logosophy: '1RJKluktWr9Dh7fXhhRkHV',
+  humanism: '1RJKluktWr9Dh7fXhhRkHV',
+  taoism: '1RJKluktWr9Dh7fXhhRkHV',
+  shamanism: '1RJKluktWr9Dh7fXhhRkHV',
+  default: '1RJKluktWr9Dh7fXhhRkHV',
+};
 
 const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', 'finances', 'relationship', 'family', 'politics', 'other'];
 
@@ -226,6 +247,36 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         defaultOpen={false}
         activeColor="bg-sky-500 text-white border-sky-500"
       />
+
+      {/* Spotify Background Music */}
+      {(() => {
+        const activeSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
+        const playlistId = SPOTIFY_PLAYLISTS[activeSelection] || SPOTIFY_PLAYLISTS.default;
+        return (
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 group">
+              <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+                <Music className="h-4 w-4" />
+                {t('panel.music', language)}
+              </h3>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+              <div className="rounded-xl overflow-hidden border border-border pb-2">
+                <iframe
+                  key={playlistId}
+                  src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`}
+                  width="100%"
+                  height="152"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  className="rounded-xl"
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })()}
 
       {onGenerate && hasContext && (
         <div className="pt-3">
