@@ -82,8 +82,6 @@ serve(async (req) => {
           email: u.email ?? "",
           display_name: profile?.display_name ?? u.email ?? "",
           is_subscriber: profile?.is_subscriber ?? false,
-          questions_used: profile?.questions_used ?? 0,
-          questions_limit: profile?.questions_limit ?? 10,
           is_admin: userRoles.includes("admin"),
           is_online: isOnline,
           created_at: u.created_at,
@@ -99,7 +97,7 @@ serve(async (req) => {
     if (action === "get-stats") {
       const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
       const authUsers = authData?.users ?? [];
-      const { data: profiles } = await supabase.from("profiles").select("is_subscriber, questions_used");
+      const { data: profiles } = await supabase.from("profiles").select("is_subscriber");
 
       const now = Date.now();
       const totalUsers = authUsers.length;
@@ -108,9 +106,8 @@ serve(async (req) => {
         return t > 0 && (now - t) < 5 * 60 * 1000;
       }).length;
       const subscribers = (profiles ?? []).filter((p: any) => p.is_subscriber).length;
-      const totalQuestions = (profiles ?? []).reduce((sum: number, p: any) => sum + (p.questions_used ?? 0), 0);
 
-      return new Response(JSON.stringify({ totalUsers, onlineUsers, subscribers, totalQuestions }), {
+      return new Response(JSON.stringify({ totalUsers, onlineUsers, subscribers }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

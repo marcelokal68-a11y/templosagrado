@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck } from 'lucide-react';
 
 const traditions = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -115,6 +115,24 @@ export default function Landing() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </section>
+
+      {/* Privacy / Confidentiality */}
+      <section className="container py-16 px-4">
+        <div className="max-w-2xl mx-auto text-center flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center">
+            <ShieldCheck className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground">
+            {t('landing.privacy_title', language)}
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('landing.privacy_desc', language)}
+          </p>
+          <p className="text-sm text-primary/80 italic font-medium">
+            {t('landing.privacy_note', language)}
+          </p>
         </div>
       </section>
 

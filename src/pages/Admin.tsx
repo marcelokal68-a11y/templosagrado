@@ -6,12 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Copy, Plus, Loader2, ToggleLeft, ToggleRight, UserPlus, Link as LinkIcon,
-  Users, CreditCard, Wifi, HelpCircle, Search, ArrowUpDown, Shield
+  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,8 +31,6 @@ interface CrmUser {
   email: string;
   display_name: string;
   is_subscriber: boolean;
-  questions_used: number;
-  questions_limit: number;
   is_admin: boolean;
   is_online: boolean;
   created_at: string;
@@ -44,7 +41,7 @@ interface Stats {
   totalUsers: number;
   onlineUsers: number;
   subscribers: number;
-  totalQuestions: number;
+  
 }
 
 type SortKey = 'display_name' | 'created_at' | 'last_sign_in_at';
@@ -238,7 +235,7 @@ export default function Admin() {
         <TabsContent value="users" className="space-y-6">
           {/* KPIs */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Card><CardContent className="p-4 flex items-center gap-3">
                 <Users className="h-8 w-8 text-primary" />
                 <div><p className="text-2xl font-bold">{stats.totalUsers}</p><p className="text-xs text-muted-foreground">Total usuários</p></div>
@@ -250,10 +247,6 @@ export default function Admin() {
               <Card><CardContent className="p-4 flex items-center gap-3">
                 <Wifi className="h-8 w-8 text-blue-500" />
                 <div><p className="text-2xl font-bold">{stats.onlineUsers}</p><p className="text-xs text-muted-foreground">Online agora</p></div>
-              </CardContent></Card>
-              <Card><CardContent className="p-4 flex items-center gap-3">
-                <HelpCircle className="h-8 w-8 text-amber-500" />
-                <div><p className="text-2xl font-bold">{stats.totalQuestions}</p><p className="text-xs text-muted-foreground">Perguntas feitas</p></div>
               </CardContent></Card>
             </div>
           )}
@@ -286,7 +279,6 @@ export default function Admin() {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Perguntas</TableHead>
                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('created_at')}>
                       <span className="flex items-center gap-1">Cadastro <ArrowUpDown className="h-3 w-3" /></span>
                     </TableHead>
@@ -314,12 +306,6 @@ export default function Admin() {
                             ? <Badge className="bg-green-500/20 text-green-700 border-green-500/30">Assinante</Badge>
                             : <Badge className="bg-amber-500/20 text-amber-700 border-amber-500/30">Gratuito</Badge>
                           }
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 min-w-[100px]">
-                          <Progress value={(u.questions_used / u.questions_limit) * 100} className="h-2 flex-1" />
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">{u.questions_used}/{u.questions_limit}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.created_at)}</TableCell>
