@@ -1,101 +1,81 @@
 
-
-# Landing Page Emotiva + Logout Limpa o Chat + Redirecionamento
+# Adicionar 5 Novas Filosofias de Vida
 
 ## Resumo
 
-Tres problemas a resolver:
-1. **Logout nao limpa o chat** - ao sair, as mensagens permanecem visiveis na tela
-2. **Nao existe landing page** - visitantes sem login veem direto o chat, sem explicacao do app
-3. **Apos logout, deve redirecionar para landing page** com opcoes claras de entrar/assinar
+Adicionar as seguintes filosofias baseadas na imagem de referencia:
+1. **Xamanismo** (shamanism) - Conexao com a Terra e Ancestrais
+2. **Taoismo** (taoism) - O fluxo do Tao e a Nao-Acao (Wu Wei)
+3. **Antroposofia** (anthroposophy) - Educacao e saude integrada ao espirito
+4. **Cosmismo** (cosmism) - Superacao das limitacoes biologicas (complementa o transhumanismo existente)
+5. **Ubuntu** (ubuntu) - "Eu sou porque nos somos" (Etica Comunitaria)
 
 ---
 
-## 1. Nova pagina: Landing Page (`src/pages/Landing.tsx`)
+## Arquivos a modificar
 
-Uma pagina emotiva e respeitosa que apresenta o Templo Sagrado. Estrutura:
+### 1. `src/components/ContextPanel.tsx`
+- Adicionar as 5 novas filosofias ao array `philosophies`
 
-### Hero Section
-- Emoji grande (icone sagrado) + titulo "Templo Sagrado" em font-display dourado
-- Subtitulo emotivo: "Seu santuario digital de sabedoria, oracao e paz interior"
-- Descricao: texto breve explicando que o app conecta o usuario com orientacao espiritual de todas as tradicoes religiosas e filosoficas
-- 3 botoes CTA: **"Experimente Gratis"** (vai para `/` como visitante), **"Entrar"** (vai para `/auth` como login), **"Assinar"** (vai para `/pricing`)
+### 2. `src/pages/Landing.tsx`
+- Adicionar as novas filosofias ao array `philosophies` da landing page
 
-### Secao de Features (3-4 cards)
-- **Chat com o Sacerdote**: Converse com IA guiada por textos sagrados de 12+ tradicoes
-- **Oracoes Personalizadas**: Gere oracoes tocantes baseadas na sua intencao e fe
-- **Versiculo do Dia**: Receba diariamente inspiracao de textos sagrados
-- **Pratica Diaria**: Checklist espiritual personalizado para sua jornada
+### 3. `src/pages/Practice.tsx`
+- Adicionar as 5 novas filosofias ao array `philosophies`
+- Adicionar checklists em `PHILOSOPHY_CHECKLISTS` para cada nova filosofia (6 itens cada)
 
-### Secao de Tradicoes Suportadas
-- Grid com chips mostrando as religioes e filosofias suportadas (Cristao, Hindu, Budista, Judaico, Estoicismo, etc.)
-- Visual leve e inclusivo
+### 4. `src/lib/i18n.ts` (3 idiomas: pt-BR, en, es)
+Para cada nova filosofia, adicionar:
+- `philosophy.{key}` - Nome traduzido
+- `practice.item.*` - Itens do checklist diario (6 por filosofia = 30 novos itens)
 
-### Footer simples
-- "Todas as tradicoes. Uma sabedoria." ou similar
+**Novas traducoes de nome:**
+| Key | pt-BR | en | es |
+|-----|-------|-----|-----|
+| shamanism | Xamanismo | Shamanism | Chamanismo |
+| taoism | Taoismo | Taoism | Taoismo |
+| anthroposophy | Antroposofia | Anthroposophy | Antroposofia |
+| cosmism | Cosmismo | Cosmism | Cosmismo |
+| ubuntu | Ubuntu | Ubuntu | Ubuntu |
 
-### Cores e estilo
-- Manter a paleta amber/dourada existente
-- Fundo com gradiente suave
-- Cards com bordas e sombras sutis
-- Font-display (Cinzel) para titulos
-- Totalmente responsiva
+**Novos itens de pratica (exemplos):**
+- Xamanismo: conexao com a terra, ritual de passagem, meditacao ancestral, oferenda a natureza, caminhada contemplativa, gratidao aos ancestrais
+- Taoismo: meditacao Wu Wei, leitura do Tao Te Ching, pratica de nao-acao, contemplacao da natureza, tai chi/chi kung, equiibrio yin-yang
+- Antroposofia: exercicio euritimico, leitura de Steiner, meditacao antroposofica, contato com a natureza, atividade artistica, reflexao corpo-alma-espirito
+- Cosmismo: reflexao cosmica, leitura de Fedorov, contemplacao do universo, acao de superacao, reflexao sobre imortalidade, conexao ciencia-espirito
+- Ubuntu: ato de comunidade, leitura Ubuntu, ajudou alguem, reflexao "eu sou porque nos somos", dialogo comunitario, gratidao coletiva
 
-## 2. Logout limpa o chat e redireciona
+### 5. `supabase/functions/sacred-chat/index.ts`
+- Adicionar as 5 novas filosofias ao `PHILOSOPHY_TEXTS` com seus livros de referencia:
+  - shamanism: "Caminhado com os Curadores Mundiais, Historias Orais, tradicoes xamanicas"
+  - taoism: "Tao Te Ching (Laozi), Zhuangzi"
+  - anthroposophy: "A Ciencia Oculta (Steiner), obras sobre Pedagogia Waldorf"
+  - cosmism: "Filosofia da Causa Comum (Fedorov), O Homem Imortal"
+  - ubuntu: "Pilares Ubuntu, Escritos de Desmond Tutu, Nelson Mandela"
 
-### `src/components/Header.tsx`
-- No `handleLogout`, apos `supabase.auth.signOut()`, redirecionar para `/landing` (nao `/`)
-
-### `src/components/ChatArea.tsx`
-- Quando `user` muda para `null`, limpar `messages` (setState para [])
-- Limpar tambem o cache de audio
-
-### `src/contexts/AppContext.tsx`
-- Quando user vira null (logout), resetar `chatContext` para valores vazios e `questionsRemaining` para 10
-
-## 3. Roteamento
-
-### `src/App.tsx`
-- Adicionar rota `/landing` para a Landing page
-- A rota `/` continua sendo o chat (para visitantes anonimos que clicaram "Experimente Gratis")
-- Apos logout, redireciona para `/landing`
-
-## 4. Traducoes (`src/lib/i18n.ts`)
-
-Novas chaves para os 3 idiomas:
-- `landing.hero_title`: "Seu santuario de sabedoria e paz"
-- `landing.hero_desc`: Descricao emotiva do app
-- `landing.try_free`: "Experimente Gratis"
-- `landing.sign_in`: "Entrar"
-- `landing.subscribe`: "Assinar"
-- `landing.feature_chat`: titulo e descricao do chat
-- `landing.feature_prayer`: titulo e descricao das oracoes
-- `landing.feature_verse`: titulo e descricao do versiculo
-- `landing.feature_practice`: titulo e descricao da pratica
-- `landing.traditions`: "Todas as tradicoes, uma sabedoria"
-- `landing.footer`: texto do footer
+### 6. `supabase/functions/daily-practice/index.ts`
+- Adicionar as 5 novas filosofias ao `PHILOSOPHY_SOURCES` (3 idiomas)
 
 ---
 
 ## Detalhes Tecnicos
 
-### Logout flow
-```text
-Usuario clica "Sair"
-  -> supabase.auth.signOut()
-  -> onAuthStateChange dispara, user = null
-  -> AppContext reseta chatContext
-  -> ChatArea detecta user=null, limpa messages
-  -> navigate('/landing')
-```
+### Checklist keys para cada filosofia:
 
-### Arquivos criados
-1. `src/pages/Landing.tsx` - Landing page emotiva
+**shamanism:**
+`['earth_connection', 'ancestor_meditation', 'nature_offering', 'shamanic_reading', 'passage_ritual', 'ancestral_gratitude']`
 
-### Arquivos modificados
-1. `src/App.tsx` - Nova rota /landing
-2. `src/components/Header.tsx` - Logout redireciona para /landing
-3. `src/components/ChatArea.tsx` - Limpa mensagens no logout
-4. `src/contexts/AppContext.tsx` - Reset do contexto no logout
-5. `src/lib/i18n.ts` - Traducoes da landing page
+**taoism:**
+`['wu_wei_meditation', 'tao_te_ching_reading', 'non_action_practice', 'nature_contemplation', 'tai_chi', 'yin_yang_balance']`
 
+**anthroposophy:**
+`['eurythmy_exercise', 'steiner_reading', 'anthroposophic_meditation', 'artistic_activity', 'body_soul_spirit', 'nature_connection']`
+
+**cosmism:**
+`['cosmic_reflection', 'fedorov_reading', 'universe_contemplation', 'self_transcendence', 'immortality_reflection', 'science_spirit_connection']`
+
+**ubuntu:**
+`['community_act', 'ubuntu_reading', 'help_others', 'i_am_because_we_are', 'community_dialogue', 'collective_gratitude']`
+
+### Nenhuma mudanca no banco de dados
+Todas as mudancas sao em codigo frontend e edge functions.
