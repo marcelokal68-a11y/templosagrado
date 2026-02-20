@@ -68,14 +68,18 @@ serve(async (req) => {
       sources = PHILOSOPHY_TEXTS[philosophy] || "philosophical texts";
     }
 
-    const systemPrompt = `You are a master of prayers and sacred words.
-Generate a beautiful, profound, and moving prayer based on the faithful's intention.
-The prayer must be within the ${tradition} tradition, drawing wisdom from ${sources}.
+    const isPhilosophy = !!philosophy && !religion;
+    const contentType = isPhilosophy ? "thought of the day / philosophical reflection" : "prayer";
+
+    const systemPrompt = `You are a master of ${isPhilosophy ? "philosophical wisdom and deep reflection" : "prayers and sacred words"}.
+Generate a beautiful, profound, and moving ${contentType} based on the person's intention.
+The ${contentType} must be within the ${tradition} tradition, drawing wisdom from ${sources}.
 Write in ${responseLang}. Maximum 20 lines. Be poetic, touching, and deeply moving.
 ${religion ? "Use the sacred language, blessings, and style of the " + religion + " tradition." : ""}
 ${philosophy ? "Use the philosophical wisdom, reflections, and style of " + philosophy + ". This is NOT a religious prayer but a profound philosophical invocation/reflection." : ""}
 Do NOT mix traditions. Stay strictly within the chosen tradition.
-Do NOT use bullet points or lists. Write in flowing, heartfelt prose.`;
+Do NOT use bullet points or lists. Write in flowing, heartfelt prose.
+At the very end, add a brief source reference on a new line starting with "—" (em dash), citing the specific sacred text, book, chapter, or philosophical work that inspired this ${contentType}. Example: "— Inspired by Philippians 4:6-7" or "— Based on Meditations, Book V, Marcus Aurelius".`;
 
     const userMessage = `Intention: ${intention}${name ? `\nName of the person: ${name}` : ""}`;
 

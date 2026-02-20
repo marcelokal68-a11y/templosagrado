@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, Copy, Check, Mail, RefreshCw, Sparkles } from 'lucide-react';
+import { Heart, Copy, Check, Mail, RefreshCw, Sparkles, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
@@ -25,6 +25,9 @@ export default function Prayers() {
   const [generatedPrayer, setGeneratedPrayer] = useState('');
   const [recipientEmails, setRecipientEmails] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
+
+  const isPhilosophy = !!philosophy && !religion;
+  const tk = (key: string) => isPhilosophy ? t(`${key}_thought`, language) : t(key, language);
 
   const handleGenerate = async () => {
     if (!religion && !philosophy) {
@@ -62,7 +65,7 @@ export default function Prayers() {
         generated_text: prayer,
       } as any);
 
-      toast({ title: t('prayers.success', language) });
+      toast({ title: tk('prayers.success') });
     } catch (err: any) {
       toast({ title: t('chat.error', language), description: err.message, variant: 'destructive' });
     } finally {
@@ -119,8 +122,8 @@ export default function Prayers() {
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <Sparkles className="h-10 w-10 text-primary mx-auto mb-2" />
-          <CardTitle className="font-display text-2xl">{t('prayers.title', language)}</CardTitle>
-          <CardDescription>{t('prayers.subtitle', language)}</CardDescription>
+          <CardTitle className="font-display text-2xl">{tk('prayers.title')}</CardTitle>
+          <CardDescription>{tk('prayers.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -174,7 +177,7 @@ export default function Prayers() {
 
             <Input placeholder={t('prayers.name', language)} value={name} onChange={e => setName(e.target.value)} />
             <Textarea
-              placeholder={t('prayers.intention', language)}
+              placeholder={tk('prayers.intention')}
               value={intention}
               onChange={e => setIntention(e.target.value)}
               required
@@ -188,12 +191,12 @@ export default function Prayers() {
               {loading ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  {t('prayers.generating', language)}
+                  {tk('prayers.generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  {t('prayers.generate', language)}
+                  {tk('prayers.generate')}
                 </>
               )}
             </Button>
@@ -205,8 +208,8 @@ export default function Prayers() {
       {generatedPrayer && (
         <Card className="w-full max-w-lg border-primary/20 bg-primary/5">
           <CardHeader className="text-center pb-3">
-            <Heart className="h-8 w-8 text-primary mx-auto mb-1" />
-            <CardTitle className="font-display text-xl">{t('prayers.generated', language)}</CardTitle>
+            {isPhilosophy ? <Lightbulb className="h-8 w-8 text-primary mx-auto mb-1" /> : <Heart className="h-8 w-8 text-primary mx-auto mb-1" />}
+            <CardTitle className="font-display text-xl">{tk('prayers.generated')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 italic">
@@ -225,7 +228,7 @@ export default function Prayers() {
                 onClick={() => { setGeneratedPrayer(''); handleGenerate(); }}
               >
                 <RefreshCw className="h-4 w-4 mr-1" />
-                {t('prayers.regenerate', language)}
+                {tk('prayers.regenerate')}
               </Button>
               {user?.email && (
                 <Button variant="outline" size="sm" onClick={handleSendToMe}>
