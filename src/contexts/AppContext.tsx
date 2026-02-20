@@ -39,8 +39,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const newUser = session?.user ?? null;
+      setUser(newUser);
       setLoading(false);
+      if (!newUser) {
+        // Reset on logout
+        setChatContext({ religion: '', need: '', mood: '', topic: '', philosophy: '' });
+        setQuestionsRemaining(10);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
