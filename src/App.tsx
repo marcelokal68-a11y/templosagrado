@@ -18,6 +18,7 @@ import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 import QuickTutorial from "./components/QuickTutorial";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -31,15 +32,15 @@ const App = () => (
           <div className="flex flex-col min-h-screen">
             <Header />
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/pricing" element={<Pricing />} />
-              <Route path="/prayers" element={<Prayers />} />
-              <Route path="/verse" element={<Verse />} />
-              <Route path="/practice" element={<Practice />} />
-              <Route path="/posts" element={<Posts />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/prayers" element={<ProtectedRoute><Prayers /></ProtectedRoute>} />
+              <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
+              <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+              <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/invite/:code" element={<InviteRedeem />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
