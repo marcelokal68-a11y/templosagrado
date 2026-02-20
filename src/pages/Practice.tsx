@@ -197,18 +197,22 @@ export default function Practice() {
         {religions.map(r => (
           <button
             key={r}
-            onClick={() => { setReligion(religion === r ? '' : r); setChecked({}); }}
+            onClick={() => { setReligion(religion === r ? '' : r); setPhilosophy(''); setChecked({}); }}
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
               religion === r
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+                ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                : "bg-secondary text-secondary-foreground border-border hover:bg-amber-500/10 hover:border-amber-500/30"
             )}
           >
             {t(`religion.${r}`, language)}
           </button>
         ))}
       </div>
+
+      <p className="text-xs text-muted-foreground text-center italic">
+        {t('panel.choose_one', language)}
+      </p>
 
       {/* Philosophy selector */}
       <div className="space-y-2">
@@ -217,12 +221,12 @@ export default function Practice() {
           {philosophies.map(p => (
             <button
               key={p}
-              onClick={() => { setPhilosophy(philosophy === p ? '' : p); setChecked({}); }}
+              onClick={() => { setPhilosophy(philosophy === p ? '' : p); setReligion(''); setChecked({}); }}
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                 philosophy === p
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+                  ? "bg-violet-500 text-white border-violet-500 shadow-sm"
+                  : "bg-secondary text-secondary-foreground border-border hover:bg-violet-500/10 hover:border-violet-500/30"
               )}
             >
               {t(`philosophy.${p}`, language)}

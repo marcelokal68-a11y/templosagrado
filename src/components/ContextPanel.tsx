@@ -33,8 +33,8 @@ function getTopicsForReligion(religion: string): string[] {
   return TOPICS_BY_RELIGION[religion] || [...UNIVERSAL_TOPICS];
 }
 
-function CollapsibleChipGroup({ label, items, prefix, selected, onSelect, defaultOpen = true }: {
-  label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void; defaultOpen?: boolean;
+function CollapsibleChipGroup({ label, items, prefix, selected, onSelect, defaultOpen = true, activeColor = "bg-primary text-primary-foreground border-primary" }: {
+  label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void; defaultOpen?: boolean; activeColor?: string;
 }) {
   const { language } = useApp();
   const [open, setOpen] = useState(defaultOpen);
@@ -57,7 +57,7 @@ function CollapsibleChipGroup({ label, items, prefix, selected, onSelect, defaul
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                 selected === item
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  ? `${activeColor} shadow-sm`
                   : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
               )}
             >
@@ -89,9 +89,25 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
         items={religions}
         prefix="religion"
         selected={chatContext.religion}
-        onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '' }))}
+        onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '', philosophy: '' }))}
         defaultOpen={true}
+        activeColor="bg-amber-500 text-white border-amber-500"
       />
+
+      <p className="text-xs text-muted-foreground text-center py-1 italic">
+        {t('panel.choose_one', language)}
+      </p>
+
+      <CollapsibleChipGroup
+        label={t('panel.philosophy', language)}
+        items={philosophies}
+        prefix="philosophy"
+        selected={chatContext.philosophy}
+        onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v, religion: '', topic: '' }))}
+        defaultOpen={false}
+        activeColor="bg-violet-500 text-white border-violet-500"
+      />
+
       <CollapsibleChipGroup
         label={t('panel.need', language)}
         items={needs}
@@ -99,6 +115,7 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
         selected={chatContext.need}
         onSelect={(v) => setChatContext(prev => ({ ...prev, need: v }))}
         defaultOpen={false}
+        activeColor="bg-emerald-500 text-white border-emerald-500"
       />
       <CollapsibleChipGroup
         label={t('panel.mood', language)}
@@ -107,6 +124,7 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
         selected={chatContext.mood}
         onSelect={(v) => setChatContext(prev => ({ ...prev, mood: v }))}
         defaultOpen={false}
+        activeColor="bg-rose-400 text-white border-rose-400"
       />
       <CollapsibleChipGroup
         label={t('panel.topics', language)}
@@ -115,14 +133,7 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
         defaultOpen={false}
-      />
-      <CollapsibleChipGroup
-        label={t('panel.philosophy', language)}
-        items={philosophies}
-        prefix="philosophy"
-        selected={chatContext.philosophy}
-        onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v }))}
-        defaultOpen={false}
+        activeColor="bg-sky-500 text-white border-sky-500"
       />
 
       {onGenerate && hasContext && (
