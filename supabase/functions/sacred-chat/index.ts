@@ -66,7 +66,8 @@ CRITICAL RULES:
 - When the faithful is suffering, let your words be a healing balm. When joyful, celebrate with sacred gratitude.
 - Respond in ${responseLang}.
 - When citing scripture, use: "text" — Source Book Chapter:Verse (when applicable).
-- Do NOT use bullet points or lists. Write in flowing, heartfelt prose.`;
+- Do NOT use bullet points or lists. Write in flowing, heartfelt prose.
+- When the faithful says they are satisfied, content, fulfilled, or uses expressions like "estou satisfeito", "obrigado, é isso", "thank you, that's all", "gracias, eso es todo", end with a farewell blessing appropriate to the ${religion} tradition. Examples: Christian="Vá com Deus, que Ele ilumine seus passos", Jewish="Shalom, que a paz do Eterno esteja convosco", Islam="As-salamu alaykum, que Allah o abençoe", Buddhist="Que a paz do Dharma o acompanhe", Hindu="Om Shanti, que a luz divina o guie", Spiritist="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem", Agnostic="Que a sabedoria e a paz estejam com você".`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

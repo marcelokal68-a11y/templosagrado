@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
@@ -79,7 +79,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
   );
 }
 
-export default function ChatArea() {
+const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
   const { language, user, chatContext, questionsRemaining, setQuestionsRemaining } = useApp();
   const religion = chatContext.religion || '';
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -93,7 +93,6 @@ export default function ChatArea() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Load chat history from DB
   useEffect(() => {
     if (!user) return;
     supabase
@@ -192,8 +191,8 @@ export default function ChatArea() {
     return count;
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const doSendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
 
     if (!user) {
       const anonUsed = getAnonCount();
@@ -209,7 +208,7 @@ export default function ChatArea() {
       return;
     }
 
-    const userMsg: Msg = { role: 'user', content: input.trim() };
+    const userMsg: Msg = { role: 'user', content: text.trim() };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
@@ -290,7 +289,6 @@ export default function ChatArea() {
         incrementAnonCount();
       }
 
-      // Persist messages to DB
       if (user && assistantSoFar.length > 0) {
         const ctx = {
           user_id: user.id,
@@ -305,7 +303,6 @@ export default function ChatArea() {
         ]).then(() => {});
       }
 
-      // Auto-preload audio for the assistant's response
       if (assistantSoFar.length > 0) {
         const assistantIndex = messages.length + 1;
         preloadAudio(assistantSoFar, assistantIndex);
@@ -317,6 +314,12 @@ export default function ChatArea() {
       setIsLoading(false);
     }
   };
+
+  const sendMessage = () => doSendMessage(input);
+
+  useImperativeHandle(ref, () => ({
+    sendAutoMessage: (msg: string) => doSendMessage(msg),
+  }));
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
@@ -447,4 +450,7 @@ export default function ChatArea() {
       </div>
     </div>
   );
-}
+});
+
+ChatArea.displayName = 'ChatArea';
+export default ChatArea;
