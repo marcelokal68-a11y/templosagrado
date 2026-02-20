@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal } from 'lucide-react';
 
 const traditions = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -63,6 +63,34 @@ export default function Landing() {
               </Button>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Tutorial Steps */}
+      <section className="container py-16 px-4">
+        <h2 className="font-display text-2xl md:text-3xl font-semibold text-center text-foreground mb-12">
+          {t('landing.tutorial_title', language)}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {[
+            { step: 1, icon: SlidersHorizontal, titleKey: 'landing.step1_title', descKey: 'landing.step1_desc' },
+            { step: 2, icon: MessageCircle, titleKey: 'landing.step2_title', descKey: 'landing.step2_desc' },
+            { step: 3, icon: Heart, titleKey: 'landing.step3_title', descKey: 'landing.step3_desc' },
+            { step: 4, icon: CheckSquare, titleKey: 'landing.step4_title', descKey: 'landing.step4_desc' },
+          ].map((item) => (
+            <div key={item.step} className="flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold shadow-md">
+                {item.step}
+              </div>
+              <item.icon className="h-6 w-6 text-primary" />
+              <h3 className="font-display text-base font-semibold text-foreground">
+                {t(item.titleKey, language)}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+                {t(item.descKey, language)}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
