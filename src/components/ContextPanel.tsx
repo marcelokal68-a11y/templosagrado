@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
 const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
 const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
+const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism'];
 
 const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', 'finances', 'relationship', 'family', 'politics', 'other'];
 
@@ -79,7 +80,7 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
     setChatContext(prev => ({ ...prev, topic: '' }));
   }
 
-  const hasContext = chatContext.religion || chatContext.need || chatContext.mood || chatContext.topic;
+  const hasContext = chatContext.religion || chatContext.need || chatContext.mood || chatContext.topic || chatContext.philosophy;
 
   return (
     <div className="space-y-1 p-4">
@@ -113,6 +114,14 @@ export default function ContextPanel({ onGenerate }: { onGenerate?: () => void }
         prefix="topic"
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
+        defaultOpen={false}
+      />
+      <CollapsibleChipGroup
+        label={t('panel.philosophy', language)}
+        items={philosophies}
+        prefix="philosophy"
+        selected={chatContext.philosophy}
+        onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v }))}
         defaultOpen={false}
       />
 

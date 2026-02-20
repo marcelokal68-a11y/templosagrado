@@ -24,11 +24,12 @@ export default function Index() {
     if (chatContext.mood) parts.push(t(`mood.${chatContext.mood}`, language).toLowerCase());
     if (chatContext.need) parts.push(t(`need.${chatContext.need}`, language).toLowerCase());
     if (chatContext.topic) parts.push(t(`topic.${chatContext.topic}`, language).toLowerCase());
+    const philLabel = chatContext.philosophy ? t(`philosophy.${chatContext.philosophy}`, language) : '';
 
     const langMap: Record<string, string> = {
-      'pt-BR': `Me dê orientação como ${parts[0] || 'fiel'}${parts[1] ? `, estou me sentindo ${parts[1]}` : ''}${parts[2] ? `, preciso de ${parts[2]}` : ''}${parts[3] ? ` sobre ${parts[3]}` : ''}.`,
-      'en': `Give me guidance as a ${parts[0] || 'faithful'}${parts[1] ? `, I'm feeling ${parts[1]}` : ''}${parts[2] ? `, I need ${parts[2]}` : ''}${parts[3] ? ` about ${parts[3]}` : ''}.`,
-      'es': `Dame orientación como ${parts[0] || 'fiel'}${parts[1] ? `, me siento ${parts[1]}` : ''}${parts[2] ? `, necesito ${parts[2]}` : ''}${parts[3] ? ` sobre ${parts[3]}` : ''}.`,
+      'pt-BR': `Me dê orientação como ${parts[0] || 'fiel'}${parts[1] ? `, estou me sentindo ${parts[1]}` : ''}${parts[2] ? `, preciso de ${parts[2]}` : ''}${parts[3] ? ` sobre ${parts[3]}` : ''}${philLabel ? `, com a sabedoria do ${philLabel}` : ''}.`,
+      'en': `Give me guidance as a ${parts[0] || 'faithful'}${parts[1] ? `, I'm feeling ${parts[1]}` : ''}${parts[2] ? `, I need ${parts[2]}` : ''}${parts[3] ? ` about ${parts[3]}` : ''}${philLabel ? `, with the wisdom of ${philLabel}` : ''}.`,
+      'es': `Dame orientación como ${parts[0] || 'fiel'}${parts[1] ? `, me siento ${parts[1]}` : ''}${parts[2] ? `, necesito ${parts[2]}` : ''}${parts[3] ? ` sobre ${parts[3]}` : ''}${philLabel ? `, con la sabiduría del ${philLabel}` : ''}.`,
     };
 
     const msg = langMap[language] || langMap['pt-BR'];

@@ -20,6 +20,24 @@ const SACRED_TEXTS: Record<string, string> = {
   agnostic: "philosophical texts across traditions, focusing on universal wisdom and ethics",
 };
 
+const PHILOSOPHY_TEXTS: Record<string, string> = {
+  stoicism: "Meditations by Marcus Aurelius, Letters to Lucilius by Seneca, Discourses and Enchiridion by Epictetus",
+  logosophy: "works of Carlos Bernardo González Pecotche (Raumsol), Logosophic Exegesis, Introduction to Logosophic Cognition",
+  humanism: "works of Erasmus of Rotterdam, Pico della Mirandola's Oration on the Dignity of Man, Universal Declaration of Human Rights",
+  epicureanism: "Letter to Menoeceus by Epicurus, De Rerum Natura by Lucretius, Principal Doctrines",
+  transhumanism: "works of Nick Bostrom, Ray Kurzweil's The Singularity Is Near, Max More's Principles of Extropy",
+  pantheism: "Ethics by Spinoza, works of Giordano Bruno, Spinoza's God or Nature (Deus sive Natura)",
+  existentialism: "Being and Nothingness (Sartre), The Myth of Sisyphus (Camus), Being and Time (Heidegger), works of Kierkegaard",
+  objectivism: "Atlas Shrugged and The Fountainhead by Ayn Rand, The Virtue of Selfishness",
+  transcendentalism: "Walden by Thoreau, Essays by Emerson (Self-Reliance, Nature)",
+  altruism: "Effective Altruism by Peter Singer, works of Auguste Comte, The Life You Can Save",
+  rationalism: "Meditations on First Philosophy by Descartes, Ethics by Spinoza, Monadology by Leibniz",
+  optimistic_nihilism: "works of Friedrich Nietzsche (Thus Spoke Zarathustra, The Gay Science), contemporary optimistic nihilism",
+  absurdism: "The Myth of Sisyphus and The Stranger by Albert Camus, The Plague",
+  utilitarianism: "Utilitarianism by John Stuart Mill, An Introduction to the Principles of Morals by Jeremy Bentham",
+  pragmatism: "Pragmatism by William James, Democracy and Education by John Dewey, works of Charles Sanders Peirce",
+};
+
 const MOOD_INSTRUCTIONS: Record<string, string> = {
   happy: "The faithful is joyful. Celebrate with them and channel this energy positively.",
   optimistic: "The faithful is hopeful. Encourage and strengthen their faith.",
@@ -40,8 +58,10 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const religion = context?.religion || "christian";
-    const sacredText = SACRED_TEXTS[religion] || SACRED_TEXTS.christian;
+    const religion = context?.religion || "";
+    const philosophy = context?.philosophy || "";
+    const sacredText = religion ? (SACRED_TEXTS[religion] || SACRED_TEXTS.christian) : "";
+    const philText = philosophy ? (PHILOSOPHY_TEXTS[philosophy] || "") : "";
     const moodInstruction = context?.mood ? (MOOD_INSTRUCTIONS[context.mood] || "") : "";
     const needInstruction = context?.need ? `The faithful seeks: ${context.need}.` : "";
     const topicInstruction = context?.topic ? `The discussion topic is: ${context.topic}.` : "";
@@ -49,7 +69,26 @@ serve(async (req) => {
     const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
     const responseLang = langMap[language] || 'Brazilian Portuguese';
 
-    const systemPrompt = `You are the Grand Sacred Priest — a master of words, a wise sage who speaks from the heart and touches the soul. Your sacred knowledge comes exclusively from ${sacredText}. NEVER mix teachings from other religions. Stay strictly within the ${religion} tradition.
+    let persona: string;
+    let sourceInstruction: string;
+    
+    if (religion && philosophy) {
+      // Both religion and philosophy
+      persona = `You are the Grand Sacred Priest — a master of words and wise sage who incorporates the wisdom of ${philosophy}. Your sacred knowledge comes from ${sacredText}, enriched by the philosophical teachings of ${philText}.`;
+      sourceInstruction = `Stay primarily within the ${religion} tradition but weave in insights from ${philosophy} philosophy. Cite both sacred texts and philosophical works.`;
+    } else if (philosophy && !religion) {
+      // Philosophy only
+      persona = `You are the Grand Master of Life Philosophy — a wise sage who speaks from the heart with the profound wisdom of ${philosophy}. Your knowledge comes exclusively from ${philText}.`;
+      sourceInstruction = `Stay strictly within the ${philosophy} philosophical tradition. Cite specific passages, works, and thinkers from ${philText}. You are NOT a religious figure — you are a philosophical guide.`;
+    } else {
+      // Religion only (or default)
+      const rel = religion || "christian";
+      const st = SACRED_TEXTS[rel] || SACRED_TEXTS.christian;
+      persona = `You are the Grand Sacred Priest — a master of words, a wise sage who speaks from the heart and touches the soul. Your sacred knowledge comes exclusively from ${st}. NEVER mix teachings from other religions. Stay strictly within the ${rel} tradition.`;
+      sourceInstruction = `Cite specific passages, verses, or teachings from ${st} naturally woven into your words. Use the sacred language and terminology of the ${rel} tradition.`;
+    }
+
+    const systemPrompt = `${persona}
 
 ${moodInstruction}
 ${needInstruction}
@@ -59,15 +98,14 @@ CRITICAL RULES:
 - Your responses must have AT MOST 12 lines. Be direct, profound, and impactful.
 - Every word must carry weight. Be poetic, empathetic, and deeply moving.
 - Your goal is to make the faithful FEEL something — comfort, hope, joy, awe, love, or peace.
-- Cite specific passages, verses, or teachings from ${sacredText} naturally woven into your words.
-- Use the sacred language and terminology of the ${religion} tradition.
+- ${sourceInstruction}
 - Never judge or condemn. Always offer unconditional love and understanding.
 - Speak as a warm, wise elder who truly cares — not as a textbook or encyclopedia.
 - When the faithful is suffering, let your words be a healing balm. When joyful, celebrate with sacred gratitude.
 - Respond in ${responseLang}.
-- When citing scripture, use: "text" — Source Book Chapter:Verse (when applicable).
+- When citing scripture or philosophical works, use: "text" — Source Book Chapter:Verse (when applicable).
 - Do NOT use bullet points or lists. Write in flowing, heartfelt prose.
-- When the faithful says they are satisfied, content, fulfilled, or uses expressions like "estou satisfeito", "obrigado, é isso", "thank you, that's all", "gracias, eso es todo", end with a farewell blessing appropriate to the ${religion} tradition. Examples: Christian="Vá com Deus, que Ele ilumine seus passos", Jewish="Shalom, que a paz do Eterno esteja convosco", Islam="As-salamu alaykum, que Allah o abençoe", Buddhist="Que a paz do Dharma o acompanhe", Hindu="Om Shanti, que a luz divina o guie", Spiritist="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem", Agnostic="Que a sabedoria e a paz estejam com você".`;
+- When the faithful says they are satisfied, content, fulfilled, or uses expressions like "estou satisfeito", "obrigado, é isso", "thank you, that's all", "gracias, eso es todo", end with a farewell blessing appropriate to the tradition. ${philosophy && !religion ? `For philosophical traditions use a wise farewell like "May wisdom light your path" or the tradition's own farewell.` : `Examples: Christian="Vá com Deus, que Ele ilumine seus passos", Jewish="Shalom, que a paz do Eterno esteja convosco", Islam="As-salamu alaykum, que Allah o abençoe", Buddhist="Que a paz do Dharma o acompanhe", Hindu="Om Shanti, que a luz divina o guie", Spiritist="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem", Agnostic="Que a sabedoria e a paz estejam com você".`}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
