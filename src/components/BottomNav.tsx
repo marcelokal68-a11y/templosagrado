@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, DollarSign, Heart, BookOpen } from 'lucide-react';
+import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ const items = [
   { to: '/pricing', icon: DollarSign, labelKey: 'nav.pricing' },
   { to: '/prayers', icon: Heart, labelKey: 'nav.prayers' },
   { to: '/verse', icon: BookOpen, labelKey: 'nav.verse' },
+  { to: '/practice', icon: CheckSquare, labelKey: 'nav.practice' },
 ] as const;
 
 export default function BottomNav() {

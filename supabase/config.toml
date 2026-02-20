@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.generate-post]
 verify_jwt = false
+
+[functions.daily-practice]
+verify_jwt = false
