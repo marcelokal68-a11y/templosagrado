@@ -19,8 +19,10 @@ const steps = [
 ];
 
 export default function QuickTutorial() {
-  const { language } = useApp();
+  const { language, user } = useApp();
   const [open, setOpen] = useState(false);
+
+  if (!user) return null;
 
   return (
     <>
