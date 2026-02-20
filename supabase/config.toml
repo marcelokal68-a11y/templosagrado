@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.daily-practice]
 verify_jwt = false
+
+[functions.generate-prayer]
+verify_jwt = false

@@ -1,0 +1,1 @@
+ALTER TABLE public.prayers ADD COLUMN IF NOT EXISTS generated_text text;
