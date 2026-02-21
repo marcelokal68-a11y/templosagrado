@@ -204,12 +204,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
     const cachedUrl = audioCacheRef.current.get(index);
     if (cachedUrl) {
-      const audio = new Audio(cachedUrl);
-      audioRef.current = audio;
-      setPlayingIndex(index);
-      audio.onended = () => setPlayingIndex(null);
-      audio.onerror = () => setPlayingIndex(null);
-      await audio.play();
+      try {
+        const audio = new Audio(cachedUrl);
+        audioRef.current = audio;
+        setPlayingIndex(index);
+        audio.onended = () => setPlayingIndex(null);
+        audio.onerror = () => { setPlayingIndex(null); };
+        await audio.play();
+      } catch (e) {
+        console.error('Playback error:', e);
+        setPlayingIndex(null);
+        toast({ title: t('chat.error', language), variant: 'destructive' });
+      }
       return;
     }
 
