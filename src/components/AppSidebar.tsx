@@ -60,10 +60,10 @@ export default function AppSidebar() {
       className={cn("hidden md:flex border-r transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-52")}
       collapsible="icon"
     >
-      <SidebarContent className="pt-6">
+      <SidebarContent className="flex flex-col justify-center h-full">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {allItems.map(item => {
                 const active = location.pathname === item.to;
                 const label = item.labelKey === 'Admin' ? 'Admin' : t(item.labelKey, language);
