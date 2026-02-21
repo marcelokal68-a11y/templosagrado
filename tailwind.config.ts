@@ -95,12 +95,22 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-4px)" },
         },
+        "shimmer": {
+          "0%, 100%": { backgroundPosition: "-200% center" },
+          "50%": { backgroundPosition: "200% center" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 15px hsl(38 80% 55% / 0.15)" },
+          "50%": { boxShadow: "0 0 30px hsl(38 80% 55% / 0.3), 0 0 60px hsl(38 80% 55% / 0.1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
+        "shimmer": "shimmer 3s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },

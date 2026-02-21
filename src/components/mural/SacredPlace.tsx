@@ -67,7 +67,6 @@ export default function SacredPlace({ selectedReligion, userReligion }: SacredPl
     });
   }, [user]);
 
-  // Realtime
   useEffect(() => {
     const channel = supabase
       .channel('mural-posts')
@@ -111,19 +110,19 @@ export default function SacredPlace({ selectedReligion, userReligion }: SacredPl
   return (
     <div className="space-y-0">
       {/* Hero image */}
-      <div className="relative h-52 md:h-64 rounded-xl overflow-hidden mb-6">
+      <div className="relative h-52 md:h-64 rounded-xl overflow-hidden mb-6 sacred-glow">
         <img
           src={place.imageUrl}
           alt={place.name[language] || place.name['pt-BR']}
           className="w-full h-full object-cover"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <h2 className="text-2xl md:text-3xl font-display font-bold text-white drop-shadow-lg">
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-gradient-sacred drop-shadow-lg" style={{ WebkitTextFillColor: 'initial', color: 'hsl(38 80% 55%)' }}>
             {place.name[language] || place.name['pt-BR']}
           </h2>
-          <p className="text-sm text-white/80 mt-1 max-w-md">
+          <p className="text-sm text-white/70 mt-1 max-w-md">
             {place.subtitle[language] || place.subtitle['pt-BR']}
           </p>
         </div>
@@ -145,25 +144,25 @@ export default function SacredPlace({ selectedReligion, userReligion }: SacredPl
                 </Button>
               </div>
             ) : (
-              <Button onClick={() => setShowForm(true)} className="w-full gap-2">
+              <Button onClick={() => setShowForm(true)} className="w-full gap-2 sacred-gradient text-primary-foreground border-0 sacred-glow">
                 <Plus className="h-4 w-4" />
                 {language === 'en' ? 'Place a note' : language === 'es' ? 'Depositar nota' : 'Depositar bilhete'}
               </Button>
             )}
           </div>
         ) : (
-          <div className="mb-6 bg-muted/50 rounded-lg p-4 text-center space-y-2">
+          <div className="mb-6 glass sacred-border rounded-lg p-4 text-center space-y-2">
             <Lock className="h-5 w-5 mx-auto text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
               {language === 'en' ? 'Subscribe to place prayer notes' : language === 'es' ? 'Suscríbete para depositar notas' : 'Assine para depositar bilhetes de oração'}
             </p>
             <Link to="/pricing">
-              <Button size="sm" variant="outline">{t('chat.upgrade', language)}</Button>
+              <Button size="sm" variant="outline" className="border-primary/30">{t('chat.upgrade', language)}</Button>
             </Link>
           </div>
         )
       ) : (
-        <div className="mb-6 bg-muted/50 rounded-lg p-4 text-center space-y-1">
+        <div className="mb-6 glass sacred-border rounded-lg p-4 text-center space-y-1">
           <Eye className="h-5 w-5 mx-auto text-muted-foreground" />
           <p className="text-sm text-muted-foreground">{viewOnlyLabel}</p>
         </div>

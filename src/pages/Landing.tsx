@@ -43,29 +43,30 @@ export default function Landing() {
   return (
     <main className="flex-1 overflow-y-auto">
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" />
+      <section className="relative overflow-hidden cosmic-bg-deep">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/8 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 30%, hsl(38 80% 55% / 0.12) 0%, transparent 60%)' }} />
         <div className="container relative py-10 md:py-28 flex flex-col items-center text-center gap-4 md:gap-6 px-4">
           <div className="text-5xl md:text-8xl animate-fade-in">🕉️</div>
-          <h1 className="font-display text-3xl md:text-6xl font-bold text-primary leading-tight max-w-3xl animate-fade-in">
+          <h1 className="font-display text-3xl md:text-6xl font-bold leading-tight max-w-3xl animate-fade-in shimmer-text">
             {t('landing.hero_title', language)}
           </h1>
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-fade-in">
             {t('landing.hero_subtitle', language)}
           </p>
-          <p className="text-sm text-foreground/70 max-w-xl animate-fade-in">
+          <p className="text-sm text-foreground/60 max-w-xl animate-fade-in">
             {t('landing.hero_desc', language)}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-2 md:mt-4 animate-fade-in w-full sm:w-auto">
             <Link to="/" className="w-full sm:w-auto">
-              <Button size="lg" className="gap-2 text-base px-8 shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto">
+              <Button size="lg" className="gap-2 text-base px-8 sacred-gradient text-primary-foreground border-0 sacred-glow hover:sacred-glow-strong transition-shadow w-full sm:w-auto">
                 <Sparkles className="h-5 w-5" />
                 {t('landing.try_free', language)}
               </Button>
             </Link>
             <Link to="/auth" className="w-full sm:w-auto">
-              <Button variant="outline" size="lg" className="gap-2 text-base px-8 w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="gap-2 text-base px-8 border-primary/30 hover:border-primary/60 hover:bg-primary/10 w-full sm:w-auto">
                 {t('landing.sign_in', language)}
               </Button>
             </Link>
@@ -80,12 +81,12 @@ export default function Landing() {
       </section>
 
       {/* Peace Stats Banner */}
-      <section className="sacred-gradient-subtle border-y border-border">
+      <section className="sacred-gradient-subtle border-y border-primary/10">
         <div className="container py-10 px-4">
           <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto text-center">
             {(['peace_stat1', 'peace_stat2', 'peace_stat3'] as const).map((key) => (
               <div key={key} className="flex flex-col items-center gap-1">
-                <span className="text-2xl md:text-5xl font-display font-bold text-primary">
+                <span className="text-2xl md:text-5xl font-display font-bold text-gradient-sacred">
                   {t(`landing.${key}`, language)}
                 </span>
                 <span className="text-[10px] md:text-sm text-muted-foreground font-medium leading-tight text-center">
@@ -110,7 +111,7 @@ export default function Landing() {
             { step: 4, icon: CheckSquare, titleKey: 'landing.step4_title', descKey: 'landing.step4_desc' },
           ].map((item) => (
             <div key={item.step} className="flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold shadow-md">
+              <div className="w-12 h-12 rounded-full sacred-gradient text-primary-foreground flex items-center justify-center text-lg font-bold shadow-md sacred-glow">
                 {item.step}
               </div>
               <item.icon className="h-6 w-6 text-primary" />
@@ -132,7 +133,7 @@ export default function Landing() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {features.map((feat) => (
-            <Card key={feat.titleKey} className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+            <Card key={feat.titleKey} className="group glass sacred-border hover:sacred-glow transition-all duration-300">
               <CardContent className="p-6 flex flex-col items-center text-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                   {feat.emoji}
@@ -151,12 +152,12 @@ export default function Landing() {
 
       {/* ✨ Mural Sagrado Highlight */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 sacred-gradient opacity-[0.07] pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-primary/5 pointer-events-none" />
+        <div className="absolute inset-0 cosmic-bg pointer-events-none" />
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 50%, hsl(38 80% 55% / 0.15) 0%, transparent 50%)' }} />
         <div className="container relative py-20 px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <div className="text-5xl md:text-6xl animate-fade-in">🕊️</div>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground leading-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground leading-tight shimmer-text">
               {t('landing.mural_title', language)}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -165,7 +166,7 @@ export default function Landing() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-10">
               {muralFeatures.map((feat) => (
-                <Card key={feat.titleKey} className="glass group hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                <Card key={feat.titleKey} className="glass sacred-border group hover:sacred-glow transition-all duration-300">
                   <CardContent className="p-6 flex flex-col items-center text-center gap-3">
                     <div className="text-3xl group-hover:scale-110 transition-transform">{feat.emoji}</div>
                     <h3 className="font-display text-base font-semibold text-foreground">
@@ -180,7 +181,7 @@ export default function Landing() {
             </div>
 
             <Link to="/auth" className="inline-block mt-6">
-              <Button size="lg" className="gap-2 text-base px-10 shadow-lg hover:shadow-xl transition-shadow sacred-gradient text-primary-foreground border-0">
+              <Button size="lg" className="gap-2 text-base px-10 sacred-gradient text-primary-foreground border-0 sacred-glow hover:sacred-glow-strong transition-shadow">
                 <Globe className="h-5 w-5" />
                 {t('landing.mural_cta', language)}
               </Button>
@@ -192,7 +193,7 @@ export default function Landing() {
       {/* Privacy / Confidentiality */}
       <section className="container py-16 px-4">
         <div className="max-w-2xl mx-auto text-center flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center sacred-glow">
             <ShieldCheck className="h-8 w-8 text-primary" />
           </div>
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground">
@@ -209,7 +210,7 @@ export default function Landing() {
 
       {/* Testimonials */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+        <div className="absolute inset-0 cosmic-bg pointer-events-none" />
         <div className="container relative py-16 px-4">
           <div className="text-center mb-12">
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3">
@@ -221,13 +222,13 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {testimonials.map((item) => (
-              <Card key={item.authorKey} className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 relative">
+              <Card key={item.authorKey} className="group glass sacred-border hover:sacred-glow transition-all duration-300 relative">
                 <CardContent className="p-6 flex flex-col gap-4">
-                  <Quote className="h-6 w-6 text-primary/30" />
+                  <Quote className="h-6 w-6 text-primary/40" />
                   <p className="text-sm text-muted-foreground leading-relaxed italic flex-1">
                     "{t(item.textKey, language)}"
                   </p>
-                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                  <div className="flex items-center gap-3 pt-2 border-t border-primary/10">
                     <span className="text-2xl">{item.emoji}</span>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{t(item.authorKey, language)}</p>
@@ -242,7 +243,7 @@ export default function Landing() {
       </section>
 
       {/* Traditions */}
-      <section className="bg-card/50 border-y border-border">
+      <section className="border-y border-primary/10">
         <div className="container py-16 px-4 text-center">
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3">
             {t('landing.traditions_title', language)}
@@ -253,7 +254,7 @@ export default function Landing() {
 
           <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto mb-6">
             {traditions.map((r) => (
-              <Badge key={r} variant="secondary" className="text-sm py-1.5 px-4">
+              <Badge key={r} variant="secondary" className="text-sm py-1.5 px-4 border-primary/10">
                 {t(`religion.${r}`, language)}
               </Badge>
             ))}
@@ -264,7 +265,7 @@ export default function Landing() {
           </p>
           <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
             {philosophies.map((p) => (
-              <Badge key={p} variant="outline" className="text-sm py-1.5 px-4">
+              <Badge key={p} variant="outline" className="text-sm py-1.5 px-4 border-primary/20 text-foreground/70">
                 {t(`philosophy.${p}`, language)}
               </Badge>
             ))}
@@ -274,7 +275,7 @@ export default function Landing() {
 
       {/* Peace Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 cosmic-bg pointer-events-none" />
         <div className="container relative py-20 px-4">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
@@ -291,7 +292,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="container py-12 px-4 text-center">
+      <footer className="container py-12 px-4 text-center border-t border-primary/10">
         <p className="font-display text-lg text-primary/80 italic">
           "{t('landing.footer', language)}"
         </p>

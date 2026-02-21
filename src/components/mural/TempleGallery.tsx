@@ -25,7 +25,7 @@ export default function TempleGallery({ userReligion, onSelect }: TempleGalleryP
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-display font-bold">🏛️ {labels.title}</h2>
+        <h2 className="text-2xl font-display font-bold shimmer-text">🏛️ {labels.title}</h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">{labels.subtitle}</p>
       </div>
 
@@ -39,7 +39,7 @@ export default function TempleGallery({ userReligion, onSelect }: TempleGalleryP
               className={cn(
                 'relative group overflow-hidden rounded-xl h-36 sm:h-44 transition-all duration-300 text-left',
                 'hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary',
-                isUserTemple && 'ring-2 ring-primary shadow-lg'
+                isUserTemple && 'ring-2 ring-primary sacred-glow'
               )}
             >
               <img
@@ -48,19 +48,19 @@ export default function TempleGallery({ userReligion, onSelect }: TempleGalleryP
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
               {isUserTemple && (
-                <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5">
+                <Badge className="absolute top-2 right-2 sacred-gradient text-primary-foreground text-[10px] px-1.5 py-0.5 border-0">
                   ⭐ {labels.yourTradition}
                 </Badge>
               )}
 
               <div className="absolute bottom-0 left-0 right-0 p-3">
-                <p className="text-white font-display font-bold text-sm leading-tight drop-shadow-lg">
+                <p className="text-primary-foreground font-display font-bold text-sm leading-tight drop-shadow-lg" style={{ WebkitTextFillColor: 'initial' }}>
                   {place.name[language] || place.name['pt-BR']}
                 </p>
-                <p className="text-white/70 text-[10px] mt-0.5">
+                <p className="text-white/60 text-[10px] mt-0.5">
                   {t(`religion.${place.religion}`, language)}
                 </p>
               </div>

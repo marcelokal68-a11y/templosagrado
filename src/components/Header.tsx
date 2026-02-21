@@ -13,7 +13,6 @@ export default function Header() {
   const location = useLocation();
   const { toggleSidebar, state } = useSidebar();
 
-  // Hide sidebar toggle on landing/auth/invite pages
   const hiddenPaths = ['/landing', '/auth', '/invite'];
   const showSidebarToggle = user && !hiddenPaths.some(p => location.pathname.startsWith(p));
 
@@ -23,17 +22,17 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b glass-strong safe-top">
+    <header className="sticky top-0 z-50 glass-strong safe-top border-b border-primary/10">
       <div className="flex h-12 md:h-14 items-center justify-between px-3 md:px-4">
         <div className="flex items-center gap-2">
           {showSidebarToggle && (
-            <Button variant="ghost" size="icon" className="hidden md:flex h-8 w-8" onClick={toggleSidebar}>
+            <Button variant="ghost" size="icon" className="hidden md:flex h-8 w-8 text-foreground/70 hover:text-primary" onClick={toggleSidebar}>
               {state === 'collapsed' ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
             </Button>
           )}
           <Link to={user ? "/" : "/landing"} className="flex items-center gap-1.5">
             <span className="text-xl md:text-2xl">🕉️</span>
-            <span className="font-display text-base md:text-lg font-semibold text-primary leading-tight">
+            <span className="font-display text-base md:text-lg font-semibold text-gradient-sacred leading-tight">
               {t('chat.title', language)}
             </span>
           </Link>
@@ -41,7 +40,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-            <SelectTrigger className="w-[100px] md:w-[120px] h-8 text-xs">
+            <SelectTrigger className="w-[100px] md:w-[120px] h-8 text-xs border-primary/20 bg-secondary/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -56,14 +55,14 @@ export default function Header() {
               <span className="text-xs text-muted-foreground truncate max-w-[150px]">
                 {user.email}
               </span>
-              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 h-8">
+              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 h-8 border-primary/20 hover:border-primary/40">
                 <LogOut className="h-3.5 w-3.5" />
                 {t('nav.logout', language)}
               </Button>
             </div>
           ) : (
             <Link to="/auth">
-              <Button size="sm" className="gap-1.5 h-8">
+              <Button size="sm" className="gap-1.5 h-8 sacred-gradient text-primary-foreground border-0">
                 <LogIn className="h-3.5 w-3.5" />
                 {t('nav.login', language)}
               </Button>

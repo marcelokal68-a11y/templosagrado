@@ -139,8 +139,8 @@ export default function Prayers() {
                     className={cn(
                       "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                       religion === r
-                        ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                        : "bg-secondary text-secondary-foreground border-border hover:bg-amber-500/10 hover:border-amber-500/30"
+                        ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
+                        : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
                     )}
                   >
                     {t(`religion.${r}`, language)}
@@ -165,8 +165,8 @@ export default function Prayers() {
                     className={cn(
                       "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                       philosophy === p
-                        ? "bg-violet-500 text-white border-violet-500 shadow-sm"
-                        : "bg-secondary text-secondary-foreground border-border hover:bg-violet-500/10 hover:border-violet-500/30"
+                        ? "bg-accent text-accent-foreground border-accent/50 shadow-sm"
+                        : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-accent/10 hover:border-accent/30"
                     )}
                   >
                     {t(`philosophy.${p}`, language)}
@@ -206,7 +206,7 @@ export default function Prayers() {
 
       {/* Generated Prayer */}
       {generatedPrayer && (
-        <Card className="w-full max-w-lg border-primary/20 bg-primary/5">
+        <Card className="w-full max-w-lg glass sacred-border">
           <CardHeader className="text-center pb-3">
             {isPhilosophy ? <Lightbulb className="h-8 w-8 text-primary mx-auto mb-1" /> : <Heart className="h-8 w-8 text-primary mx-auto mb-1" />}
             <CardTitle className="font-display text-xl">{tk('prayers.generated')}</CardTitle>

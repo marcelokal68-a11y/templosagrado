@@ -19,11 +19,10 @@ export default function BottomNav() {
   const { pathname } = useLocation();
   const { language, user } = useApp();
 
-  // Show limited nav for anonymous users, full nav for logged-in
   const visibleItems = user ? items : items.filter(i => ['/', '/pricing'].includes(i.to));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t glass-strong safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden glass-strong safe-bottom border-t border-primary/10">
       <div className="flex items-center justify-around h-14">
         {visibleItems.map(({ to, icon: Icon, labelKey }) => {
           const active = pathname === to;
@@ -37,9 +36,12 @@ export default function BottomNav() {
               )}
             >
               {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary animate-scale-in" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full sacred-gradient animate-scale-in" />
               )}
-              <Icon className={cn("h-5 w-5 transition-transform duration-300", active && "animate-scale-in")} />
+              <Icon className={cn(
+                "h-5 w-5 transition-all duration-300",
+                active && "animate-scale-in drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]"
+              )} />
               <span className={cn("text-[10px] font-medium leading-none transition-all duration-300", active && "font-semibold")}>{t(labelKey, language)}</span>
             </Link>
           );
