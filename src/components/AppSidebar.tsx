@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, Feather, ScrollText, Shield } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Feather, ScrollText, Shield, DollarSign } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,12 +18,12 @@ import {
 
 const navItems = [
   { to: '/', labelKey: 'nav.chat', icon: MessageCircle },
-  { to: '/pricing', labelKey: 'nav.pricing', icon: DollarSign },
   { to: '/posts', labelKey: 'nav.posts', icon: Feather },
   { to: '/prayers', labelKey: 'nav.prayers', icon: Heart },
   { to: '/verse', labelKey: 'nav.verse', icon: BookOpen },
   { to: '/practice', labelKey: 'nav.practice', icon: CheckSquare },
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
+  { to: '/pricing', labelKey: 'nav.pricing', icon: DollarSign },
 ];
 
 export default function AppSidebar() {
@@ -33,6 +33,10 @@ export default function AppSidebar() {
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Don't render sidebar on landing, auth, or invite pages
+  const hiddenPaths = ['/landing', '/auth', '/invite'];
+  const shouldHide = hiddenPaths.some(p => location.pathname.startsWith(p));
+  
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
     (async () => {
@@ -45,6 +49,8 @@ export default function AppSidebar() {
     })();
   }, [user]);
 
+  if (shouldHide || !user) return null;
+
   const allItems = [
     ...navItems,
     ...(isAdmin ? [{ to: '/admin', labelKey: 'Admin' as const, icon: Shield }] : []),
@@ -52,7 +58,7 @@ export default function AppSidebar() {
 
   return (
     <Sidebar
-      className={cn("hidden md:flex border-r transition-all duration-300", collapsed ? "w-14" : "w-48")}
+      className={cn("hidden md:flex border-r transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-48")}
       collapsible="icon"
     >
       <SidebarContent className="pt-2">
