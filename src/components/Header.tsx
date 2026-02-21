@@ -52,13 +52,14 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop nav — scrollable to prevent overflow */}
+        <nav className="hidden md:flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-shrink min-w-0">
           {navItems.map(item => (
-            <Link key={item.to} to={item.to}>
-              <Button variant="ghost" size="sm" className="gap-1.5">
-                <item.icon className="h-4 w-4" />
-                {item.label}
+            <Link key={item.to} to={item.to} className="flex-shrink-0">
+              <Button variant="ghost" size="sm" className="gap-1 text-xs px-2 lg:px-3 lg:text-sm">
+                <item.icon className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">{item.label}</span>
+                <span className="lg:hidden">{item.label.split(' ')[0]}</span>
               </Button>
             </Link>
           ))}

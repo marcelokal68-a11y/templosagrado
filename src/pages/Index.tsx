@@ -66,7 +66,7 @@ export default function Index() {
         </Drawer>
       </div>
 
-      <div className="hidden md:block w-[320px] border-l border-border bg-card/50">
+      <div className="hidden md:block w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50">
         <ScrollArea className="h-full">
           <div className="p-4 border-b border-border">
             <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
