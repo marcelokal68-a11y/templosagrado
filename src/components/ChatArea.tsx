@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
@@ -98,6 +98,19 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const prevAffiliationRef = useRef<string>('');
+  const geoRef = useRef<{ latitude: number; longitude: number } | null>(null);
+
+  // Capture timezone (always available) and geolocation (request once)
+  const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude }; },
+      () => { /* permission denied — fallback to timezone only */ },
+      { timeout: 5000, maximumAge: 600000 }
+    );
+  }, []);
 
   // Show undo toast when chat is cleared via affiliation change
   useEffect(() => {
@@ -274,6 +287,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           context: chatContext,
           language,
           userId: user?.id,
+          datetime: new Date().toISOString(),
+          timezone,
+          geo: geoRef.current,
         }),
       });
 

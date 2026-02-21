@@ -56,13 +56,58 @@ const MOOD_INSTRUCTIONS: Record<string, string> = {
   spiritual: "The faithful is in a deep spiritual state. Guide with profound sacred wisdom.",
 };
 
+const TIMEZONE_REGIONS: Record<string, string> = {
+  "America/Sao_Paulo": "Brazil", "America/Fortaleza": "Brazil", "America/Recife": "Brazil",
+  "America/Bahia": "Brazil", "America/Manaus": "Brazil", "America/Belem": "Brazil",
+  "America/New_York": "United States", "America/Chicago": "United States",
+  "America/Denver": "United States", "America/Los_Angeles": "United States",
+  "America/Argentina/Buenos_Aires": "Argentina", "America/Bogota": "Colombia",
+  "America/Mexico_City": "Mexico", "America/Santiago": "Chile", "America/Lima": "Peru",
+  "Europe/London": "United Kingdom", "Europe/Paris": "France", "Europe/Berlin": "Germany",
+  "Europe/Madrid": "Spain", "Europe/Rome": "Italy", "Europe/Lisbon": "Portugal",
+  "Europe/Moscow": "Russia", "Asia/Tokyo": "Japan", "Asia/Shanghai": "China",
+  "Asia/Kolkata": "India", "Asia/Dubai": "United Arab Emirates", "Asia/Jerusalem": "Israel",
+  "Asia/Seoul": "South Korea", "Asia/Bangkok": "Thailand", "Asia/Jakarta": "Indonesia",
+  "Africa/Cairo": "Egypt", "Africa/Lagos": "Nigeria", "Africa/Johannesburg": "South Africa",
+  "Australia/Sydney": "Australia", "Pacific/Auckland": "New Zealand",
+};
+
+function resolveRegion(timezone?: string): string {
+  if (!timezone) return "";
+  if (TIMEZONE_REGIONS[timezone]) return TIMEZONE_REGIONS[timezone];
+  // Fallback: extract city from timezone name
+  const parts = timezone.split("/");
+  return parts[parts.length - 1].replace(/_/g, " ");
+}
+
+function buildTemporalContext(datetime?: string, timezone?: string): string {
+  if (!datetime) return "";
+  try {
+    const date = new Date(datetime);
+    const region = resolveRegion(timezone);
+    const formatted = date.toLocaleString("en-US", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true,
+      timeZone: timezone || undefined,
+    });
+    return `\nTEMPORAL & GEOGRAPHIC CONTEXT:
+Current date and time for the faithful: ${formatted}${timezone ? ` (${timezone}` : ""}${region ? `, ${region})` : timezone ? ")" : ""}.
+Use this information to:
+- Reference the correct time of day (morning/afternoon/evening/night)
+- Be aware of religious holidays and observances happening today or this week
+- Never hallucinate about the date or time — use ONLY the provided information
+- Adapt greetings and blessings to the time of day\n`;
+  } catch {
+    return "";
+  }
+}
+
 async function fetchUserHistory(userId: string, currentReligion: string, currentPhilosophy: string): Promise<string> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch last 10 messages from OTHER sessions (different affiliation)
     let query = sb
       .from('chat_messages')
       .select('role, content, religion, philosophy, created_at')
@@ -70,7 +115,6 @@ async function fetchUserHistory(userId: string, currentReligion: string, current
       .order('created_at', { ascending: false })
       .limit(10);
 
-    // Exclude current affiliation messages to get cross-session history
     if (currentPhilosophy) {
       query = query.or(`philosophy.neq.${currentPhilosophy},philosophy.is.null`);
     } else if (currentReligion) {
@@ -80,7 +124,6 @@ async function fetchUserHistory(userId: string, currentReligion: string, current
     const { data } = await query;
     if (!data || data.length === 0) return '';
 
-    // Build a concise summary
     const userMessages = data.filter(m => m.role === 'user').slice(0, 5);
     if (userMessages.length === 0) return '';
 
@@ -100,7 +143,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, context, language, userId } = await req.json();
+    const { messages, context, language, userId, datetime, timezone } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -115,26 +158,43 @@ serve(async (req) => {
     const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
     const responseLang = langMap[language] || 'Brazilian Portuguese';
 
-    // Fetch cross-session history if user is authenticated
     let historySection = '';
     if (userId) {
       historySection = await fetchUserHistory(userId, religion, philosophy);
     }
 
+    const temporalContext = buildTemporalContext(datetime, timezone);
+
     let persona: string;
     let sourceInstruction: string;
-    
+    let religionDetection = "";
+
     if (religion && philosophy) {
       persona = `You are the Grand Sacred Priest — a master of words and wise sage who incorporates the wisdom of ${philosophy}. Your sacred knowledge comes from ${sacredText}, enriched by the philosophical teachings of ${philText}.`;
       sourceInstruction = `Stay primarily within the ${religion} tradition but weave in insights from ${philosophy} philosophy. Cite both sacred texts and philosophical works.`;
     } else if (philosophy && !religion) {
       persona = `You are the Grand Master of Life Philosophy — a wise sage who speaks from the heart with the profound wisdom of ${philosophy}. Your knowledge comes exclusively from ${philText}.`;
       sourceInstruction = `Stay strictly within the ${philosophy} philosophical tradition. Cite specific passages, works, and thinkers from ${philText}. You are NOT a religious figure — you are a philosophical guide.`;
+    } else if (religion) {
+      const st = SACRED_TEXTS[religion] || SACRED_TEXTS.christian;
+      persona = `You are the Grand Sacred Priest — a master of words, a wise sage who speaks from the heart and touches the soul. Your sacred knowledge comes exclusively from ${st}. NEVER mix teachings from other religions. Stay strictly within the ${religion} tradition.`;
+      sourceInstruction = `Cite specific passages, verses, or teachings from ${st} naturally woven into your words. Use the sacred language and terminology of the ${religion} tradition.`;
     } else {
-      const rel = religion || "christian";
-      const st = SACRED_TEXTS[rel] || SACRED_TEXTS.christian;
-      persona = `You are the Grand Sacred Priest — a master of words, a wise sage who speaks from the heart and touches the soul. Your sacred knowledge comes exclusively from ${st}. NEVER mix teachings from other religions. Stay strictly within the ${rel} tradition.`;
-      sourceInstruction = `Cite specific passages, verses, or teachings from ${st} naturally woven into your words. Use the sacred language and terminology of the ${rel} tradition.`;
+      // No religion selected — enable auto-detection from user message
+      persona = `You are a wise spiritual guide who draws from universal wisdom across all sacred traditions. You speak from the heart and touch the soul.`;
+      sourceInstruction = `If no specific tradition can be identified, draw from universal spiritual wisdom without favoring any single religion.`;
+      religionDetection = `\nRELIGION DETECTION:
+No specific religion was selected by the user in the settings. If the user mentions their religion in the message (e.g., "sou judeu", "I'm Buddhist", "soy musulmán", "sou espírita", "sou católico"), detect it and respond EXCLUSIVELY from that tradition's sacred texts and terminology. Do NOT default to Christianity. Match the tradition exactly:
+- "judeu/jewish" → Torah, Talmud, Tanakh
+- "católico/catholic" → Bible, Catholic Catechism
+- "protestante/protestant" → Bible (Protestant canon)
+- "muçulmano/muslim/islam" → Quran, Hadith
+- "budista/buddhist" → Tripitaka, Dhammapada, Sutras
+- "hindu" → Vedas, Upanishads, Bhagavad Gita
+- "espírita/spiritist" → Allan Kardec's works
+- "umbandista/umbanda" → Umbanda traditions
+- "candomblé" → Yoruba/Ifá traditions
+If no religion can be detected from the message, respond with universal spiritual wisdom.\n`;
     }
 
     const systemPrompt = `${persona}
@@ -144,6 +204,8 @@ ${needInstruction}
 ${topicInstruction}
 
 ${historySection}
+${temporalContext}
+${religionDetection}
 
 MEMORY & CONTINUITY:
 You have continuous memory of this conversation. The messages include previous interactions from past sessions.
