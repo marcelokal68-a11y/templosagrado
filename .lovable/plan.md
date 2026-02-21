@@ -1,5 +1,3 @@
-
-
 ## Mural Sagrado - Bilhetes de Oracao nos Locais Sagrados do Mundo
 
 ### Visao Geral
@@ -8,21 +6,23 @@ Criar uma experiencia imersiva onde cada religiao tem seu local sagrado virtual 
 
 ### Locais Sagrados por Religiao
 
-| Religiao | Local Sagrado | Descricao Visual |
-|----------|--------------|------------------|
-| Judeu | Muro das Lamentacoes | Parede de pedras antigas com bilhetes de papel entre as frestas |
-| Catolico | Basilica de Sao Pedro | Interior iluminado por velas com bilhetes nos bancos |
-| Protestante | Igreja Reformada | Altar simples de madeira com bilhetes no pulpito |
-| Cristao | Igreja de Cristo | Cruz central com bilhetes ao redor |
-| Mormon | Templo de Salt Lake | Fachada branca com bilhetes dourados |
-| Isla | Kaaba em Meca | Cubo negro rodeado de bilhetes |
-| Budista | Templo Dourado | Arvore Bodhi com bilhetes pendurados |
-| Hindu | Templo de Ganges | Margem do rio com lamparinas e bilhetes |
-| Espirita | Centro Espirita | Sala de passes com bilhetes na mesa |
-| Umbanda | Terreiro | Espaco sagrado com velas e bilhetes |
-| Candomble | Terreiro de Candomble | Arvore sagrada (Iroko) com bilhetes |
-| Agnostico | Universo | Ceu estrelado com bilhetes flutuando |
-| Ecumenico (geral) | Planeta Terra | Globo terrestre com bilhetes de todas as tradicoes |
+
+| Religiao          | Local Sagrado         | Descricao Visual                                                |
+| ----------------- | --------------------- | --------------------------------------------------------------- |
+| Judeu             | Muro das Lamentacoes  | Parede de pedras antigas com bilhetes de papel entre as frestas |
+| Catolico          | Basilica de Sao Pedro | Interior iluminado por velas com bilhetes nos bancos            |
+| Protestante       | Igreja Reformada      | Altar simples de madeira com bilhetes no pulpito                |
+| Cristao           | Igreja de Cristo      | Cruz central com bilhetes ao redor                              |
+| Mormon            | Templo de Salt Lake   | Fachada branca com bilhetes dourados                            |
+| Isla              | Kaaba em Meca         | Cubo negro rodeado de bilhetes                                  |
+| Budista           | Templo Dourado        | Arvore Bodhi com bilhetes pendurados                            |
+| Hindu             | Templo de Ganges      | Margem do rio com lamparinas e bilhetes                         |
+| Espirita          | Centro Espirita       | Sala de passes com bilhetes na mesa                             |
+| Umbanda           | Terreiro              | Espaco sagrado com velas e bilhetes                             |
+| Candomble         | Terreiro de Candomble | Arvore sagrada (Iroko) com bilhetes                             |
+| Agnostico         | Universo              | Ceu estrelado com bilhetes flutuando                            |
+| Ecumenico (geral) | Planeta Terra         | Globo terrestre com bilhetes de todas as tradicoes              |
+
 
 As imagens serao geradas via prompt de IA ou obtidas de bancos de imagens livres (Unsplash), armazenadas como URLs publicas.
 
@@ -37,30 +37,35 @@ Nova rota `/mural` acessivel pela BottomNav e Header. A pagina tera duas abas:
 
 **Tabela `prayer_wall_posts`:**
 
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid PK | Identificador |
-| user_id | uuid NOT NULL | Autor do bilhete |
-| content | text NOT NULL | Texto do bilhete/oracao |
-| religion | text | Religiao associada |
-| philosophy | text | Filosofia associada |
-| is_anonymous | boolean DEFAULT false | Se publicado anonimamente |
-| is_public | boolean DEFAULT false | Se visivel no painel ecumenico |
-| display_name | text | Nome exibido (cache do perfil) |
-| created_at | timestamptz DEFAULT now() | Data de criacao |
+
+| Coluna       | Tipo                      | Descricao                      |
+| ------------ | ------------------------- | ------------------------------ |
+| id           | uuid PK                   | Identificador                  |
+| user_id      | uuid NOT NULL             | Autor do bilhete               |
+| content      | text NOT NULL             | Texto do bilhete/oracao        |
+| religion     | text                      | Religiao associada             |
+| philosophy   | text                      | Filosofia associada            |
+| is_anonymous | boolean DEFAULT false     | Se publicado anonimamente      |
+| is_public    | boolean DEFAULT false     | Se visivel no painel ecumenico |
+| display_name | text                      | Nome exibido (cache do perfil) |
+| created_at   | timestamptz DEFAULT now() | Data de criacao                |
+
 
 **Tabela `prayer_reactions`:**
 
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid PK | Identificador |
-| post_id | uuid FK | Referencia ao post |
-| user_id | uuid NOT NULL | Quem reagiu |
-| reaction_type | text NOT NULL | 'pray' ou 'heart' |
-| created_at | timestamptz DEFAULT now() | Data |
-| UNIQUE(post_id, user_id, reaction_type) | | Uma reacao por tipo por usuario |
+
+| Coluna                                  | Tipo                      | Descricao                       |
+| --------------------------------------- | ------------------------- | ------------------------------- |
+| id                                      | uuid PK                   | Identificador                   |
+| post_id                                 | uuid FK                   | Referencia ao post              |
+| user_id                                 | uuid NOT NULL             | Quem reagiu                     |
+| reaction_type                           | text NOT NULL             | 'pray' ou 'heart'               |
+| created_at                              | timestamptz DEFAULT now() | Data                            |
+| UNIQUE(post_id, user_id, reaction_type) | &nbsp;                    | Uma reacao por tipo por usuario |
+
 
 **Politicas RLS:**
+
 - `prayer_wall_posts` SELECT: usuarios autenticados podem ver seus proprios posts OU posts publicos (`is_public = true`)
 - `prayer_wall_posts` INSERT: apenas assinantes autenticados (`profiles.is_subscriber = true`)
 - `prayer_wall_posts` DELETE: apenas o proprio autor
@@ -72,6 +77,7 @@ Nova rota `/mural` acessivel pela BottomNav e Header. A pagina tera duas abas:
 ### Arquivos a Criar/Modificar
 
 **Novos:**
+
 - `src/pages/Mural.tsx` - Pagina principal com as duas abas
 - `src/components/mural/SacredPlace.tsx` - Componente do local sagrado com imagem de fundo, bilhetes animados sobrepostos e formulario
 - `src/components/mural/EcumenicalWall.tsx` - Painel ecumenico com filtros e lista de todos os bilhetes publicos
@@ -79,6 +85,7 @@ Nova rota `/mural` acessivel pela BottomNav e Header. A pagina tera duas abas:
 - `src/components/mural/NoteForm.tsx` - Formulario para criar novo bilhete com toggles de anonimato e visibilidade publica
 
 **Modificados:**
+
 - `src/App.tsx` - Adicionar rota `/mural`
 - `src/components/BottomNav.tsx` - Adicionar item "Mural" (icone ScrollText ou similar)
 - `src/components/Header.tsx` - Adicionar link "Mural" na nav desktop
@@ -87,6 +94,7 @@ Nova rota `/mural` acessivel pela BottomNav e Header. A pagina tera duas abas:
 ### Design Visual dos Bilhetes
 
 Cada bilhete tera aspecto de papel/pergaminho com:
+
 - Sombra suave e leve rotacao aleatoria (como bilhetes reais colados numa parede)
 - Texto em fonte manuscrita ou serif
 - Icone da religiao no canto
@@ -113,6 +121,7 @@ Cada bilhete tera aspecto de papel/pergaminho com:
 ### Imagens dos Locais Sagrados
 
 Usar imagens de alta qualidade do Unsplash via URL direta. Cada religiao tera uma URL de imagem mapeada num objeto constante. Exemplo:
+
 - Muro das Lamentacoes: foto real do Kotel
 - Kaaba: foto da Grande Mesquita
 - Templo Budista: foto de templo dourado
@@ -126,8 +135,9 @@ As URLs serao hardcoded como constantes no componente SacredPlace.
 2. Aba "Meu Local Sagrado" mostra o local da religiao selecionada (ou pede para selecionar)
 3. Usuario clica em "Depositar bilhete"
 4. Formulario aparece com: textarea, toggle "Anonimo", toggle "Publicar no Encontro Ecumenico"
-5. Ao submeter, bilhete aparece no mural com animacao
-6. Na aba "Encontro Ecumenico", usuario ve bilhetes publicos de todas as religioes
-7. Pode filtrar por religiao especifica
-8. Pode reagir com maozinhas juntas ou coracao
-
+5. Ao submeter, bilhete aparece no mural com animacao. A IA deve ler bilhetes agressivos ou racistas e evitar a publicacao. tudo vai para o painel do admin. cada novo post é notificado ao admin. Se a IA notar abuso, agressividade, discriminacao, racismo, sugere ao admin apagar imediatamente. o usuario deve avisar que pode ser banido do templo Sagrado caso poste mensagens assim. 
+6. Criar canal de denuncia de abusos com motivos em checkbox (assedio, icentivo ao odio, racismo, etc..., outros (abrir campo de texto). 
+7. o acesso ao mural é restrito a usuarios logados
+8. Na aba "Encontro Ecumenico", usuario ve bilhetes publicos de todas as religioes
+9. Pode filtrar por religiao especifica
+10. Pode reagir com maozinhas juntas ou coracao
