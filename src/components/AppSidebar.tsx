@@ -5,6 +5,7 @@ import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Sidebar,
   SidebarContent,
@@ -63,30 +64,46 @@ export default function AppSidebar() {
       <SidebarContent className="flex flex-col justify-center h-full">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {allItems.map(item => {
-                const active = location.pathname === item.to;
-                const label = item.labelKey === 'Admin' ? 'Admin' : t(item.labelKey, language);
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton asChild isActive={active}>
-                      <Link
-                        to={item.to}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                          active
-                            ? "bg-primary/15 text-primary-foreground font-semibold"
-                            : "text-white/80 hover:text-white hover:bg-white/10"
+            <TooltipProvider delayDuration={0}>
+              <SidebarMenu className="space-y-2">
+                {allItems.map(item => {
+                  const active = location.pathname === item.to;
+                  const label = item.labelKey === 'Admin' ? 'Admin' : t(item.labelKey, language);
+                  const linkEl = (
+                    <Link
+                      to={item.to}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                        active
+                          ? "bg-primary/15 text-primary-foreground font-semibold"
+                          : "text-white/80 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      <item.icon className="shrink-0 h-6 w-6" />
+                      {!collapsed && <span className="text-base font-medium">{label}</span>}
+                    </Link>
+                  );
+                  return (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton asChild isActive={active}>
+                        {collapsed ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              {linkEl}
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              {label}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          linkEl
                         )}
-                      >
-                        <item.icon className={cn("shrink-0", collapsed ? "h-6 w-6" : "h-6 w-6")} />
-                        {!collapsed && <span className="text-base font-medium">{label}</span>}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </TooltipProvider>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
