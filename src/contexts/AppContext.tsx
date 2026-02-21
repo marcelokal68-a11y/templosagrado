@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { Language } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -26,6 +26,9 @@ interface AppContextType {
   setMessages: React.Dispatch<React.SetStateAction<Msg[]>>;
   chatInput: string;
   setChatInput: (v: string) => void;
+  clearChatWithUndo: () => void;
+  undoClearChat: () => void;
+  hasPendingUndo: boolean;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -45,13 +48,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     philosophy: '',
   });
 
+  // Undo buffer
+  const [previousMessages, setPreviousMessages] = useState<Msg[]>([]);
+  const [hasPendingUndo, setHasPendingUndo] = useState(false);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearChatWithUndo = useCallback(() => {
+    if (messages.length === 0) return;
+    
+    // Clear any existing undo timer
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+
+    // Save current messages to buffer
+    setPreviousMessages([...messages]);
+    setMessages([]);
+    setChatInput('');
+    setHasPendingUndo(true);
+
+    // Auto-discard buffer after 20 seconds
+    undoTimerRef.current = setTimeout(() => {
+      setPreviousMessages([]);
+      setHasPendingUndo(false);
+      undoTimerRef.current = null;
+    }, 20000);
+  }, [messages]);
+
+  const undoClearChat = useCallback(() => {
+    if (previousMessages.length === 0) return;
+    
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+
+    setMessages(previousMessages);
+    setPreviousMessages([]);
+    setHasPendingUndo(false);
+  }, [previousMessages]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const newUser = session?.user ?? null;
       setUser(newUser);
       setLoading(false);
       if (!newUser) {
-        // Reset on logout
         setChatContext({ religion: '', need: '', mood: '', topic: '', philosophy: '' });
         setQuestionsRemaining(10);
         setMessages([]);
@@ -85,7 +134,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo }}>
       {children}
     </AppContext.Provider>
   );
