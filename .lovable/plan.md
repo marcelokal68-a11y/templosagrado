@@ -1,143 +1,94 @@
-## Mural Sagrado - Bilhetes de Oracao nos Locais Sagrados do Mundo
-
-### Visao Geral
-
-Criar uma experiencia imersiva onde cada religiao tem seu local sagrado virtual representado com imagens tematicas. Os fieis depositam "bilhetes" de oracao nesses locais, podendo escolher se sao privados (so ele ve) ou publicos. Um segundo painel ecumenico reune todos os bilhetes publicos de todas as religioes, com filtros por afiliacao.
-
-### Locais Sagrados por Religiao
 
 
-| Religiao          | Local Sagrado         | Descricao Visual                                                |
-| ----------------- | --------------------- | --------------------------------------------------------------- |
-| Judeu             | Muro das Lamentacoes  | Parede de pedras antigas com bilhetes de papel entre as frestas |
-| Catolico          | Basilica de Sao Pedro | Interior iluminado por velas com bilhetes nos bancos            |
-| Protestante       | Igreja Reformada      | Altar simples de madeira com bilhetes no pulpito                |
-| Cristao           | Igreja de Cristo      | Cruz central com bilhetes ao redor                              |
-| Mormon            | Templo de Salt Lake   | Fachada branca com bilhetes dourados                            |
-| Isla              | Kaaba em Meca         | Cubo negro rodeado de bilhetes                                  |
-| Budista           | Templo Dourado        | Arvore Bodhi com bilhetes pendurados                            |
-| Hindu             | Templo de Ganges      | Margem do rio com lamparinas e bilhetes                         |
-| Espirita          | Centro Espirita       | Sala de passes com bilhetes na mesa                             |
-| Umbanda           | Terreiro              | Espaco sagrado com velas e bilhetes                             |
-| Candomble         | Terreiro de Candomble | Arvore sagrada (Iroko) com bilhetes                             |
-| Agnostico         | Universo              | Ceu estrelado com bilhetes flutuando                            |
-| Ecumenico (geral) | Planeta Terra         | Globo terrestre com bilhetes de todas as tradicoes              |
+## Contexto de Localizacao e Data/Hora no Chat + Deteccao de Religiao
 
+### Problema
 
-As imagens serao geradas via prompt de IA ou obtidas de bancos de imagens livres (Unsplash), armazenadas como URLs publicas.
+1. **Sem data/hora**: O system prompt da IA nao recebe a data/hora atual nem o fuso horario do usuario. A IA pode "alucinar" sobre o momento do dia ou data.
+2. **Sem localizacao**: O app nao sabe onde o usuario esta. Respostas nao podem referenciar contexto local (feriados religiosos locais, horarios de oracao, etc).
+3. **Religiao ignorada na mensagem**: Quando o usuario escreve "sou judeu" mas nao selecionou religiao no painel de contexto, o sistema usa o fallback "christian" (linha 134 do edge function: `const rel = religion || "christian"`), resultando em citacoes da Biblia crista ao inves da Torah/Talmud.
 
-### Estrutura de Navegacao
+### Solucao
 
-Nova rota `/mural` acessivel pela BottomNav e Header. A pagina tera duas abas:
+#### 1. Capturar data/hora e localizacao no frontend
 
-1. **Meu Local Sagrado** - Mural tematico da religiao/filosofia do usuario (baseado no `chatContext.religion` ou selecao local)
-2. **Encontro Ecumenico** - Todos os bilhetes publicos de todas as religioes, com filtros
+**Arquivo**: `src/components/ChatArea.tsx`
 
-### Banco de Dados
+- Ao montar o componente, capturar:
+  - `new Date().toISOString()` para data/hora atual
+  - `Intl.DateTimeFormat().resolvedOptions().timeZone` para fuso horario
+  - `navigator.geolocation.getCurrentPosition()` para latitude/longitude (com fallback gracioso se negado)
+- Usar API de geocodificacao reversa (ou simplesmente enviar timezone que ja contem a regiao) para determinar cidade/pais
+- Armazenar em estado local e enviar junto ao body da requisicao para o edge function
 
-**Tabela `prayer_wall_posts`:**
+**Dados enviados ao edge function**:
+```text
+{
+  ...campos existentes,
+  datetime: "2026-02-21T14:30:00-03:00",
+  timezone: "America/Sao_Paulo",
+  location: { city: "Sao Paulo", country: "Brazil" }  // opcional, via timezone
+}
+```
 
+#### 2. Adicionar contexto temporal e geografico ao system prompt
 
-| Coluna       | Tipo                      | Descricao                      |
-| ------------ | ------------------------- | ------------------------------ |
-| id           | uuid PK                   | Identificador                  |
-| user_id      | uuid NOT NULL             | Autor do bilhete               |
-| content      | text NOT NULL             | Texto do bilhete/oracao        |
-| religion     | text                      | Religiao associada             |
-| philosophy   | text                      | Filosofia associada            |
-| is_anonymous | boolean DEFAULT false     | Se publicado anonimamente      |
-| is_public    | boolean DEFAULT false     | Se visivel no painel ecumenico |
-| display_name | text                      | Nome exibido (cache do perfil) |
-| created_at   | timestamptz DEFAULT now() | Data de criacao                |
+**Arquivo**: `supabase/functions/sacred-chat/index.ts`
 
+- Receber os novos campos `datetime`, `timezone`, `location` do body
+- Construir uma secao `TEMPORAL & GEOGRAPHIC CONTEXT` no system prompt:
 
-**Tabela `prayer_reactions`:**
+```text
+TEMPORAL & GEOGRAPHIC CONTEXT:
+Current date and time for the faithful: Saturday, February 21, 2026, 2:30 PM (America/Sao_Paulo timezone, Brazil).
+Use this information to:
+- Reference the correct time of day (morning/afternoon/evening/night)
+- Be aware of religious holidays and observances happening today or this week
+- Never hallucinate about the date or time — use ONLY the provided information
+- Adapt greetings and blessings to the time of day
+```
 
+- Mapear o timezone para cidade/pais usando um mapa simples de timezones comuns (ex: "America/Sao_Paulo" -> "Brazil", "America/New_York" -> "United States")
 
-| Coluna                                  | Tipo                      | Descricao                       |
-| --------------------------------------- | ------------------------- | ------------------------------- |
-| id                                      | uuid PK                   | Identificador                   |
-| post_id                                 | uuid FK                   | Referencia ao post              |
-| user_id                                 | uuid NOT NULL             | Quem reagiu                     |
-| reaction_type                           | text NOT NULL             | 'pray' ou 'heart'               |
-| created_at                              | timestamptz DEFAULT now() | Data                            |
-| UNIQUE(post_id, user_id, reaction_type) | &nbsp;                    | Uma reacao por tipo por usuario |
+#### 3. Corrigir fallback de religiao quando usuario declara na mensagem
 
+**Arquivo**: `supabase/functions/sacred-chat/index.ts`
 
-**Politicas RLS:**
+- Quando `context.religion` esta vazio, NAO usar fallback "christian"
+- Em vez disso, adicionar instrucao no system prompt para a IA detectar a religiao a partir da mensagem do usuario:
 
-- `prayer_wall_posts` SELECT: usuarios autenticados podem ver seus proprios posts OU posts publicos (`is_public = true`)
-- `prayer_wall_posts` INSERT: apenas assinantes autenticados (`profiles.is_subscriber = true`)
-- `prayer_wall_posts` DELETE: apenas o proprio autor
-- `prayer_reactions` SELECT: todos autenticados
-- `prayer_reactions` INSERT/DELETE: todos autenticados (toggle)
+```text
+RELIGION DETECTION:
+No specific religion was selected by the user in the settings. If the user mentions their religion
+in the message (e.g., "sou judeu", "I'm Buddhist", "soy musulman"), detect it and respond
+EXCLUSIVELY from that tradition's sacred texts. Do NOT default to Christianity.
+If no religion can be detected, respond with universal spiritual wisdom without favoring any tradition.
+```
 
-**Realtime:** Habilitar para `prayer_wall_posts` para novos bilhetes aparecerem em tempo real.
+- Mudar a linha 134 de `const rel = religion || "christian"` para `const rel = religion || ""`
+- Quando `rel` esta vazio, usar um prompt generico multi-tradicao em vez de forcar "christian"
 
-### Arquivos a Criar/Modificar
+### Resumo de alteracoes
 
-**Novos:**
+| Arquivo | Mudanca |
+|---------|---------|
+| `src/components/ChatArea.tsx` | Capturar datetime, timezone; enviar no body da requisicao ao edge function |
+| `supabase/functions/sacred-chat/index.ts` | Receber datetime/timezone; adicionar secao de contexto temporal ao prompt; remover fallback "christian"; adicionar instrucao de deteccao de religiao por mensagem |
 
-- `src/pages/Mural.tsx` - Pagina principal com as duas abas
-- `src/components/mural/SacredPlace.tsx` - Componente do local sagrado com imagem de fundo, bilhetes animados sobrepostos e formulario
-- `src/components/mural/EcumenicalWall.tsx` - Painel ecumenico com filtros e lista de todos os bilhetes publicos
-- `src/components/mural/PrayerNote.tsx` - Componente do bilhete individual (aspecto de papel/pergaminho) com reacoes
-- `src/components/mural/NoteForm.tsx` - Formulario para criar novo bilhete com toggles de anonimato e visibilidade publica
+### Detalhes tecnicos
 
-**Modificados:**
+**Captura de timezone (frontend)**:
+- `Intl.DateTimeFormat().resolvedOptions().timeZone` — funciona em todos os browsers modernos, nao precisa de permissao
+- A data/hora formatada sera gerada no momento do envio da mensagem (nao no mount)
 
-- `src/App.tsx` - Adicionar rota `/mural`
-- `src/components/BottomNav.tsx` - Adicionar item "Mural" (icone ScrollText ou similar)
-- `src/components/Header.tsx` - Adicionar link "Mural" na nav desktop
-- `src/lib/i18n.ts` - Traducoes para pt-BR, en, es
+**Geolocalizacao (frontend)**:
+- Usar `navigator.geolocation.getCurrentPosition()` com timeout de 5s
+- Se o usuario negar permissao, usar apenas o timezone para inferir regiao aproximada
+- Armazenar em ref para nao pedir permissao repetidamente
 
-### Design Visual dos Bilhetes
+**Mapa de timezone para regiao (edge function)**:
+- Mapa simples hardcoded com os timezones mais comuns (America/Sao_Paulo -> Brasil, Europe/London -> UK, etc.)
+- Fallback: extrair continente/cidade do proprio nome do timezone
 
-Cada bilhete tera aspecto de papel/pergaminho com:
-
-- Sombra suave e leve rotacao aleatoria (como bilhetes reais colados numa parede)
-- Texto em fonte manuscrita ou serif
-- Icone da religiao no canto
-- Botoes de reacao (maozinhas juntas e coracao) com contagem
-- Badge "Anonimo" quando aplicavel
-- Data discreta
-
-### Layout do Local Sagrado
-
-- Imagem hero do local sagrado (altura ~200-250px) com overlay gradiente escuro
-- Titulo do local (ex: "Muro das Lamentacoes") sobre a imagem
-- Subtitulo inspirador (ex: "Deposite aqui sua oracao, como fazem os fieis em Jerusalem")
-- Abaixo: grid de bilhetes com rotacao aleatoria leve
-- Botao flutuante "Depositar bilhete" que abre o formulario
-- Nao-assinantes veem um CTA para assinar antes de poder depositar
-
-### Layout do Encontro Ecumenico
-
-- Header com titulo "Encontro Ecumenico" e descricao
-- Barra de filtros com chips de religiao/filosofia (multi-selecao)
-- Grid/lista de bilhetes publicos de todas as tradicoes, com badge da religiao
-- Ordenacao por mais recentes
-
-### Imagens dos Locais Sagrados
-
-Usar imagens de alta qualidade do Unsplash via URL direta. Cada religiao tera uma URL de imagem mapeada num objeto constante. Exemplo:
-
-- Muro das Lamentacoes: foto real do Kotel
-- Kaaba: foto da Grande Mesquita
-- Templo Budista: foto de templo dourado
-- etc.
-
-As URLs serao hardcoded como constantes no componente SacredPlace.
-
-### Fluxo do Usuario
-
-1. Usuario clica em "Mural" na navegacao
-2. Aba "Meu Local Sagrado" mostra o local da religiao selecionada (ou pede para selecionar)
-3. Usuario clica em "Depositar bilhete"
-4. Formulario aparece com: textarea, toggle "Anonimo", toggle "Publicar no Encontro Ecumenico"
-5. Ao submeter, bilhete aparece no mural com animacao. A IA deve ler bilhetes agressivos ou racistas e evitar a publicacao. tudo vai para o painel do admin. cada novo post é notificado ao admin. Se a IA notar abuso, agressividade, discriminacao, racismo, sugere ao admin apagar imediatamente. o usuario deve avisar que pode ser banido do templo Sagrado caso poste mensagens assim. 
-6. Criar canal de denuncia de abusos com motivos em checkbox (assedio, icentivo ao odio, racismo, etc..., outros (abrir campo de texto). 
-7. o acesso ao mural é restrito a usuarios logados
-8. Na aba "Encontro Ecumenico", usuario ve bilhetes publicos de todas as religioes
-9. Pode filtrar por religiao especifica
-10. Pode reagir com maozinhas juntas ou coracao
+**Fallback de religiao (edge function)**:
+- Quando nenhuma religiao selecionada E nenhuma detectada na mensagem, o prompt sera: "You are a wise spiritual guide drawing from universal wisdom across all traditions. Do not favor any single religion."
