@@ -42,12 +42,13 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b glass-strong">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl">🕉️</span>
-          <span className="font-display text-xl font-semibold text-primary">
-            {t('chat.title', language)}
+    <header className="sticky top-0 z-50 border-b glass-strong safe-top">
+      <div className="container flex h-12 md:h-16 items-center justify-between px-3 md:px-4">
+        <Link to="/" className="flex items-center gap-1.5">
+          <span className="text-xl md:text-2xl">🕉️</span>
+          <span className="font-display text-base md:text-xl font-semibold text-primary leading-tight">
+            <span className="hidden sm:inline">{t('chat.title', language)}</span>
+            <span className="sm:hidden">Templo<br/>Sagrado</span>
           </span>
         </Link>
 
@@ -65,7 +66,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-            <SelectTrigger className="w-[120px] h-9 text-xs">
+            <SelectTrigger className="w-[100px] md:w-[120px] h-8 md:h-9 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

@@ -45,32 +45,32 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" />
-        <div className="container relative py-16 md:py-28 flex flex-col items-center text-center gap-6 px-4">
-          <div className="text-6xl md:text-8xl animate-fade-in">🕉️</div>
-          <h1 className="font-display text-4xl md:text-6xl font-bold text-primary leading-tight max-w-3xl animate-fade-in">
+        <div className="container relative py-10 md:py-28 flex flex-col items-center text-center gap-4 md:gap-6 px-4">
+          <div className="text-5xl md:text-8xl animate-fade-in">🕉️</div>
+          <h1 className="font-display text-3xl md:text-6xl font-bold text-primary leading-tight max-w-3xl animate-fade-in">
             {t('landing.hero_title', language)}
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-fade-in">
+          <p className="text-base md:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-fade-in">
             {t('landing.hero_subtitle', language)}
           </p>
-          <p className="text-sm md:text-base text-foreground/70 max-w-xl animate-fade-in">
+          <p className="text-sm text-foreground/70 max-w-xl animate-fade-in">
             {t('landing.hero_desc', language)}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-4 animate-fade-in">
-            <Link to="/">
-              <Button size="lg" className="gap-2 text-base px-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex flex-col sm:flex-row gap-3 mt-2 md:mt-4 animate-fade-in w-full sm:w-auto">
+            <Link to="/" className="w-full sm:w-auto">
+              <Button size="lg" className="gap-2 text-base px-8 shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto">
                 <Sparkles className="h-5 w-5" />
                 {t('landing.try_free', language)}
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button variant="outline" size="lg" className="gap-2 text-base px-8">
+            <Link to="/auth" className="w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="gap-2 text-base px-8 w-full sm:w-auto">
                 {t('landing.sign_in', language)}
               </Button>
             </Link>
-            <Link to="/pricing">
-              <Button variant="secondary" size="lg" className="gap-2 text-base px-8">
+            <Link to="/pricing" className="w-full sm:w-auto">
+              <Button variant="secondary" size="lg" className="gap-2 text-base px-8 w-full sm:w-auto">
                 <ArrowRight className="h-5 w-5" />
                 {t('landing.subscribe', language)}
               </Button>
@@ -85,10 +85,10 @@ export default function Landing() {
           <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto text-center">
             {(['peace_stat1', 'peace_stat2', 'peace_stat3'] as const).map((key) => (
               <div key={key} className="flex flex-col items-center gap-1">
-                <span className="text-3xl md:text-5xl font-display font-bold text-primary">
+                <span className="text-2xl md:text-5xl font-display font-bold text-primary">
                   {t(`landing.${key}`, language)}
                 </span>
-                <span className="text-xs md:text-sm text-muted-foreground font-medium">
+                <span className="text-[10px] md:text-sm text-muted-foreground font-medium leading-tight text-center">
                   {t(`landing.${key}_label`, language)}
                 </span>
               </div>

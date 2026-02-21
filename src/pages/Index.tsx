@@ -40,7 +40,7 @@ export default function Index() {
 
   return (
     <div className="flex flex-1 overflow-hidden">
-      <div className="flex-1 flex flex-col min-w-0 pb-14 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-[56px] md:pb-0">
         <ChatArea ref={chatRef} />
       </div>
 
@@ -50,7 +50,7 @@ export default function Index() {
             <Button
               variant="outline"
               size="icon"
-              className="fixed bottom-36 left-4 z-40 shadow-lg rounded-full h-10 w-10 bg-primary text-primary-foreground border-0"
+              className="fixed bottom-[7.5rem] right-3 z-40 shadow-lg rounded-full h-11 w-11 bg-primary text-primary-foreground border-0"
             >
               <SlidersHorizontal className="h-5 w-5" />
             </Button>

@@ -18,12 +18,13 @@ export default function BottomNav() {
   const { pathname } = useLocation();
   const { language, user } = useApp();
 
-  if (!user) return null;
+  // Show limited nav for anonymous users, full nav for logged-in
+  const visibleItems = user ? items : items.filter(i => ['/', '/pricing'].includes(i.to));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t glass-strong">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t glass-strong safe-bottom">
       <div className="flex items-center justify-around h-14">
-        {items.map(({ to, icon: Icon, labelKey }) => {
+        {visibleItems.map(({ to, icon: Icon, labelKey }) => {
           const active = pathname === to;
           return (
             <Link
