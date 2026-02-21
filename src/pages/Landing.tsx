@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck, Globe, ScrollText, Shield } from 'lucide-react';
 
 const traditions = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -22,6 +22,12 @@ const features = [
   { icon: Heart, titleKey: 'landing.feat_prayer_title', descKey: 'landing.feat_prayer_desc', emoji: '✨' },
   { icon: BookOpen, titleKey: 'landing.feat_verse_title', descKey: 'landing.feat_verse_desc', emoji: '📖' },
   { icon: CheckSquare, titleKey: 'landing.feat_practice_title', descKey: 'landing.feat_practice_desc', emoji: '☀️' },
+];
+
+const muralFeatures = [
+  { icon: ScrollText, titleKey: 'landing.mural_feat1', descKey: 'landing.mural_feat1_desc', emoji: '🕍' },
+  { icon: Globe, titleKey: 'landing.mural_feat2', descKey: 'landing.mural_feat2_desc', emoji: '🌍' },
+  { icon: Shield, titleKey: 'landing.mural_feat3', descKey: 'landing.mural_feat3_desc', emoji: '🛡️' },
 ];
 
 export default function Landing() {
@@ -62,6 +68,24 @@ export default function Landing() {
                 {t('landing.subscribe', language)}
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Peace Stats Banner */}
+      <section className="sacred-gradient-subtle border-y border-border">
+        <div className="container py-10 px-4">
+          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto text-center">
+            {(['peace_stat1', 'peace_stat2', 'peace_stat3'] as const).map((key) => (
+              <div key={key} className="flex flex-col items-center gap-1">
+                <span className="text-3xl md:text-5xl font-display font-bold text-primary">
+                  {t(`landing.${key}`, language)}
+                </span>
+                <span className="text-xs md:text-sm text-muted-foreground font-medium">
+                  {t(`landing.${key}_label`, language)}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -118,6 +142,46 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ✨ Mural Sagrado Highlight */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 sacred-gradient opacity-[0.07] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-primary/5 pointer-events-none" />
+        <div className="container relative py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="text-5xl md:text-6xl animate-fade-in">🕊️</div>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground leading-tight">
+              {t('landing.mural_title', language)}
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              {t('landing.mural_subtitle', language)}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-10">
+              {muralFeatures.map((feat) => (
+                <Card key={feat.titleKey} className="glass group hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                  <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                    <div className="text-3xl group-hover:scale-110 transition-transform">{feat.emoji}</div>
+                    <h3 className="font-display text-base font-semibold text-foreground">
+                      {t(feat.titleKey, language)}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {t(feat.descKey, language)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Link to="/auth" className="inline-block mt-6">
+              <Button size="lg" className="gap-2 text-base px-10 shadow-lg hover:shadow-xl transition-shadow sacred-gradient text-primary-foreground border-0">
+                <Globe className="h-5 w-5" />
+                {t('landing.mural_cta', language)}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Privacy / Confidentiality */}
       <section className="container py-16 px-4">
         <div className="max-w-2xl mx-auto text-center flex flex-col items-center gap-4">
@@ -163,6 +227,24 @@ export default function Landing() {
                 {t(`philosophy.${p}`, language)}
               </Badge>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Peace Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent pointer-events-none" />
+        <div className="container relative py-20 px-4">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+              🕊️ {t('landing.peace_title', language)}
+            </h2>
+            <p className="text-muted-foreground leading-relaxed text-base md:text-lg">
+              {t('landing.peace_desc', language)}
+            </p>
+            <blockquote className="font-display text-xl md:text-2xl italic text-primary/90 font-semibold pt-4">
+              "{t('landing.peace_quote', language)}"
+            </blockquote>
           </div>
         </div>
       </section>
