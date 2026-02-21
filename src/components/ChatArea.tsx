@@ -36,7 +36,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
   return (
     <div className={cn("flex gap-3 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
+        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1 ring-1 ring-primary/30 shadow-[0_0_10px_hsl(38_80%_55%_/_0.15)]">
           <ReligionIcon religion={religion} />
         </div>
       )}
@@ -44,8 +44,8 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
         <div className={cn(
           "rounded-2xl px-4 py-3 text-sm leading-relaxed",
           isUser
-            ? "bg-primary text-primary-foreground rounded-br-md"
-            : "bg-card border border-border rounded-bl-md shadow-sm"
+            ? "sacred-gradient text-primary-foreground rounded-br-md"
+            : "glass sacred-border rounded-bl-md"
         )}>
           <p className="whitespace-pre-wrap">{msg.content}</p>
         </div>
@@ -468,7 +468,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   return (
     <div className="flex flex-col h-full">
       {messages.length > 0 && (
-        <div className="flex justify-between items-center gap-1 p-2 border-b border-border">
+        <div className="flex justify-between items-center gap-1 p-2 border-b border-primary/10">
           <div className="flex items-center gap-1.5">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
             <select
@@ -521,7 +521,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               <button
                 key={i}
                 onClick={() => setChatInput(q)}
-                className="block w-full text-left px-4 py-3 rounded-lg border border-border bg-card hover:bg-primary/5 hover:border-primary/30 transition-all text-sm hover-scale"
+                className="block w-full text-left px-4 py-3 rounded-lg glass sacred-border hover:sacred-glow transition-all text-sm hover-scale"
               >
                 {q}
               </button>
@@ -544,18 +544,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         ))}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex gap-3 justify-start animate-fade-in">
-            <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1 ring-1 ring-primary/30 shadow-[0_0_10px_hsl(38_80%_55%_/_0.15)]">
               <ReligionIcon religion={religion} />
             </div>
-            <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="glass sacred-border rounded-2xl rounded-bl-md px-4 py-3">
               <TypingDots />
             </div>
           </div>
         )}
       </div>
 
-      <div className="border-t border-border">
-        <div className="flex items-center justify-between px-4 py-1.5 bg-muted/30">
+      <div className="border-t border-primary/10">
+        <div className="flex items-center justify-between px-4 py-1.5 bg-secondary/30">
           <Badge
             variant="outline"
             className={cn(
@@ -607,7 +607,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           >
             {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
-          <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0 h-11 w-11 md:h-10 md:w-10">
+          <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0 h-11 w-11 md:h-10 md:w-10 sacred-gradient text-primary-foreground border-0">
             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </Button>
         </div>

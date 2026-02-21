@@ -118,8 +118,8 @@ export default function Verse() {
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                 selectedReligion === r
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+                  ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
+                  : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
               )}
             >
               {t(`religion.${r}`, language)}
@@ -136,7 +136,7 @@ export default function Verse() {
             </CardContent>
           </Card>
         ) : content ? (
-          <Card className="border-primary/20">
+          <Card className="glass sacred-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function Verse() {
               <p className="text-sm text-foreground leading-relaxed">{content.explanation}</p>
 
               {content.reflection && (
-                <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                <div className="bg-primary/8 rounded-lg p-3 border border-primary/15">
                   <p className="text-sm text-foreground italic">✨ {content.reflection}</p>
                 </div>
               )}

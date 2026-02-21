@@ -203,11 +203,11 @@ export default function Practice() {
           <button
             key={r}
             onClick={() => { setReligion(religion === r ? '' : r); setPhilosophy(''); setChecked({}); }}
-            className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-              religion === r
-                ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                : "bg-secondary text-secondary-foreground border-border hover:bg-amber-500/10 hover:border-amber-500/30"
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                religion === r
+                  ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
+                  : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
             )}
           >
             {t(`religion.${r}`, language)}
@@ -230,8 +230,8 @@ export default function Practice() {
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                 philosophy === p
-                  ? "bg-violet-500 text-white border-violet-500 shadow-sm"
-                  : "bg-secondary text-secondary-foreground border-border hover:bg-violet-500/10 hover:border-violet-500/30"
+                  ? "bg-accent text-accent-foreground border-accent/50 shadow-sm"
+                  : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-accent/10 hover:border-accent/30"
               )}
             >
               {t(`philosophy.${p}`, language)}
@@ -298,7 +298,7 @@ export default function Practice() {
 
       {/* Daily sacred content */}
       {(religion || philosophy) && (
-        <Card className="border-primary/20">
+        <Card className="glass sacred-border">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -345,7 +345,7 @@ export default function Practice() {
                   )}
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">{dailyContent.explanation}</p>
-                <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                <div className="bg-primary/8 rounded-lg p-3 border border-primary/15">
                   <p className="text-sm text-foreground italic">✨ {dailyContent.reflection}</p>
                 </div>
 

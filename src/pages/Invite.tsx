@@ -126,7 +126,7 @@ export default function Invite() {
         </div>
 
         {/* How it works */}
-        <Card>
+         <Card className="glass sacred-border">
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -150,7 +150,7 @@ export default function Invite() {
         </Card>
 
         {/* Invite Link */}
-        <Card className="border-primary/30">
+        <Card className="glass sacred-border sacred-glow">
           <CardHeader>
             <CardTitle className="font-display text-lg flex items-center gap-2">
               <Gift className="h-5 w-5 text-primary" />
@@ -170,7 +170,7 @@ export default function Invite() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button onClick={shareLink} className="flex-1 gap-2">
+                  <Button onClick={shareLink} className="flex-1 gap-2 sacred-gradient text-primary-foreground border-0">
                     <Share2 className="h-4 w-4" />
                     {t('invite.share', language)}
                   </Button>
@@ -184,7 +184,7 @@ export default function Invite() {
         </Card>
 
         {/* Stats */}
-        <Card>
+        <Card className="glass sacred-border">
           <CardContent className="p-6 flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
               <Users className="h-6 w-6 text-primary" />

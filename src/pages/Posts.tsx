@@ -114,8 +114,8 @@ export default function Posts() {
                 className={cn(
                   "w-full text-left px-3 py-2.5 rounded-lg border text-sm transition-all",
                   selectedMsg === msg.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-card hover:border-primary/30"
+                    ? "border-primary/40 bg-primary/10 sacred-glow"
+                    : "border-primary/10 glass hover:border-primary/30"
                 )}
               >
                 <p className="line-clamp-2">{msg.content}</p>
@@ -137,8 +137,8 @@ export default function Posts() {
                 className={cn(
                   "flex items-center gap-2 px-3 py-2.5 rounded-lg border cursor-pointer transition-all",
                   selectedNetworks.includes(net.id)
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-card hover:border-primary/30"
+                    ? "border-primary/40 bg-primary/10 sacred-glow"
+                    : "border-primary/10 glass hover:border-primary/30"
                 )}
               >
                 <Checkbox
@@ -167,7 +167,7 @@ export default function Posts() {
           {posts.map((post, i) => {
             const net = NETWORKS.find(n => n.id === post.network);
             return (
-              <div key={i} className="bg-card border border-border rounded-lg p-4 space-y-2">
+              <div key={i} className="glass sacred-border rounded-lg p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{net?.icon} {net?.label}</span>
                   <Button variant="ghost" size="sm" onClick={() => copyPost(post.content, i)} className="gap-1.5">

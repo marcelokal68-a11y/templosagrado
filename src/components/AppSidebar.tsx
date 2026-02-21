@@ -59,7 +59,7 @@ export default function AppSidebar() {
 
   return (
     <Sidebar
-      className={cn("hidden md:flex border-r transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-52")}
+      className={cn("hidden md:flex border-r border-primary/10 transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-52")}
       collapsible="icon"
     >
       <SidebarContent className="flex flex-col justify-center h-full">
@@ -74,13 +74,13 @@ export default function AppSidebar() {
                     <Link
                       to={item.to}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
                         active
-                          ? "bg-primary/15 text-primary-foreground font-semibold"
-                          : "text-white/80 hover:text-white hover:bg-white/10"
+                          ? "bg-primary/15 text-primary font-semibold sacred-glow"
+                          : "text-foreground/60 hover:text-primary hover:bg-primary/5"
                       )}
                     >
-                      <item.icon className="shrink-0 h-6 w-6" />
+                      <item.icon className={cn("shrink-0 h-6 w-6", active && "drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]")} />
                       {!collapsed && <span className="text-base font-medium">{label}</span>}
                     </Link>
                   );

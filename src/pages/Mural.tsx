@@ -56,7 +56,7 @@ export default function Mural() {
       <ReligionPicker open={showPicker} onSelected={handleReligionPicked} />
 
       <Tabs defaultValue="sacred" className="space-y-6">
-        <TabsList className="w-full grid grid-cols-2">
+        <TabsList className="w-full grid grid-cols-2 bg-secondary border border-primary/10">
           <TabsTrigger value="sacred" className="gap-1.5">
             <ScrollText className="h-4 w-4" />
             {labels.myPlace}
