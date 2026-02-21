@@ -4,70 +4,38 @@ import { t, Language, languageNames } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, LogIn, LogOut, Menu, X, Shield, Feather, ScrollText } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { LogIn, LogOut, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 export default function Header() {
   const { language, setLanguage, user } = useApp();
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const resp = await supabase.functions.invoke('admin', {
-        body: { action: 'check-role' },
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-      });
-      setIsAdmin(resp.data?.isAdmin ?? false);
-    })();
-  }, [user]);
+  const { toggleSidebar, state } = useSidebar();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/landing');
   };
 
-  const navItems = [
-    { to: '/', label: t('nav.chat', language), icon: MessageCircle },
-    { to: '/pricing', label: t('nav.pricing', language), icon: DollarSign },
-    { to: '/posts', label: t('nav.posts', language), icon: Feather },
-    { to: '/prayers', label: t('nav.prayers', language), icon: Heart },
-    { to: '/verse', label: t('nav.verse', language), icon: BookOpen },
-    { to: '/practice', label: t('nav.practice', language), icon: CheckSquare },
-    { to: '/mural', label: t('nav.mural', language), icon: ScrollText },
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: Shield }] : []),
-  ];
-
   return (
     <header className="sticky top-0 z-50 border-b glass-strong safe-top">
-      <div className="container flex h-12 md:h-16 items-center justify-between px-3 md:px-4">
-        <Link to="/" className="flex items-center gap-1.5">
-          <span className="text-xl md:text-2xl">🕉️</span>
-          <span className="font-display text-base md:text-xl font-semibold text-primary leading-tight">
-            <span className="hidden sm:inline">{t('chat.title', language)}</span>
-            <span className="sm:hidden">Templo<br/>Sagrado</span>
-          </span>
-        </Link>
-
-        {/* Desktop nav — scrollable to prevent overflow */}
-        <nav className="hidden md:flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-shrink min-w-0">
-          {navItems.map(item => (
-            <Link key={item.to} to={item.to} className="flex-shrink-0">
-              <Button variant="ghost" size="sm" className="gap-1 text-xs px-2 lg:px-3 lg:text-sm">
-                <item.icon className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">{item.label}</span>
-                <span className="lg:hidden">{item.label.split(' ')[0]}</span>
-              </Button>
-            </Link>
-          ))}
-        </nav>
+      <div className="flex h-12 md:h-14 items-center justify-between px-3 md:px-4">
+        <div className="flex items-center gap-2">
+          {/* Sidebar toggle - desktop only */}
+          <Button variant="ghost" size="icon" className="hidden md:flex h-8 w-8" onClick={toggleSidebar}>
+            {state === 'collapsed' ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </Button>
+          <Link to="/" className="flex items-center gap-1.5">
+            <span className="text-xl md:text-2xl">🕉️</span>
+            <span className="font-display text-base md:text-lg font-semibold text-primary leading-tight">
+              {t('chat.title', language)}
+            </span>
+          </Link>
+        </div>
 
         <div className="flex items-center gap-2">
           <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-            <SelectTrigger className="w-[100px] md:w-[120px] h-8 md:h-9 text-xs">
+            <SelectTrigger className="w-[100px] md:w-[120px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -79,55 +47,24 @@ export default function Header() {
 
           {user ? (
             <div className="hidden md:flex items-center gap-2">
-              <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+              <span className="text-xs text-muted-foreground truncate max-w-[150px]">
                 {user.email}
               </span>
-              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5">
-                <LogOut className="h-4 w-4" />
+              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 h-8">
+                <LogOut className="h-3.5 w-3.5" />
                 {t('nav.logout', language)}
               </Button>
             </div>
           ) : (
             <Link to="/auth">
-              <Button size="sm" className="hidden md:flex gap-1.5">
-                <LogIn className="h-4 w-4" />
+              <Button size="sm" className="hidden md:flex gap-1.5 h-8">
+                <LogIn className="h-3.5 w-3.5" />
                 {t('nav.login', language)}
               </Button>
             </Link>
           )}
-
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X /> : <Menu />}
-          </Button>
         </div>
       </div>
-
-      {/* Mobile menu - login/logout only */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background p-4 space-y-2">
-          {isAdmin && (
-            <Link to="/admin" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <Shield className="h-4 w-4" />
-                Admin
-              </Button>
-            </Link>
-          )}
-          {user ? (
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => { handleLogout(); setMobileOpen(false); }}>
-              <LogOut className="h-4 w-4" />
-              {t('nav.logout', language)}
-            </Button>
-          ) : (
-            <Link to="/auth" onClick={() => setMobileOpen(false)}>
-              <Button className="w-full justify-start gap-2">
-                <LogIn className="h-4 w-4" />
-                {t('nav.login', language)}
-              </Button>
-            </Link>
-          )}
-        </div>
-      )}
     </header>
   );
 }

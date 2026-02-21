@@ -1,31 +1,49 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, RefreshCw, Loader2 } from 'lucide-react';
+import { BookOpen, RefreshCw, Loader2, Sparkles, BookMarked, GraduationCap, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
 
+interface VerseContent {
+  title: string;
+  reference: string;
+  explanation: string;
+  reflection: string;
+  sources?: string;
+  scholarly_note?: string;
+}
+
 export default function Verse() {
   const { language, chatContext } = useApp();
   const [selectedReligion, setSelectedReligion] = useState(chatContext.religion || 'christian');
-  const [verse, setVerse] = useState('');
+  const [content, setContent] = useState<VerseContent | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loadingAudio, setLoadingAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchVerse = async (religion?: string) => {
     setLoading(true);
+    setContent(null);
     try {
       const { data, error } = await supabase.functions.invoke('verse-of-day', {
         body: { religion: religion || selectedReligion || 'christian', language },
       });
       if (error) throw error;
-      setVerse(data?.verse || 'No verse available');
+      if (data?.title || data?.explanation) {
+        setContent(data);
+      } else if (data?.verse) {
+        // Legacy fallback
+        setContent({ title: '', reference: '', explanation: data.verse, reflection: '', sources: '', scholarly_note: '' });
+      }
     } catch (err) {
       console.error(err);
-      setVerse('Could not fetch verse. Please try again.');
+      setContent({ title: '', reference: '', explanation: t('verse.loading', language), reflection: '', sources: '', scholarly_note: '' });
     } finally {
       setLoading(false);
     }
@@ -33,56 +51,139 @@ export default function Verse() {
 
   useEffect(() => { fetchVerse(); }, []);
 
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    };
+  }, []);
+
   const handleReligionChange = (r: string) => {
     setSelectedReligion(r);
     fetchVerse(r);
   };
 
-  return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center">
-          <BookOpen className="h-10 w-10 text-primary mx-auto mb-2" />
-          <CardTitle className="font-display text-2xl">{t('verse.title', language)}</CardTitle>
-          <CardDescription>{t('verse.subtitle', language)}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Religion selector */}
-          <div className="flex flex-wrap gap-1.5 justify-center">
-            {religions.map(r => (
-              <button
-                key={r}
-                onClick={() => handleReligionChange(r)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                  selectedReligion === r
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
-                )}
-              >
-                {t(`religion.${r}`, language)}
-              </button>
-            ))}
-          </div>
+  const handleNarrate = async () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+      return;
+    }
+    if (!content) return;
+    const text = `${content.title}. ${content.explanation}. ${content.reflection}`;
+    setLoadingAudio(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text, speed: 1.15 }),
+        }
+      );
+      if (!response.ok) throw new Error('TTS failed');
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      audio.onended = () => { setIsPlaying(false); audioRef.current = null; };
+      await audio.play();
+      setIsPlaying(true);
+    } catch (e) {
+      console.error('TTS error:', e);
+    } finally {
+      setLoadingAudio(false);
+    }
+  };
 
-          {loading ? (
-            <div className="py-8 flex flex-col items-center gap-3">
+  return (
+    <div className="flex-1 flex items-start justify-center p-4 pb-24">
+      <div className="w-full max-w-2xl space-y-4">
+        <div className="text-center space-y-1">
+          <BookOpen className="h-10 w-10 text-primary mx-auto" />
+          <h1 className="font-display text-2xl font-bold">{t('verse.title', language)}</h1>
+          <p className="text-sm text-muted-foreground">{t('verse.subtitle', language)}</p>
+        </div>
+
+        {/* Religion selector */}
+        <div className="flex flex-wrap gap-1.5 justify-center">
+          {religions.map(r => (
+            <button
+              key={r}
+              onClick={() => handleReligionChange(r)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                selectedReligion === r
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+              )}
+            >
+              {t(`religion.${r}`, language)}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        {loading ? (
+          <Card>
+            <CardContent className="py-8 flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">{t('verse.loading', language)}</p>
-            </div>
-          ) : (
-            <blockquote className="text-lg font-body italic leading-relaxed border-l-4 border-primary pl-4 text-left">
-              {verse}
-            </blockquote>
-          )}
-          <div className="text-center">
-            <Button variant="outline" onClick={() => fetchVerse()} disabled={loading} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              {t('verse.refresh', language)}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        ) : content ? (
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  {content.title || t('verse.title', language)}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={handleNarrate} disabled={loadingAudio} className="flex items-center gap-1.5">
+                    {loadingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    <span className="text-xs">{isPlaying ? t('practice.stop', language) : t('practice.listen', language)}</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => fetchVerse()} className="gap-1.5">
+                    <RefreshCw className="h-4 w-4" />
+                    <span className="text-xs hidden sm:inline">{t('verse.refresh', language)}</span>
+                  </Button>
+                </div>
+              </div>
+              {content.reference && (
+                <p className="text-xs text-muted-foreground mt-1">{content.reference}</p>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-foreground leading-relaxed">{content.explanation}</p>
+
+              {content.reflection && (
+                <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                  <p className="text-sm text-foreground italic">✨ {content.reflection}</p>
+                </div>
+              )}
+
+              {content.sources && (
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <BookMarked className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <p><span className="font-medium">{t('practice.sources', language)}:</span> {content.sources}</p>
+                </div>
+              )}
+
+              {content.scholarly_note && (
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <GraduationCap className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <p><span className="font-medium">{t('practice.scholarly_note', language)}:</span> {content.scholarly_note}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
     </div>
   );
 }
