@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck, Globe, ScrollText, Shield } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck, Globe, ScrollText, Shield, Quote } from 'lucide-react';
 
 const traditions = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -28,6 +28,13 @@ const muralFeatures = [
   { icon: ScrollText, titleKey: 'landing.mural_feat1', descKey: 'landing.mural_feat1_desc', emoji: '🕍' },
   { icon: Globe, titleKey: 'landing.mural_feat2', descKey: 'landing.mural_feat2_desc', emoji: '🌍' },
   { icon: Shield, titleKey: 'landing.mural_feat3', descKey: 'landing.mural_feat3_desc', emoji: '🛡️' },
+];
+
+const testimonials = [
+  { textKey: 'landing.testimonial1_text', authorKey: 'landing.testimonial1_author', traditionKey: 'landing.testimonial1_tradition', emoji: '✝️' },
+  { textKey: 'landing.testimonial2_text', authorKey: 'landing.testimonial2_author', traditionKey: 'landing.testimonial2_tradition', emoji: '☸️' },
+  { textKey: 'landing.testimonial3_text', authorKey: 'landing.testimonial3_author', traditionKey: 'landing.testimonial3_tradition', emoji: '☪️' },
+  { textKey: 'landing.testimonial4_text', authorKey: 'landing.testimonial4_author', traditionKey: 'landing.testimonial4_tradition', emoji: '🏛️' },
 ];
 
 export default function Landing() {
@@ -197,6 +204,40 @@ export default function Landing() {
           <p className="text-sm text-primary/80 italic font-medium">
             {t('landing.privacy_note', language)}
           </p>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+        <div className="container relative py-16 px-4">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3">
+              {t('landing.testimonials_title', language)}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              {t('landing.testimonials_subtitle', language)}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {testimonials.map((item) => (
+              <Card key={item.authorKey} className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 relative">
+                <CardContent className="p-6 flex flex-col gap-4">
+                  <Quote className="h-6 w-6 text-primary/30" />
+                  <p className="text-sm text-muted-foreground leading-relaxed italic flex-1">
+                    "{t(item.textKey, language)}"
+                  </p>
+                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                    <span className="text-2xl">{item.emoji}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{t(item.authorKey, language)}</p>
+                      <p className="text-xs text-primary font-medium">{t(item.traditionKey, language)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
