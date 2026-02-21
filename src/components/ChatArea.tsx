@@ -524,7 +524,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         </div>
       )}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 mobile-scroll">
         {messages.map((msg, i) => (
           <MessageBubble
             key={i}
@@ -583,13 +583,13 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             </Link>
           )}
         </div>
-        <div className="flex gap-2 p-4 pt-3">
+        <div className="flex gap-2 p-3 md:p-4 pt-2 md:pt-3">
           <Textarea
             value={chatInput}
             onChange={e => setChatInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('chat.placeholder', language)}
-            className="min-h-[44px] max-h-[120px] resize-none"
+            className="min-h-[44px] max-h-[100px] md:max-h-[120px] resize-none text-base"
             rows={1}
           />
           <Button
@@ -597,12 +597,12 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             disabled={isTranscribing}
             size="icon"
             variant={isRecording ? "destructive" : "outline"}
-            className={cn("shrink-0", isRecording && "animate-pulse")}
+            className={cn("shrink-0 h-11 w-11 md:h-10 md:w-10", isRecording && "animate-pulse")}
           >
-            {isTranscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
-          <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0">
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0 h-11 w-11 md:h-10 md:w-10">
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </Button>
         </div>
       </div>
