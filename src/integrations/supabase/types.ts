@@ -292,6 +292,7 @@ export type Database = {
           questions_limit: number
           questions_used: number
           subscription_id: string | null
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
@@ -305,6 +306,7 @@ export type Database = {
           questions_limit?: number
           questions_used?: number
           subscription_id?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -318,6 +320,7 @@ export type Database = {
           questions_limit?: number
           questions_used?: number
           subscription_id?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
         }

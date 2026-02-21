@@ -15,6 +15,7 @@ import Verse from "./pages/Verse";
 import Practice from "./pages/Practice";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
+import Invite from "./pages/Invite";
 import Posts from "./pages/Posts";
 import Mural from "./pages/Mural";
 import Landing from "./pages/Landing";
@@ -49,6 +50,7 @@ const App = () => (
                     <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
                     <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

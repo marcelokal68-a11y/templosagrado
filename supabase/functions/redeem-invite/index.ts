@@ -55,10 +55,18 @@ serve(async (req) => {
       .single();
     if (existing) throw new Error("You have already used this invite");
 
-    // Redeem: update profile questions_limit
+    // Calculate trial end (7 days from now)
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+
+    // Redeem: activate 7-day premium trial
     await supabase
       .from("profiles")
-      .update({ questions_limit: invite.questions_limit })
+      .update({
+        questions_limit: invite.questions_limit,
+        is_subscriber: true,
+        trial_ends_at: trialEndsAt.toISOString(),
+      })
       .eq("user_id", user.id);
 
     // Record redemption
@@ -73,7 +81,11 @@ serve(async (req) => {
       .update({ times_used: invite.times_used + 1 })
       .eq("id", invite.id);
 
-    return new Response(JSON.stringify({ success: true, questions_limit: invite.questions_limit }), {
+    return new Response(JSON.stringify({
+      success: true,
+      questions_limit: invite.questions_limit,
+      trial_ends_at: trialEndsAt.toISOString(),
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
