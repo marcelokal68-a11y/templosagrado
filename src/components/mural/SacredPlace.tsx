@@ -6,37 +6,37 @@ import { getSacredPlace } from './sacredPlaces';
 import PrayerNote from './PrayerNote';
 import NoteForm from './NoteForm';
 import { Button } from '@/components/ui/button';
-import { Plus, Lock } from 'lucide-react';
+import { Plus, Lock, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0.5', '-rotate-0.5', 'rotate-0'];
 
-export default function SacredPlace({ religion, philosophy }: { religion: string; philosophy: string }) {
+interface SacredPlaceProps {
+  selectedReligion: string;
+  userReligion: string;
+}
+
+export default function SacredPlace({ selectedReligion, userReligion }: SacredPlaceProps) {
   const { language, user } = useApp();
   const [posts, setPosts] = useState<any[]>([]);
   const [reactions, setReactions] = useState<Record<string, { pray: number; heart: number; userPray: boolean; userHeart: boolean }>>({});
   const [showForm, setShowForm] = useState(false);
   const [isSubscriber, setIsSubscriber] = useState(false);
 
-  const affiliation = religion || philosophy || 'agnostic';
-  const place = getSacredPlace(affiliation);
+  const canPost = selectedReligion === userReligion;
+  const place = getSacredPlace(selectedReligion);
 
   const fetchPosts = useCallback(async () => {
     if (!user) return;
-    const aff = religion || philosophy;
-    let query = supabase
+    const { data } = await supabase
       .from('prayer_wall_posts')
       .select('*')
+      .eq('religion', selectedReligion)
       .order('created_at', { ascending: false })
       .limit(50);
 
-    if (religion) query = query.eq('religion', religion);
-    else if (philosophy) query = query.eq('philosophy', philosophy);
-
-    const { data } = await query;
     setPosts(data || []);
 
-    // Fetch reactions
     if (data && data.length > 0) {
       const postIds = data.map(p => p.id);
       const { data: rxns } = await supabase
@@ -56,11 +56,9 @@ export default function SacredPlace({ religion, philosophy }: { religion: string
       }
       setReactions(map);
     }
-  }, [user, religion, philosophy]);
+  }, [user, selectedReligion]);
 
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   useEffect(() => {
     if (!user) return;
@@ -98,6 +96,18 @@ export default function SacredPlace({ religion, philosophy }: { religion: string
     fetchPosts();
   };
 
+  const viewOnlyLabel = language === 'en'
+    ? 'You are visiting this temple. You can only post in your own tradition.'
+    : language === 'es'
+      ? 'Estás visitando este templo. Solo puedes publicar en tu propia tradición.'
+      : 'Você está visitando este templo. Só pode postar na sua própria tradição.';
+
+  const banWarning = language === 'en'
+    ? '⚠️ Offensive, racist, or hateful messages may result in a ban from the Sacred Temple.'
+    : language === 'es'
+      ? '⚠️ Mensajes ofensivos, racistas o de odio pueden resultar en un baneo del Templo Sagrado.'
+      : '⚠️ Mensagens ofensivas, racistas ou de ódio podem resultar em banimento do Templo Sagrado.';
+
   return (
     <div className="space-y-0">
       {/* Hero image */}
@@ -119,36 +129,43 @@ export default function SacredPlace({ religion, philosophy }: { religion: string
         </div>
       </div>
 
-      {/* Form toggle */}
-      {isSubscriber ? (
-        <div className="mb-6">
-          {showForm ? (
-            <div className="space-y-3">
-              <NoteForm
-                religion={religion || undefined}
-                philosophy={philosophy || undefined}
-                onCreated={() => { setShowForm(false); fetchPosts(); }}
-              />
-              <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} className="w-full">
-                {language === 'en' ? 'Cancel' : language === 'es' ? 'Cancelar' : 'Cancelar'}
+      {/* Post controls */}
+      {canPost ? (
+        isSubscriber ? (
+          <div className="mb-6">
+            {showForm ? (
+              <div className="space-y-3">
+                <p className="text-[10px] text-muted-foreground text-center">{banWarning}</p>
+                <NoteForm
+                  religion={selectedReligion}
+                  onCreated={() => { setShowForm(false); fetchPosts(); }}
+                />
+                <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} className="w-full">
+                  {language === 'en' ? 'Cancel' : 'Cancelar'}
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={() => setShowForm(true)} className="w-full gap-2">
+                <Plus className="h-4 w-4" />
+                {language === 'en' ? 'Place a note' : language === 'es' ? 'Depositar nota' : 'Depositar bilhete'}
               </Button>
-            </div>
-          ) : (
-            <Button onClick={() => setShowForm(true)} className="w-full gap-2">
-              <Plus className="h-4 w-4" />
-              {language === 'en' ? 'Place a note' : language === 'es' ? 'Depositar nota' : 'Depositar bilhete'}
-            </Button>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="mb-6 bg-muted/50 rounded-lg p-4 text-center space-y-2">
+            <Lock className="h-5 w-5 mx-auto text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              {language === 'en' ? 'Subscribe to place prayer notes' : language === 'es' ? 'Suscríbete para depositar notas' : 'Assine para depositar bilhetes de oração'}
+            </p>
+            <Link to="/pricing">
+              <Button size="sm" variant="outline">{t('chat.upgrade', language)}</Button>
+            </Link>
+          </div>
+        )
       ) : (
-        <div className="mb-6 bg-muted/50 rounded-lg p-4 text-center space-y-2">
-          <Lock className="h-5 w-5 mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            {language === 'en' ? 'Subscribe to place prayer notes' : language === 'es' ? 'Suscríbete para depositar notas' : 'Assine para depositar bilhetes de oração'}
-          </p>
-          <Link to="/pricing">
-            <Button size="sm" variant="outline">{t('chat.upgrade', language)}</Button>
-          </Link>
+        <div className="mb-6 bg-muted/50 rounded-lg p-4 text-center space-y-1">
+          <Eye className="h-5 w-5 mx-auto text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{viewOnlyLabel}</p>
         </div>
       )}
 
@@ -165,7 +182,7 @@ export default function SacredPlace({ religion, philosophy }: { religion: string
               post={post}
               reactions={reactions[post.id] || { pray: 0, heart: 0, userPray: false, userHeart: false }}
               onReact={handleReact}
-              onDelete={() => handleDelete(post.id)}
+              onDelete={post.user_id === user?.id ? () => handleDelete(post.id) : undefined}
               rotationClass={ROTATIONS[i % ROTATIONS.length]}
             />
           ))}

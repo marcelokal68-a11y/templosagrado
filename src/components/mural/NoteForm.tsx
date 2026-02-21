@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Send, Eye, EyeOff, Globe } from 'lucide-react';
 import { toast } from 'sonner';
+import { containsProfanity } from '@/lib/profanityFilter';
 
 interface NoteFormProps {
   religion?: string;
@@ -24,9 +24,21 @@ export default function NoteForm({ religion, philosophy, onCreated }: NoteFormPr
 
   const handleSubmit = async () => {
     if (!content.trim() || !user) return;
+
+    // Profanity check
+    if (containsProfanity(content)) {
+      toast.error(
+        language === 'en'
+          ? 'Your message contains inappropriate language. Please revise it before posting.'
+          : language === 'es'
+            ? 'Tu mensaje contiene lenguaje inapropiado. Por favor revísalo antes de publicar.'
+            : 'Sua mensagem contém linguagem inapropriada. Por favor, revise antes de publicar.'
+      );
+      return;
+    }
+
     setLoading(true);
 
-    // Get display name from profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('display_name')
