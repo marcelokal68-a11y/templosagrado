@@ -1,94 +1,89 @@
+# Plano: Navegacao Lateral + Versiculo Personalizado por Religiao
 
+## Problemas Identificados
 
-## Contexto de Localizacao e Data/Hora no Chat + Deteccao de Religiao
+1. **Email sobrepondo as abas no header** - O email do usuario logado empurra/sobrepoe os botoes de navegacao no desktop
+2. **Navegacao horizontal dificulta a navegabilidade** - Muitas abas no header causam overflow
+3. **Versiculo do Dia generico** - O edge function `verse-of-day` usa um prompt simples que nao diferencia por religiao (ex: para judeus deveria ser a Parasha com Talmud/Mishna/Guemara, como ja feito no `daily-practice`)
+4. **Duplicidade de codigo** - O `verse-of-day` reimplementa logica que ja existe no `daily-practice` (que ja tem prompts detalhados por religiao)
 
-### Problema
+## Solucao
 
-1. **Sem data/hora**: O system prompt da IA nao recebe a data/hora atual nem o fuso horario do usuario. A IA pode "alucinar" sobre o momento do dia ou data.
-2. **Sem localizacao**: O app nao sabe onde o usuario esta. Respostas nao podem referenciar contexto local (feriados religiosos locais, horarios de oracao, etc).
-3. **Religiao ignorada na mensagem**: Quando o usuario escreve "sou judeu" mas nao selecionou religiao no painel de contexto, o sistema usa o fallback "christian" (linha 134 do edge function: `const rel = religion || "christian"`), resultando em citacoes da Biblia crista ao inves da Torah/Talmud.
+### 1. Sidebar Lateral para Navegacao (Desktop)
 
-### Solucao
+Mover a navegacao do header para uma sidebar lateral no desktop, eliminando o problema de overflow e do email sobrepondo as abas.
 
-#### 1. Capturar data/hora e localizacao no frontend
+- **Header simplificado**: Apenas logo + seletor de idioma + email/logout (sem abas)
+- **Sidebar lateral esquerda**: Com icones e labels das abas (Chat, Precos, Post, Oracoes, Versiculo, Praticando, Mural)
+- Sidebar colapsavel (icones apenas quando fechada, icones + labels quando aberta)
+- **Mobile**: Mantem o BottomNav atual (sem mudanca)
 
-**Arquivo**: `src/components/ChatArea.tsx`
+### 2. Versiculo do Dia: Reutilizar Prompts do `daily-practice`
 
-- Ao montar o componente, capturar:
-  - `new Date().toISOString()` para data/hora atual
-  - `Intl.DateTimeFormat().resolvedOptions().timeZone` para fuso horario
-  - `navigator.geolocation.getCurrentPosition()` para latitude/longitude (com fallback gracioso se negado)
-- Usar API de geocodificacao reversa (ou simplesmente enviar timezone que ja contem a regiao) para determinar cidade/pais
-- Armazenar em estado local e enviar junto ao body da requisicao para o edge function
+Em vez de manter dois edge functions com prompts duplicados, o `verse-of-day` sera reescrito para usar os mesmos prompts detalhados que ja existem no `daily-practice`:
 
-**Dados enviados ao edge function**:
+- **Judeus**: Parasha da semana com explicacoes do Talmud Bavli, Mishna e Guemara. Falar de kaballah a cada output, com grande destaque e rferencias. 
+- **Catolicos**: Leitura liturgica do dia com Patristica
+- **Protestantes**: Devocional biblico com exegese
+- **Islamicos**: Sura com Tafsir de Ibn Kathir
+- **Budistas**: Sutra com comentarios de mestres
+- **Hindus**: Verso do Bhagavad Gita com comentario de Shankaracharya
+- **Espiritas**: Evangelho Segundo o Espiritismo
+- **Umbanda/Candomble**: Ensinamento dos Orixas
+- **Mormons**: Livro de Mormon
+- **Agnosticos**: Reflexao filosofica
+
+O formato do versiculo sera o mesmo JSON rico: `{title, reference, explanation, reflection, sources, scholarly_note}`
+
+### 3. Pagina Verse Atualizada
+
+A pagina de Versiculo do Dia exibira o conteudo rico (titulo, referencia, explicacao, reflexao, fontes) em vez de apenas texto simples. Reutilizara o mesmo layout de cards do `Practice`.
+
+## Detalhes Tecnicos
+
+### Arquivos a criar:
+
+- `src/components/AppSidebar.tsx` - Sidebar lateral com navegacao
+
+### Arquivos a modificar:
+
+- `src/App.tsx` - Envolver com SidebarProvider, adicionar AppSidebar
+- `src/components/Header.tsx` - Remover nav items do header desktop, simplificar
+- `supabase/functions/verse-of-day/index.ts` - Reescrever para usar prompts detalhados por religiao (extraidos do `daily-practice`), retornando JSON rico
+- `src/pages/Verse.tsx` - Exibir conteudo rico (titulo, referencia, explicacao, reflexao, fontes, nota academica) com cards, em vez de blockquote simples
+
+### Arquivos SEM mudanca:
+
+- `src/components/BottomNav.tsx` - Mantem igual (mobile)
+- `supabase/functions/daily-practice/index.ts` - Mantem igual (referencia para os prompts)
+
+### Fluxo da Sidebar:
+
+```text
++----------+-----------------------------+
+| Sidebar  |  Conteudo da pagina         |
+| (lateral)|                             |
+|          |                             |
+| Chat     |                             |
+| Precos   |                             |
+| Post     |                             |
+| Oracoes  |                             |
+| Versiculo|                             |
+| Praticando                             |
+| Mural    |                             |
+|          |                             |
++----------+-----------------------------+
+```
+
+### Estrutura do JSON retornado pelo `verse-of-day` atualizado:
+
 ```text
 {
-  ...campos existentes,
-  datetime: "2026-02-21T14:30:00-03:00",
-  timezone: "America/Sao_Paulo",
-  location: { city: "Sao Paulo", country: "Brazil" }  // opcional, via timezone
+  "title": "Nome da parasha / leitura / sura",
+  "reference": "Referencia sagrada exata",
+  "explanation": "Explicacao detalhada 5-8 linhas",
+  "reflection": "Reflexao pratica 2-3 linhas",
+  "sources": "Fontes consultadas",
+  "scholarly_note": "Nota academica"
 }
 ```
-
-#### 2. Adicionar contexto temporal e geografico ao system prompt
-
-**Arquivo**: `supabase/functions/sacred-chat/index.ts`
-
-- Receber os novos campos `datetime`, `timezone`, `location` do body
-- Construir uma secao `TEMPORAL & GEOGRAPHIC CONTEXT` no system prompt:
-
-```text
-TEMPORAL & GEOGRAPHIC CONTEXT:
-Current date and time for the faithful: Saturday, February 21, 2026, 2:30 PM (America/Sao_Paulo timezone, Brazil).
-Use this information to:
-- Reference the correct time of day (morning/afternoon/evening/night)
-- Be aware of religious holidays and observances happening today or this week
-- Never hallucinate about the date or time — use ONLY the provided information
-- Adapt greetings and blessings to the time of day
-```
-
-- Mapear o timezone para cidade/pais usando um mapa simples de timezones comuns (ex: "America/Sao_Paulo" -> "Brazil", "America/New_York" -> "United States")
-
-#### 3. Corrigir fallback de religiao quando usuario declara na mensagem
-
-**Arquivo**: `supabase/functions/sacred-chat/index.ts`
-
-- Quando `context.religion` esta vazio, NAO usar fallback "christian"
-- Em vez disso, adicionar instrucao no system prompt para a IA detectar a religiao a partir da mensagem do usuario:
-
-```text
-RELIGION DETECTION:
-No specific religion was selected by the user in the settings. If the user mentions their religion
-in the message (e.g., "sou judeu", "I'm Buddhist", "soy musulman"), detect it and respond
-EXCLUSIVELY from that tradition's sacred texts. Do NOT default to Christianity.
-If no religion can be detected, respond with universal spiritual wisdom without favoring any tradition.
-```
-
-- Mudar a linha 134 de `const rel = religion || "christian"` para `const rel = religion || ""`
-- Quando `rel` esta vazio, usar um prompt generico multi-tradicao em vez de forcar "christian"
-
-### Resumo de alteracoes
-
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/components/ChatArea.tsx` | Capturar datetime, timezone; enviar no body da requisicao ao edge function |
-| `supabase/functions/sacred-chat/index.ts` | Receber datetime/timezone; adicionar secao de contexto temporal ao prompt; remover fallback "christian"; adicionar instrucao de deteccao de religiao por mensagem |
-
-### Detalhes tecnicos
-
-**Captura de timezone (frontend)**:
-- `Intl.DateTimeFormat().resolvedOptions().timeZone` — funciona em todos os browsers modernos, nao precisa de permissao
-- A data/hora formatada sera gerada no momento do envio da mensagem (nao no mount)
-
-**Geolocalizacao (frontend)**:
-- Usar `navigator.geolocation.getCurrentPosition()` com timeout de 5s
-- Se o usuario negar permissao, usar apenas o timezone para inferir regiao aproximada
-- Armazenar em ref para nao pedir permissao repetidamente
-
-**Mapa de timezone para regiao (edge function)**:
-- Mapa simples hardcoded com os timezones mais comuns (America/Sao_Paulo -> Brasil, Europe/London -> UK, etc.)
-- Fallback: extrair continente/cidade do proprio nome do timezone
-
-**Fallback de religiao (edge function)**:
-- Quando nenhuma religiao selecionada E nenhuma detectada na mensagem, o prompt sera: "You are a wise spiritual guide drawing from universal wisdom across all traditions. Do not favor any single religion."
