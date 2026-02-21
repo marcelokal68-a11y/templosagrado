@@ -6,89 +6,111 @@
 
 @layer base {
   :root {
-    --background: 40 33% 98%;
-    --foreground: 30 15% 15%;
+    --background: 42 30% 97%;
+    --foreground: 25 20% 12%;
 
-    --card: 40 40% 97%;
-    --card-foreground: 30 15% 15%;
+    --card: 42 35% 96%;
+    --card-foreground: 25 20% 12%;
 
-    --popover: 40 40% 97%;
-    --popover-foreground: 30 15% 15%;
+    --popover: 42 35% 96%;
+    --popover-foreground: 25 20% 12%;
 
-    --primary: 38 75% 55%;
-    --primary-foreground: 40 33% 98%;
+    --primary: 38 72% 50%;
+    --primary-foreground: 42 30% 98%;
 
-    --secondary: 35 30% 90%;
-    --secondary-foreground: 30 15% 25%;
+    --secondary: 150 18% 88%;
+    --secondary-foreground: 150 25% 20%;
 
-    --muted: 35 20% 93%;
-    --muted-foreground: 30 10% 50%;
+    --muted: 38 18% 92%;
+    --muted-foreground: 25 12% 48%;
 
-    --accent: 30 60% 45%;
-    --accent-foreground: 40 33% 98%;
+    --accent: 150 30% 35%;
+    --accent-foreground: 42 30% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 35 25% 88%;
-    --input: 35 25% 88%;
-    --ring: 38 75% 55%;
+    --border: 38 20% 86%;
+    --input: 38 20% 86%;
+    --ring: 38 72% 50%;
 
     --radius: 0.75rem;
 
-    --sacred-gold: 38 75% 55%;
-    --sacred-amber: 30 60% 45%;
-    --sacred-cream: 40 33% 98%;
-    --sacred-warm: 35 30% 90%;
-    --sacred-text: 30 15% 15%;
+    /* Sacred palette */
+    --sacred-gold: 38 72% 50%;
+    --sacred-amber: 30 55% 42%;
+    --sacred-cream: 42 30% 97%;
+    --sacred-warm: 35 28% 90%;
+    --sacred-text: 25 20% 12%;
+    --sacred-green: 150 30% 35%;
+    --sacred-green-light: 150 25% 90%;
+    --sacred-earth: 25 35% 30%;
+    --sacred-bark: 20 28% 22%;
 
-    --sidebar-background: 40 33% 96%;
-    --sidebar-foreground: 30 15% 25%;
-    --sidebar-primary: 38 75% 55%;
-    --sidebar-primary-foreground: 40 33% 98%;
-    --sidebar-accent: 35 30% 90%;
-    --sidebar-accent-foreground: 30 15% 25%;
-    --sidebar-border: 35 25% 88%;
-    --sidebar-ring: 38 75% 55%;
+    /* Glass effects */
+    --glass-bg: 42 30% 97% / 0.7;
+    --glass-border: 38 20% 86% / 0.5;
+
+    --sidebar-background: 25 20% 14%;
+    --sidebar-foreground: 42 25% 88%;
+    --sidebar-primary: 38 72% 50%;
+    --sidebar-primary-foreground: 42 30% 98%;
+    --sidebar-accent: 150 20% 22%;
+    --sidebar-accent-foreground: 42 25% 88%;
+    --sidebar-border: 25 15% 20%;
+    --sidebar-ring: 38 72% 50%;
   }
 
   .dark {
-    --background: 30 15% 10%;
-    --foreground: 40 33% 95%;
+    --background: 25 18% 8%;
+    --foreground: 42 25% 92%;
 
-    --card: 30 15% 13%;
-    --card-foreground: 40 33% 95%;
+    --card: 25 16% 11%;
+    --card-foreground: 42 25% 92%;
 
-    --popover: 30 15% 13%;
-    --popover-foreground: 40 33% 95%;
+    --popover: 25 16% 11%;
+    --popover-foreground: 42 25% 92%;
 
-    --primary: 38 75% 55%;
-    --primary-foreground: 30 15% 10%;
+    --primary: 38 72% 50%;
+    --primary-foreground: 25 18% 8%;
 
-    --secondary: 30 15% 18%;
-    --secondary-foreground: 40 33% 90%;
+    --secondary: 150 12% 16%;
+    --secondary-foreground: 150 18% 80%;
 
-    --muted: 30 12% 20%;
-    --muted-foreground: 35 15% 60%;
+    --muted: 25 12% 16%;
+    --muted-foreground: 38 15% 55%;
 
-    --accent: 38 60% 50%;
-    --accent-foreground: 30 15% 10%;
+    --accent: 150 25% 30%;
+    --accent-foreground: 42 25% 92%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 30 12% 22%;
-    --input: 30 12% 22%;
-    --ring: 38 75% 55%;
+    --border: 25 12% 18%;
+    --input: 25 12% 18%;
+    --ring: 38 72% 50%;
 
-    --sidebar-background: 30 15% 10%;
-    --sidebar-foreground: 40 33% 90%;
-    --sidebar-primary: 38 75% 55%;
-    --sidebar-primary-foreground: 30 15% 10%;
-    --sidebar-accent: 30 15% 18%;
-    --sidebar-accent-foreground: 40 33% 90%;
-    --sidebar-border: 30 12% 22%;
-    --sidebar-ring: 38 75% 55%;
+    --sacred-gold: 38 72% 50%;
+    --sacred-amber: 30 50% 40%;
+    --sacred-cream: 25 18% 8%;
+    --sacred-warm: 25 15% 14%;
+    --sacred-text: 42 25% 92%;
+    --sacred-green: 150 25% 30%;
+    --sacred-green-light: 150 15% 14%;
+    --sacred-earth: 25 20% 45%;
+    --sacred-bark: 20 15% 60%;
+
+    --glass-bg: 25 18% 10% / 0.75;
+    --glass-border: 25 12% 22% / 0.6;
+
+    --sidebar-background: 25 18% 8%;
+    --sidebar-foreground: 42 25% 88%;
+    --sidebar-primary: 38 72% 50%;
+    --sidebar-primary-foreground: 25 18% 8%;
+    --sidebar-accent: 150 12% 16%;
+    --sidebar-accent-foreground: 42 25% 88%;
+    --sidebar-border: 25 12% 18%;
+    --sidebar-ring: 38 72% 50%;
   }
 }
 
@@ -103,5 +125,36 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Cinzel', serif;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  .glass-strong {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  .sacred-gradient {
+    background: linear-gradient(135deg, hsl(var(--sacred-gold)) 0%, hsl(var(--sacred-amber)) 100%);
+  }
+
+  .sacred-gradient-subtle {
+    background: linear-gradient(135deg, hsl(var(--sacred-gold) / 0.1) 0%, hsl(var(--sacred-green) / 0.08) 100%);
+  }
+
+  .text-gradient-sacred {
+    background: linear-gradient(135deg, hsl(var(--sacred-gold)), hsl(var(--sacred-amber)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
