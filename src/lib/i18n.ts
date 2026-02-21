@@ -511,6 +511,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.step4_desc': 'Use o checklist espiritual para nutrir sua jornada interior',
     'tutorial.quick_title': 'Tutorial Rápido',
     'tutorial.got_it': 'Entendi!',
+    'nav.mural': 'Mural',
   },
   'en': {
     'nav.chat': 'Chat',
@@ -992,6 +993,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.step4_desc': 'Use the spiritual checklist to nourish your inner journey',
     'tutorial.quick_title': 'Quick Tutorial',
     'tutorial.got_it': 'Got it!',
+    'nav.mural': 'Wall',
   },
   'es': {
     'nav.chat': 'Chat',
@@ -1473,6 +1475,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.step4_desc': 'Usa el checklist espiritual para nutrir tu camino interior',
     'tutorial.quick_title': 'Tutorial Rápido',
     'tutorial.got_it': '¡Entendido!',
+    'nav.mural': 'Mural',
   },
 };
 

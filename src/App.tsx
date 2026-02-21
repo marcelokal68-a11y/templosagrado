@@ -14,6 +14,7 @@ import Practice from "./pages/Practice";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
 import Posts from "./pages/Posts";
+import Mural from "./pages/Mural";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
               <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
               <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
+              <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/invite/:code" element={<InviteRedeem />} />
               <Route path="*" element={<NotFound />} />

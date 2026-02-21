@@ -148,6 +148,74 @@ export type Database = {
           },
         ]
       }
+      prayer_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prayer_wall_posts: {
+        Row: {
+          content: string
+          created_at: string
+          display_name: string | null
+          id: string
+          is_anonymous: boolean
+          is_public: boolean
+          philosophy: string | null
+          religion: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_anonymous?: boolean
+          is_public?: boolean
+          philosophy?: string | null
+          religion?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_anonymous?: boolean
+          is_public?: boolean
+          philosophy?: string | null
+          religion?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayers: {
         Row: {
           created_at: string
@@ -250,6 +318,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_subscriber: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
