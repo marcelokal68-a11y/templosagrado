@@ -33,7 +33,6 @@ export default function AppSidebar() {
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Don't render sidebar on landing, auth, or invite pages
   const hiddenPaths = ['/landing', '/auth', '/invite'];
   const shouldHide = hiddenPaths.some(p => location.pathname.startsWith(p));
   
@@ -58,22 +57,30 @@ export default function AppSidebar() {
 
   return (
     <Sidebar
-      className={cn("hidden md:flex border-r transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-48")}
+      className={cn("hidden md:flex border-r transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-52")}
       collapsible="icon"
     >
-      <SidebarContent className="pt-2">
+      <SidebarContent className="pt-6">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {allItems.map(item => {
                 const active = location.pathname === item.to;
                 const label = item.labelKey === 'Admin' ? 'Admin' : t(item.labelKey, language);
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton asChild isActive={active}>
-                      <Link to={item.to} className={cn("flex items-center gap-2 px-3 py-2 rounded-md transition-colors", active ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && <span className="text-sm truncate">{label}</span>}
+                      <Link
+                        to={item.to}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                          active
+                            ? "bg-primary/15 text-primary-foreground font-semibold"
+                            : "text-white/80 hover:text-white hover:bg-white/10"
+                        )}
+                      >
+                        <item.icon className={cn("shrink-0", collapsed ? "h-5 w-5" : "h-5 w-5")} />
+                        {!collapsed && <span className="text-sm font-medium">{label}</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
