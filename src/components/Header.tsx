@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { t, Language, languageNames } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,12 @@ import { useSidebar } from '@/components/ui/sidebar';
 export default function Header() {
   const { language, setLanguage, user } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toggleSidebar, state } = useSidebar();
+
+  // Hide sidebar toggle on landing/auth/invite pages
+  const hiddenPaths = ['/landing', '/auth', '/invite'];
+  const showSidebarToggle = user && !hiddenPaths.some(p => location.pathname.startsWith(p));
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -21,11 +26,12 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b glass-strong safe-top">
       <div className="flex h-12 md:h-14 items-center justify-between px-3 md:px-4">
         <div className="flex items-center gap-2">
-          {/* Sidebar toggle - desktop only */}
-          <Button variant="ghost" size="icon" className="hidden md:flex h-8 w-8" onClick={toggleSidebar}>
-            {state === 'collapsed' ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </Button>
-          <Link to="/" className="flex items-center gap-1.5">
+          {showSidebarToggle && (
+            <Button variant="ghost" size="icon" className="hidden md:flex h-8 w-8" onClick={toggleSidebar}>
+              {state === 'collapsed' ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            </Button>
+          )}
+          <Link to={user ? "/" : "/landing"} className="flex items-center gap-1.5">
             <span className="text-xl md:text-2xl">🕉️</span>
             <span className="font-display text-base md:text-lg font-semibold text-primary leading-tight">
               {t('chat.title', language)}
@@ -57,7 +63,7 @@ export default function Header() {
             </div>
           ) : (
             <Link to="/auth">
-              <Button size="sm" className="hidden md:flex gap-1.5 h-8">
+              <Button size="sm" className="gap-1.5 h-8">
                 <LogIn className="h-3.5 w-3.5" />
                 {t('nav.login', language)}
               </Button>
