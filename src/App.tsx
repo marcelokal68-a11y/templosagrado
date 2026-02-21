@@ -30,7 +30,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AppProvider>
-          <div className="flex flex-col min-h-screen">
+          <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
             <Header />
             <Routes>
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
