@@ -79,8 +79,8 @@ export default function AppSidebar() {
                             : "text-white/80 hover:text-white hover:bg-white/10"
                         )}
                       >
-                        <item.icon className={cn("shrink-0", collapsed ? "h-5 w-5" : "h-5 w-5")} />
-                        {!collapsed && <span className="text-sm font-medium">{label}</span>}
+                        <item.icon className={cn("shrink-0", collapsed ? "h-6 w-6" : "h-6 w-6")} />
+                        {!collapsed && <span className="text-base font-medium">{label}</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
