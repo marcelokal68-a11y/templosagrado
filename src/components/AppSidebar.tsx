@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Heart, BookOpen, CheckSquare, Feather, ScrollText, Shield, DollarSign } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Feather, ScrollText, Shield, DollarSign, Gift } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +25,7 @@ const navItems = [
   { to: '/practice', labelKey: 'nav.practice', icon: CheckSquare },
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
   { to: '/pricing', labelKey: 'nav.pricing', icon: DollarSign },
+  { to: '/invite-friends', labelKey: 'nav.invite', icon: Gift },
 ];
 
 export default function AppSidebar() {
