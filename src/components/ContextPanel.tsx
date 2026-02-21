@@ -34,26 +34,26 @@ const SPOTIFY_PLAYLISTS: Record<string, string> = {
   umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',
   candomble: '3kg2IhbcbiRE4ZmvYWlUdw',
   agnostic: '1RJKluktWr9Dh7fXhhRkHV',
-  stoicism: '0As0R4eZyxaMKAqZfW9zUL',          // Stoicism Music - Wisdom, Courage
-  logosophy: '5rzRAZvCFie84nUaz0sypb',          // Inspiring Modern Classical & Neo-Classical
-  humanism: '37i9dQZF1DWVFeEut75IAL',           // Calming Classical
-  taoism: '0w3U6XHnNOGKrXdZLH3r2L',            // Taoism Meditation - Chinese meditation
-  shamanism: '5NGZfEoKJlQYDpWfSvBf0F',          // Shamanic Drumming | Healing Drums
-  epicureanism: '37i9dQZF1DWVFeEut75IAL',       // Calming Classical
-  existentialism: '07UPzxWbrgZnIposHWaoXI',     // 50 Best Relaxing Classical
-  transcendentalism: '5rzRAZvCFie84nUaz0sypb',   // Inspiring Modern Classical
-  pantheism: '0w3U6XHnNOGKrXdZLH3r2L',          // Nature/Taoism Meditation
-  absurdism: '07UPzxWbrgZnIposHWaoXI',           // 50 Best Relaxing Classical
-  rationalism: '37i9dQZF1DWVFeEut75IAL',         // Calming Classical
-  optimistic_nihilism: '07UPzxWbrgZnIposHWaoXI', // 50 Best Relaxing Classical
-  utilitarianism: '37i9dQZF1DWVFeEut75IAL',      // Calming Classical
-  pragmatism: '37i9dQZF1DWVFeEut75IAL',          // Calming Classical
-  altruism: '5rzRAZvCFie84nUaz0sypb',            // Inspiring Modern Classical
-  objectivism: '37i9dQZF1DWVFeEut75IAL',         // Calming Classical
-  transhumanism: '5rzRAZvCFie84nUaz0sypb',       // Inspiring Modern Classical
-  anthroposophy: '5rzRAZvCFie84nUaz0sypb',       // Inspiring Modern Classical
-  cosmism: '5rzRAZvCFie84nUaz0sypb',             // Inspiring Modern Classical
-  ubuntu: '3kg2IhbcbiRE4ZmvYWlUdw',             // Meditative/African
+  stoicism: '0As0R4eZyxaMKAqZfW9zUL',
+  logosophy: '5rzRAZvCFie84nUaz0sypb',
+  humanism: '37i9dQZF1DWVFeEut75IAL',
+  taoism: '0w3U6XHnNOGKrXdZLH3r2L',
+  shamanism: '5NGZfEoKJlQYDpWfSvBf0F',
+  epicureanism: '37i9dQZF1DWVFeEut75IAL',
+  existentialism: '07UPzxWbrgZnIposHWaoXI',
+  transcendentalism: '5rzRAZvCFie84nUaz0sypb',
+  pantheism: '0w3U6XHnNOGKrXdZLH3r2L',
+  absurdism: '07UPzxWbrgZnIposHWaoXI',
+  rationalism: '37i9dQZF1DWVFeEut75IAL',
+  optimistic_nihilism: '07UPzxWbrgZnIposHWaoXI',
+  utilitarianism: '37i9dQZF1DWVFeEut75IAL',
+  pragmatism: '37i9dQZF1DWVFeEut75IAL',
+  altruism: '5rzRAZvCFie84nUaz0sypb',
+  objectivism: '37i9dQZF1DWVFeEut75IAL',
+  transhumanism: '5rzRAZvCFie84nUaz0sypb',
+  anthroposophy: '5rzRAZvCFie84nUaz0sypb',
+  cosmism: '5rzRAZvCFie84nUaz0sypb',
+  ubuntu: '3kg2IhbcbiRE4ZmvYWlUdw',
   default: '1RJKluktWr9Dh7fXhhRkHV',
 };
 
@@ -117,7 +117,7 @@ function CollapsibleChipGroup({ label, items, prefix, selected, onSelect, defaul
 }
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
-  const { language, chatContext, setChatContext } = useApp();
+  const { language, chatContext, setChatContext, clearChatWithUndo } = useApp();
   const [activeMode, setActiveMode] = useState<'religion' | 'philosophy'>(
     chatContext.philosophy ? 'philosophy' : 'religion'
   );
@@ -126,7 +126,6 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const topics = getTopicsForReligion(chatContext.religion);
 
-  // Reset topic if current one is not in the new religion's list
   const currentTopicValid = !chatContext.topic || topics.includes(chatContext.topic);
   if (!currentTopicValid) {
     setChatContext(prev => ({ ...prev, topic: '' }));
@@ -147,6 +146,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
   };
 
   const confirmSwitch = () => {
+    clearChatWithUndo();
     setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
     setActiveMode(pendingMode!);
     setShowConfirm(false);
@@ -177,6 +177,22 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
   const handleGenerate = () => {
     onGenerate?.();
     onClose?.();
+  };
+
+  const handleReligionSelect = (v: string) => {
+    // If selecting a different religion (not deselecting), clear chat with undo
+    if (v && v !== chatContext.religion) {
+      clearChatWithUndo();
+    }
+    setChatContext(prev => ({ ...prev, religion: v, topic: '' }));
+  };
+
+  const handlePhilosophySelect = (v: string) => {
+    // If selecting a different philosophy (not deselecting), clear chat with undo
+    if (v && v !== chatContext.philosophy) {
+      clearChatWithUndo();
+    }
+    setChatContext(prev => ({ ...prev, philosophy: v, topic: '' }));
   };
 
   return (
@@ -216,7 +232,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           items={religions}
           prefix="religion"
           selected={chatContext.religion}
-          onSelect={(v) => setChatContext(prev => ({ ...prev, religion: v, topic: '' }))}
+          onSelect={handleReligionSelect}
           defaultOpen={true}
           activeColor="bg-amber-500 text-white border-amber-500"
         />
@@ -229,7 +245,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           items={philosophies}
           prefix="philosophy"
           selected={chatContext.philosophy}
-          onSelect={(v) => setChatContext(prev => ({ ...prev, philosophy: v, topic: '' }))}
+          onSelect={handlePhilosophySelect}
           defaultOpen={true}
           activeColor="bg-violet-500 text-white border-violet-500"
         />
@@ -309,8 +325,8 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
             <AlertDialogTitle>{t('panel.switch_title', language)}</AlertDialogTitle>
             <AlertDialogDescription>
               {t('panel.switch_message', language)
-                .replace(/\{current\}/g, getCurrentLabel())
-                .replace(/\{target\}/g, getTargetLabel())}
+                .replace(/\\{current\\}/g, getCurrentLabel())
+                .replace(/\\{target\\}/g, getTargetLabel())}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

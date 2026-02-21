@@ -4,13 +4,14 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ReligionIcon from '@/components/ReligionIcon';
 import ChatHistory from '@/components/ChatHistory';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
+import { ToastAction } from '@/components/ui/toast';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -82,7 +83,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput } = useApp();
+  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat } = useApp();
   const religion = chatContext.religion || '';
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -96,27 +97,62 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const chunksRef = useRef<Blob[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const prevAffiliationRef = useRef<string>('');
 
+  // Show undo toast when chat is cleared via affiliation change
+  useEffect(() => {
+    if (hasPendingUndo) {
+      toast({
+        title: t('chat.cleared', language) || 'Chat limpo',
+        description: t('chat.cleared_desc', language) || 'A conversa foi limpa ao trocar de afiliação.',
+        action: (
+          <ToastAction altText="Desfazer" onClick={undoClearChat}>
+            <Undo2 className="h-4 w-4 mr-1" />
+            {t('chat.undo', language) || 'Desfazer'}
+          </ToastAction>
+        ),
+        duration: 20000,
+      });
+    }
+  }, [hasPendingUndo]);
+
+  // Load messages filtered by current affiliation
   useEffect(() => {
     if (!user) {
-      // Logout: clear messages and audio cache
       setMessages([]);
       stopAudio();
       audioCacheRef.current.forEach(url => URL.revokeObjectURL(url));
       audioCacheRef.current.clear();
       return;
     }
-    supabase
+
+    const currentAffiliation = chatContext.philosophy || chatContext.religion || '';
+    
+    // Build query with affiliation filter
+    let query = supabase
       .from('chat_messages')
       .select('role, content, created_at')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: true })
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setMessages(data.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })));
+      .order('created_at', { ascending: true });
+
+    if (chatContext.philosophy) {
+      query = query.eq('philosophy', chatContext.philosophy);
+    } else if (chatContext.religion) {
+      query = query.eq('religion', chatContext.religion);
+    }
+
+    query.then(({ data }) => {
+      if (data && data.length > 0) {
+        setMessages(data.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })));
+      } else {
+        // Only clear if affiliation actually changed (not on initial load with no messages)
+        if (prevAffiliationRef.current !== currentAffiliation) {
+          setMessages([]);
         }
-      });
-  }, [user]);
+      }
+      prevAffiliationRef.current = currentAffiliation;
+    });
+  }, [user, chatContext.religion, chatContext.philosophy]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -307,6 +343,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           need: chatContext.need || null,
           mood: chatContext.mood || null,
           topic: chatContext.topic || null,
+          philosophy: chatContext.philosophy || null,
         };
         supabase.from('chat_messages').insert([
           { ...ctx, role: 'user', content: userMsg.content },
@@ -388,7 +425,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       recorder.start();
       setIsRecording(true);
 
-      // Auto-stop after 60 seconds
       setTimeout(() => {
         if (recorder.state === 'recording') {
           recorder.stop();

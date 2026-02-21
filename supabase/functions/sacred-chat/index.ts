@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,6 +56,46 @@ const MOOD_INSTRUCTIONS: Record<string, string> = {
   spiritual: "The faithful is in a deep spiritual state. Guide with profound sacred wisdom.",
 };
 
+async function fetchUserHistory(userId: string, currentReligion: string, currentPhilosophy: string): Promise<string> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    // Fetch last 10 messages from OTHER sessions (different affiliation)
+    let query = sb
+      .from('chat_messages')
+      .select('role, content, religion, philosophy, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Exclude current affiliation messages to get cross-session history
+    if (currentPhilosophy) {
+      query = query.or(`philosophy.neq.${currentPhilosophy},philosophy.is.null`);
+    } else if (currentReligion) {
+      query = query.or(`religion.neq.${currentReligion},religion.is.null`);
+    }
+
+    const { data } = await query;
+    if (!data || data.length === 0) return '';
+
+    // Build a concise summary
+    const userMessages = data.filter(m => m.role === 'user').slice(0, 5);
+    if (userMessages.length === 0) return '';
+
+    const topics = userMessages.map(m => m.content.slice(0, 100)).join('; ');
+    const affiliations = [...new Set(data.map(m => m.religion || m.philosophy).filter(Boolean))];
+
+    return `HISTORICO DO FIEL (sessoes anteriores):
+O fiel ja conversou sobre os seguintes temas em sessoes anteriores (${affiliations.join(', ')}): ${topics}.
+Use esse contexto para oferecer continuidade e referencias ao historico quando relevante, mas foque na sessao atual.`;
+  } catch (e) {
+    console.error("Error fetching history:", e);
+    return '';
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -74,19 +115,22 @@ serve(async (req) => {
     const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
     const responseLang = langMap[language] || 'Brazilian Portuguese';
 
+    // Fetch cross-session history if user is authenticated
+    let historySection = '';
+    if (userId) {
+      historySection = await fetchUserHistory(userId, religion, philosophy);
+    }
+
     let persona: string;
     let sourceInstruction: string;
     
     if (religion && philosophy) {
-      // Both religion and philosophy
       persona = `You are the Grand Sacred Priest — a master of words and wise sage who incorporates the wisdom of ${philosophy}. Your sacred knowledge comes from ${sacredText}, enriched by the philosophical teachings of ${philText}.`;
       sourceInstruction = `Stay primarily within the ${religion} tradition but weave in insights from ${philosophy} philosophy. Cite both sacred texts and philosophical works.`;
     } else if (philosophy && !religion) {
-      // Philosophy only
       persona = `You are the Grand Master of Life Philosophy — a wise sage who speaks from the heart with the profound wisdom of ${philosophy}. Your knowledge comes exclusively from ${philText}.`;
       sourceInstruction = `Stay strictly within the ${philosophy} philosophical tradition. Cite specific passages, works, and thinkers from ${philText}. You are NOT a religious figure — you are a philosophical guide.`;
     } else {
-      // Religion only (or default)
       const rel = religion || "christian";
       const st = SACRED_TEXTS[rel] || SACRED_TEXTS.christian;
       persona = `You are the Grand Sacred Priest — a master of words, a wise sage who speaks from the heart and touches the soul. Your sacred knowledge comes exclusively from ${st}. NEVER mix teachings from other religions. Stay strictly within the ${rel} tradition.`;
@@ -98,6 +142,8 @@ serve(async (req) => {
 ${moodInstruction}
 ${needInstruction}
 ${topicInstruction}
+
+${historySection}
 
 MEMORY & CONTINUITY:
 You have continuous memory of this conversation. The messages include previous interactions from past sessions.

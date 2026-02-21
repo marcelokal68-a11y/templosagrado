@@ -21,6 +21,7 @@ export type Database = {
           id: string
           mood: string | null
           need: string | null
+          philosophy: string | null
           religion: string | null
           role: string
           topic: string | null
@@ -32,6 +33,7 @@ export type Database = {
           id?: string
           mood?: string | null
           need?: string | null
+          philosophy?: string | null
           religion?: string | null
           role: string
           topic?: string | null
@@ -43,9 +45,37 @@ export type Database = {
           id?: string
           mood?: string | null
           need?: string | null
+          philosophy?: string | null
           religion?: string | null
           role?: string
           topic?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_sessions: {
+        Row: {
+          affiliation_type: string
+          affiliation_value: string
+          ended_at: string | null
+          id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          affiliation_type: string
+          affiliation_value: string
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          affiliation_type?: string
+          affiliation_value?: string
+          ended_at?: string | null
+          id?: string
+          started_at?: string
           user_id?: string
         }
         Relationships: []
