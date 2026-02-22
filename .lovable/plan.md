@@ -1,94 +1,124 @@
-## Seção "Aprenda sobre Religiões e Filosofias"
 
-### Resumo
 
-Nova seção educacional onde usuários logados exploram religiões e filosofias como se estivessem em uma aula com um professor de história, filosofia e religião. Cada resposta da IA sugere 3 perguntas clicáveis, eliminando a necessidade de digitar, se usuarioo desejar, pois existe o chatbot. Tudo vai para o histórico de atividades. Na primeira seleção de religião no app, o sistema pergunta se o usuário deseja configurá-la como religião de fé padrão.
+## Redesign Mobile UX: Bottom Nav Lean + Upgrade Diamond + Mural Integration
 
----
-
-### Funcionalidades
-
-1. **Nova página `/learn**` com grid de cards para todas as religiões e filosofias disponíveis
-2. **Ao clicar em uma religião/filosofia**: abre uma tela com história breve + chatbot educacional
-3. **Chatbot educacional**: persona de professor (não sacerdote), com respostas que incluem 3 sugestões de perguntas clicáveis
-4. **Sugestões clicáveis**: após cada resposta da IA, 3 botões de perguntas aparecem; ao clicar, a pergunta é enviada automaticamente
-5. **Histórico**: cada interação é salva na tabela `activity_history` com tipo `learn`
-6. **Prompt de religião de fé**: na primeira vez que o usuário seleciona uma religião (em qualquer lugar do app), um dialog pergunta "Deseja configurar XXX como sua religião de fé?" e salva em `preferred_religion` no perfil
+### Overview
+Redesign the mobile experience to eliminate tab overlap, remove Pricing from navigation, add an upgrade diamond icon, and integrate "Publish to Mural" directly into Chat, Prayers, Verse, and Posts.
 
 ---
 
-### Detalhes Técnicos
+### 1. Bottom Nav -- Reduce to 4 tabs
 
-#### 1. Nova Edge Function: `learn-chat`
+Current: 9 items causing overlap.
+New layout (mobile only):
 
-- Persona: professor de história, filosofia e religião (tom acadêmico mas acessível)
-- Modelo: `google/gemini-2.5-flash` (mesmo do sacred-chat, para manter custo baixo)
-- O prompt instrui a IA a sempre terminar a resposta com exatamente 3 sugestões de perguntas no formato JSON: `{"suggestions": ["pergunta1", "pergunta2", "pergunta3"]}`
-- A resposta textual vem separada das sugestões, parseadas no frontend
+| Tab | Icon | Route |
+|-----|-------|-------|
+| Chat | MessageCircle | / |
+| Oracoes | Heart | /prayers |
+| Versiculo | BookOpen | /verse |
+| Aprender | GraduationCap | /learn |
 
-#### 2. Nova página `src/pages/Learn.tsx`
+Removed from bottom nav: Pricing, Mural, Post, Practice, Invite.
+- **Post** stays accessible via sidebar (desktop) and via a button inside Chat (since posts are generated from chat messages).
+- **Practice** and **Invite** stay in sidebar only.
 
-- Grid responsivo com cards para cada religião e filosofia
-- Cada card tem ícone, nome traduzido e breve descrição
-- Ao clicar, navega para `/learn/:topic` (ex: `/learn/buddhist`)
+**File**: `src/components/BottomNav.tsx`
 
-#### 3. Nova página `src/pages/LearnTopic.tsx`
+---
 
-- Ao abrir, faz uma chamada automática pedindo "Conte-me uma breve história sobre [religião/filosofia]"
-- Exibe respostas em bolhas de chat
-- Após cada resposta, renderiza 3 botões de sugestão clicáveis
-- Ao clicar em uma sugestão, envia como mensagem automaticamente (sem digitar)
-- Campo de texto também disponível para perguntas livres
-- Todas as interações são salvas em `activity_history` com tipo `learn`
+### 2. Upgrade Diamond in Header
 
-#### 4. Prompt de religião de fé (AppContext)
+Add a `Gem` icon (lucide) in the Header, visible only to logged-in users who are NOT premium subscribers (`is_subscriber === false`). Clicking navigates to `/pricing`.
 
-- No `AppContext`, ao detectar que `preferred_religion` é null e o usuário seleciona uma religião pela primeira vez (em qualquer contexto: chat, learn, etc.), exibe um `AlertDialog`:
-  - "Deseja configurar [Religião] como sua religião de fé?"
-  - Sim: salva em `profiles.preferred_religion` e pré-seleciona sempre
-  - Não agora: dismiss sem salvar, não pergunta novamente na sessão
+- Subtle golden pulse animation via Tailwind (`animate-pulse`)
+- Positioned between the language selector and user info
+- Uses profile data already available in AppContext (need to check if `is_subscriber` is exposed)
 
-#### 5. Navegação
+**File**: `src/components/Header.tsx`
+**File**: `src/contexts/AppContext.tsx` (expose `isSubscriber` from profile if not already)
 
-- Adicionar item "Aprender" no `BottomNav` e `AppSidebar` com ícone `GraduationCap`
-- Rota protegida (apenas logados)
+---
 
-#### 6. Traduções (i18n)
+### 3. Publish to Mural -- New Reusable Component
 
-- Adicionar chaves para pt-BR, en, es:
-  - `nav.learn`: "Aprender" / "Learn" / "Aprender"
-  - `learn.title`: "Aprenda sobre Religiões e Filosofias"
-  - `learn.intro_prompt`: textos para cada idioma
-  - `learn.ask_faith`: "Deseja configurar {religion} como sua religião de fé?"
-  - `learn.yes`: "Sim, é minha fé"
-  - `learn.not_now`: "Não agora"
+Create `src/components/mural/PublishToMural.tsx`:
 
-#### 7. Formato de resposta da IA
+- Receives `originalContent: string` as prop
+- Shows a button (ScrollText icon) labeled "Publicar no Mural"
+- On click, opens a Dialog/Drawer with:
+  - AI-generated summary (calls existing `sacred-chat` edge function with a summarization prompt)
+  - Editable textarea for user to adjust
+  - Toggle: "Meu Templo" (user's religion) vs "Ecumenico"
+  - "Confirmar e Publicar" button
+- Inserts into `prayer_wall_posts` table on confirm
+- Includes profanity filter check
 
-A edge function `learn-chat` instrui o modelo a retornar respostas no formato:
+**New file**: `src/components/mural/PublishToMural.tsx`
+
+---
+
+### 4. Integrate PublishToMural into Features
+
+Add the PublishToMural button in:
+
+- **ChatArea.tsx**: Inside `MessageBubble`, next to the "Ouvir" button for assistant messages
+- **Prayers.tsx**: In the generated prayer result card, alongside Copy/Regenerate buttons
+- **Verse.tsx**: In the verse card actions area
+- **Posts.tsx**: In each generated post card, alongside the Copy button
+
+**Files modified**:
+- `src/components/ChatArea.tsx`
+- `src/pages/Prayers.tsx`
+- `src/pages/Verse.tsx`
+- `src/pages/Posts.tsx`
+
+---
+
+### 5. AppContext -- Expose Subscriber Status
+
+Check if `isSubscriber` is already available. If not, add it by reading `profiles.is_subscriber` when user loads.
+
+**File**: `src/contexts/AppContext.tsx`
+
+---
+
+### Technical Details
+
+**PublishToMural component flow:**
 
 ```text
-[texto da resposta educacional]
-
----SUGGESTIONS---
-["Qual a diferença entre...", "Como surgiu...", "O que significa..."]
+User clicks "Publicar no Mural"
+       |
+       v
+Dialog opens with loading spinner
+       |
+       v
+Call sacred-chat with prompt:
+  "Resuma este conteudo em ate 500 caracteres
+   para publicacao em um mural sagrado: [content]"
+       |
+       v
+Show editable summary + religion/ecumenical toggle
+       |
+       v
+User confirms --> Insert into prayer_wall_posts
+       |
+       v
+Toast success, close dialog
 ```
 
-O frontend faz split por `---SUGGESTIONS---`, renderiza o texto como mensagem e parseia o JSON das sugestões como botões.
+**Database**: No schema changes needed. The existing `prayer_wall_posts` table already supports `content`, `religion`, `is_public` (ecumenical), `is_anonymous`, `display_name`, `user_id`.
 
----
+**RLS**: Already has INSERT policy for subscribers. Non-subscribers will get a graceful error prompting upgrade.
 
-### Arquivos a criar/modificar
+**Files changed (summary):**
+- `src/components/BottomNav.tsx` -- reduce to 4 items
+- `src/components/Header.tsx` -- add Gem upgrade icon
+- `src/contexts/AppContext.tsx` -- expose isSubscriber
+- `src/components/mural/PublishToMural.tsx` -- NEW component
+- `src/components/ChatArea.tsx` -- add publish button to assistant messages
+- `src/pages/Prayers.tsx` -- add publish button to generated prayer
+- `src/pages/Verse.tsx` -- add publish button to verse card
+- `src/pages/Posts.tsx` -- add publish button to generated posts
 
-
-| Arquivo                                  | Ação                                                   |
-| ---------------------------------------- | ------------------------------------------------------ |
-| `supabase/functions/learn-chat/index.ts` | Criar - edge function do chatbot educacional           |
-| `src/pages/Learn.tsx`                    | Criar - grid de religiões/filosofias                   |
-| `src/pages/LearnTopic.tsx`               | Criar - chat educacional com sugestões                 |
-| `src/App.tsx`                            | Modificar - adicionar rotas `/learn` e `/learn/:topic` |
-| `src/components/BottomNav.tsx`           | Modificar - adicionar item "Aprender"                  |
-| `src/components/AppSidebar.tsx`          | Modificar - adicionar item "Aprender"                  |
-| `src/lib/i18n.ts`                        | Modificar - adicionar traduções                        |
-| `src/contexts/AppContext.tsx`            | Modificar - lógica do prompt de religião de fé         |
-| `supabase/config.toml`                   | Nota: não editar, deploy automático                    |
