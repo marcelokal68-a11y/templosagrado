@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, Copy, Check, Mail, RefreshCw, Sparkles, User, ArrowLeft } from 'lucide-react';
+import PublishToMural from '@/components/mural/PublishToMural';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -281,6 +282,7 @@ export default function Prayers() {
                 <RefreshCw className="h-4 w-4 mr-1" />
                 {t('prayers.regenerate', language)}
               </Button>
+              <PublishToMural originalContent={generatedPrayer} variant="button" />
               {user?.email && (
                 <Button variant="outline" size="sm" onClick={handleSendToMe}>
                   <Mail className="h-4 w-4 mr-1" />

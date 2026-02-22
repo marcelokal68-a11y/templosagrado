@@ -28,6 +28,7 @@ interface AppContextType {
   setLanguage: (lang: Language) => void;
   user: User | null;
   loading: boolean;
+  isSubscriber: boolean;
   chatContext: ChatContext;
   setChatContext: React.Dispatch<React.SetStateAction<ChatContext>>;
   questionsRemaining: number;
@@ -59,6 +60,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     philosophy: '',
   });
   const [geo, setGeo] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [isSubscriber, setIsSubscriber] = useState(false);
 
   // Undo buffer
   const [previousMessages, setPreviousMessages] = useState<Msg[]>([]);
@@ -146,8 +148,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', user.id)
         .maybeSingle()
         .then(({ data }) => {
-          if (data) {
+        if (data) {
             setQuestionsRemaining(data.questions_limit - data.questions_used);
+            setIsSubscriber(!!(data as any).is_subscriber);
             if (data.preferred_language) setLanguage(data.preferred_language as Language);
             if (data.preferred_religion) {
               setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
@@ -176,7 +179,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const faithReligionLabel = faithPromptReligion ? t(`religion.${faithPromptReligion}`, language) : '';
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo }}>
       {children}
       <AlertDialog open={!!faithPromptReligion}>
         <AlertDialogContent>

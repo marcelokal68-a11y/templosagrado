@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, RefreshCw, Loader2, Sparkles, BookMarked, GraduationCap, Volume2, VolumeX, Target, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
+import PublishToMural from '@/components/mural/PublishToMural';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -188,6 +189,7 @@ export default function Verse() {
                     <RefreshCw className="h-4 w-4" />
                     <span className="text-xs hidden sm:inline">{t('verse.refresh', language)}</span>
                   </Button>
+                  <PublishToMural originalContent={`${toStr(content.title)} — ${toStr(content.reference)}\n\n${toStr(content.explanation)}\n\n${toStr(content.reflection)}`} />
                 </div>
               </div>
               {content.reference && (
