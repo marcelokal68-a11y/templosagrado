@@ -166,9 +166,10 @@ serve(async (req) => {
     throw new Error("Unknown action");
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    const isAuthError = msg === "No auth header" || msg === "Not authenticated" || msg === "Forbidden";
     return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: isAuthError ? 401 : 500,
     });
   }
 });
