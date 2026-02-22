@@ -110,6 +110,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_verse_cache: {
+        Row: {
+          cache_date: string
+          created_at: string
+          id: string
+          language: string
+          religion: string
+          verse_data: Json
+        }
+        Insert: {
+          cache_date: string
+          created_at?: string
+          id?: string
+          language?: string
+          religion: string
+          verse_data: Json
+        }
+        Update: {
+          cache_date?: string
+          created_at?: string
+          id?: string
+          language?: string
+          religion?: string
+          verse_data?: Json
+        }
+        Relationships: []
+      }
       invite_links: {
         Row: {
           code: string
