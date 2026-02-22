@@ -3,7 +3,8 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, RefreshCw, Loader2, Sparkles, BookMarked, GraduationCap, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, RefreshCw, Loader2, Sparkles, BookMarked, GraduationCap, Volume2, VolumeX, Target, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,7 @@ interface VerseContent {
   reflection: string;
   sources?: string;
   scholarly_note?: string;
+  practical_use?: string;
 }
 
 export default function Verse() {
@@ -25,6 +27,7 @@ export default function Verse() {
   const [loading, setLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadingAudio, setLoadingAudio] = useState(false);
+  const [feedbackGiven, setFeedbackGiven] = useState<'up' | 'down' | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchVerse = async (religion?: string) => {
@@ -59,7 +62,19 @@ export default function Verse() {
 
   const handleReligionChange = (r: string) => {
     setSelectedReligion(r);
+    setFeedbackGiven(null);
     fetchVerse(r);
+  };
+
+  const handleCopyPractical = async () => {
+    if (!content?.practical_use) return;
+    await navigator.clipboard.writeText(content.practical_use);
+    toast({ title: t('verse.copied', language) });
+  };
+
+  const handleFeedback = (type: 'up' | 'down') => {
+    setFeedbackGiven(type);
+    toast({ title: t('verse.feedback_thanks', language) });
   };
 
   const handleNarrate = async () => {
@@ -178,6 +193,36 @@ export default function Verse() {
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <GraduationCap className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                   <p><span className="font-medium">{t('practice.scholarly_note', language)}:</span> {content.scholarly_note}</p>
+                </div>
+              )}
+
+              {content.practical_use && (
+                <div className="bg-primary/10 rounded-lg p-4 border border-primary/20 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-primary" />
+                    <h3 className="font-display text-sm font-semibold text-primary">{t('verse.practical_title', language)}</h3>
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">{content.practical_use}</p>
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleFeedback('up')}
+                        className={cn("p-1.5 rounded-md transition-colors", feedbackGiven === 'up' ? "text-primary bg-primary/15" : "text-muted-foreground hover:text-primary hover:bg-primary/10")}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleFeedback('down')}
+                        className={cn("p-1.5 rounded-md transition-colors", feedbackGiven === 'down' ? "text-destructive bg-destructive/15" : "text-muted-foreground hover:text-destructive hover:bg-destructive/10")}
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleCopyPractical} className="gap-1.5 text-xs">
+                      <Copy className="h-3.5 w-3.5" />
+                      {t('posts.copy', language)}
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
