@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, Feather, ScrollText, Gift } from 'lucide-react';
+import { MessageCircle, DollarSign, Heart, BookOpen, CheckSquare, Feather, ScrollText, Gift, GraduationCap } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ const items = [
   { to: '/verse', icon: BookOpen, labelKey: 'nav.verse' },
   { to: '/practice', icon: CheckSquare, labelKey: 'nav.practice' },
   { to: '/mural', icon: ScrollText, labelKey: 'nav.mural' },
+  { to: '/learn', icon: GraduationCap, labelKey: 'nav.learn' },
   { to: '/invite-friends', icon: Gift, labelKey: 'nav.invite' },
 ] as const;
 

@@ -576,6 +576,15 @@ const translations: Record<Language, Record<string, string>> = {
     'history.analyzing': 'Analisando...',
     'history.start_analysis': 'Iniciar Análise',
     'history.new_analysis': 'Nova Análise',
+    // Learn
+    'nav.learn': 'Aprender',
+    'learn.title': 'Aprenda sobre Religiões e Filosofias',
+    'learn.subtitle': 'Explore a história, princípios e práticas de cada tradição',
+    'learn.professor_mode': 'Modo Professor — pergunte o que quiser',
+    'learn.ask_placeholder': 'Faça uma pergunta ao professor...',
+    'learn.ask_faith': 'Deseja configurar {religion} como sua religião de fé?',
+    'learn.yes': 'Sim, é minha fé',
+    'learn.not_now': 'Não agora',
   },
   'en': {
     'nav.chat': 'Chat',
@@ -1122,6 +1131,15 @@ const translations: Record<Language, Record<string, string>> = {
     'history.analyzing': 'Analyzing...',
     'history.start_analysis': 'Start Analysis',
     'history.new_analysis': 'New Analysis',
+    // Learn
+    'nav.learn': 'Learn',
+    'learn.title': 'Learn about Religions and Philosophies',
+    'learn.subtitle': 'Explore the history, principles, and practices of each tradition',
+    'learn.professor_mode': 'Professor Mode — ask anything',
+    'learn.ask_placeholder': 'Ask the professor a question...',
+    'learn.ask_faith': 'Would you like to set {religion} as your faith religion?',
+    'learn.yes': 'Yes, it\'s my faith',
+    'learn.not_now': 'Not now',
   },
   'es': {
     'nav.chat': 'Chat',
@@ -1668,6 +1686,16 @@ const translations: Record<Language, Record<string, string>> = {
     'history.analyzing': 'Analizando...',
     'history.start_analysis': 'Iniciar Análisis',
     'history.new_analysis': 'Nuevo Análisis',
+
+    // Learn
+    'nav.learn': 'Aprender',
+    'learn.title': 'Aprende sobre Religiones y Filosofías',
+    'learn.subtitle': 'Explora la historia, principios y prácticas de cada tradición',
+    'learn.professor_mode': 'Modo Profesor — pregunta lo que quieras',
+    'learn.ask_placeholder': 'Haz una pregunta al profesor...',
+    'learn.ask_faith': '¿Deseas configurar {religion} como tu religión de fe?',
+    'learn.yes': 'Sí, es mi fe',
+    'learn.not_now': 'Ahora no',
   },
 };
 
