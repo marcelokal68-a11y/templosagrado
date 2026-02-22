@@ -68,7 +68,7 @@ export default function AppSidebar() {
       className={cn("hidden md:flex border-r border-primary/10 transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-52")}
       collapsible="icon"
     >
-      <SidebarContent className="flex flex-col justify-center h-full">
+      <SidebarContent className="flex flex-col pt-4 h-full">
         <SidebarGroup>
           <SidebarGroupContent>
             <TooltipProvider delayDuration={0}>
