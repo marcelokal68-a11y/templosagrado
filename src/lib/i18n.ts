@@ -465,6 +465,9 @@ const translations: Record<Language, Record<string, string>> = {
     'verse.subtitle': 'Uma passagem sagrada para iluminar seu dia',
     'verse.loading': 'Buscando inspiração divina...',
     'verse.refresh': 'Novo versículo',
+    'verse.practical_title': 'Usando na Prática',
+    'verse.copied': 'Copiado!',
+    'verse.feedback_thanks': 'Obrigado pelo feedback!',
     
     // Auth
     'auth.login': 'Entrar',
@@ -994,6 +997,9 @@ const translations: Record<Language, Record<string, string>> = {
     'verse.subtitle': 'A sacred passage to light your day',
     'verse.loading': 'Seeking divine inspiration...',
     'verse.refresh': 'New verse',
+    'verse.practical_title': 'Putting into Practice',
+    'verse.copied': 'Copied!',
+    'verse.feedback_thanks': 'Thanks for your feedback!',
     
     'auth.login': 'Sign In',
     'auth.signup': 'Sign Up',
@@ -1521,6 +1527,9 @@ const translations: Record<Language, Record<string, string>> = {
     'verse.subtitle': 'Un pasaje sagrado para iluminar tu día',
     'verse.loading': 'Buscando inspiración divina...',
     'verse.refresh': 'Nuevo versículo',
+    'verse.practical_title': 'Poniendo en Práctica',
+    'verse.copied': '¡Copiado!',
+    'verse.feedback_thanks': '¡Gracias por tu feedback!',
     
     'auth.login': 'Iniciar Sesión',
     'auth.signup': 'Crear Cuenta',

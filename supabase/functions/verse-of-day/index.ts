@@ -5,7 +5,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const practicalUseInstruction: Record<string, string> = {
+  'pt-BR': `\nInclua também um campo "practical_use" com um parágrafo inspirador (4-6 linhas) sobre como aplicar este ensinamento na vida prática do usuário hoje. Reveze entre temas como: cuidar da saúde física e mental, fortalecer a alma, excelência no trabalho, cultivar amizades, nutrir a família, servir a comunidade. Escreva de forma inédita, poética e motivadora, como um grande sacerdote falando diretamente ao coração do leitor. O leitor deve terminar de ler e sentir vontade de agir imediatamente.`,
+  'en': `\nAlso include a "practical_use" field with an inspiring paragraph (4-6 lines) about how to apply this teaching in the user's practical life today. Rotate between themes such as: caring for physical and mental health, strengthening the soul, excellence at work, cultivating friendships, nurturing family, serving the community. Write in a unique, poetic, and motivating way, like a great priest speaking directly to the reader's heart. The reader should finish reading and feel compelled to act immediately.`,
+  'es': `\nIncluye también un campo "practical_use" con un párrafo inspirador (4-6 líneas) sobre cómo aplicar esta enseñanza en la vida práctica del usuario hoy. Alterna entre temas como: cuidar la salud física y mental, fortalecer el alma, excelencia en el trabajo, cultivar amistades, nutrir la familia, servir a la comunidad. Escribe de forma inédita, poética y motivadora, como un gran sacerdote hablando directamente al corazón del lector. El lector debe terminar de leer y sentir ganas de actuar inmediatamente.`,
+};
+
 function getVersePrompt(religion: string, language: string, date: string): { system: string; user: string } {
+  const lang = language || 'pt-BR';
+  const practicalInstr = practicalUseInstruction[lang] || practicalUseInstruction['pt-BR'];
   const prompts: Record<string, Record<string, { system: string; user: string }>> = {
     'pt-BR': {
       jewish: {
@@ -396,9 +404,19 @@ Responde SOLO con JSON válido (sin markdown):
     },
   };
 
-  const lang = prompts[language] || prompts['pt-BR'];
-  const rel = lang[religion] || lang['christian'];
-  return rel;
+  const langPrompts = prompts[lang] || prompts['pt-BR'];
+  const rel = langPrompts[religion] || langPrompts['christian'];
+  // Inject practical_use instruction into every system prompt
+  const jsonFieldPt = ', "practical_use": "parágrafo prático"';
+  const jsonFieldEn = ', "practical_use": "practical paragraph"';
+  const jsonFieldEs = ', "practical_use": "párrafo práctico"';
+  const jsonField = lang === 'en' ? jsonFieldEn : lang === 'es' ? jsonFieldEs : jsonFieldPt;
+  // Add practical_use to system prompt and JSON format
+  const updatedSystem = rel.system.replace(
+    /("scholarly_note":\s*"[^"]*")\s*}/,
+    `$1${jsonField}}`
+  ) + practicalInstr;
+  return { system: updatedSystem, user: rel.user };
 }
 
 serve(async (req) => {
