@@ -10,12 +10,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const PLANS = {
   monthly: {
-    priceId: 'price_1T2fE3CkGJ1CW5bGNUoxI1uo',
-    productId: 'prod_U0gbjXw27dj6Hd',
+    priceId: 'price_1T3dRaCkGJ1CW5bG9N43LMuq',
+    productId: 'prod_U1gp611KZoR0wO',
   },
   annual: {
-    priceId: 'price_1T2fEnCkGJ1CW5bGv9fgUSq3',
-    productId: 'prod_U0gckVzX4EtzIG',
+    priceId: 'price_1T3dZcCkGJ1CW5bGZvBy9ibE',
+    productId: 'prod_U1gxCDHt1CMGuE',
   },
 };
 
