@@ -1,82 +1,44 @@
 
 
-## Redesign Visual: Estetica Premium Sagrada
+## Secao "Usando na Pratica" no Versiculo do Dia
 
-Inspirado nas imagens de referencia, o app ganhara uma estetica dark premium com brilhos dourados, efeitos de luz cosmica e cards com glassmorphism profundo -- evocando uma experiencia imersiva de templo digital.
-
----
-
-### Visao Geral das Mudancas
-
-A reformulacao abrange **cores, tipografia, efeitos visuais e layout de componentes** em todo o app, mantendo a estrutura funcional existente.
+Adicionar uma nova secao abaixo do versiculo com um paragrafo gerado pela IA sobre como aplicar o ensinamento no dia a dia, alem de botoes de feedback e copiar.
 
 ---
 
-### 1. Nova Paleta de Cores (index.css)
+### 1. Edge Function (verse-of-day/index.ts)
 
-**Tema escuro como padrao** -- inspirado nas imagens com fundo azul-marinho profundo e destaques dourados:
+Adicionar um novo campo `practical_use` ao JSON retornado pela IA. O prompt sera expandido para instruir a LLM a gerar um paragrafo inspirador sobre como usar o versiculo na pratica, revezando entre temas como saude, alma, trabalho, amigos, familia e comunidade.
 
-- **Background**: Azul-marinho escuro (#0a0e1a) em vez do creme claro atual
-- **Cards**: Vidro escuro semi-transparente com borda dourada sutil
-- **Primary**: Dourado brilhante (mantendo o tom atual mas mais luminoso)
-- **Accent**: Azul cosmico profundo (#1a2444)
-- **Texto**: Branco/creme (#f0e6d3) com hierarquia clara
-- **Glass**: Efeito mais forte com backdrop-blur maior e bordas luminosas
+**Mudanca no prompt (todas as religioes e idiomas):**
+- Adicionar ao system prompt de cada religiao uma instrucao extra:
+  ```
+  Inclua tambem um campo "practical_use" com um paragrafo inspirador (4-6 linhas) sobre como aplicar este ensinamento na vida pratica do usuario hoje. 
+  Reveze entre temas como: cuidar da saude fisica e mental, fortalecer a alma, excelencia no trabalho, cultivar amizades, nutrir a familia, servir a comunidade. 
+  Escreva de forma inedita, poetica e motivadora, como um grande sacerdote falando diretamente ao coracao do leitor. 
+  O leitor deve terminar de ler e sentir vontade de agir imediatamente.
+  ```
+- Adicionar `"practical_use": "paragrafo pratico"` ao formato JSON esperado
 
-O tema claro sera mantido como alternativa, mas o dark sera o padrao visual.
+### 2. Frontend (src/pages/Verse.tsx)
 
-### 2. Efeitos Visuais Novos (index.css)
+**Novo campo na interface:**
+- Adicionar `practical_use?: string` ao tipo `VerseContent`
 
-- **Glow dourado**: Classe `.sacred-glow` com box-shadow dourado pulsante
-- **Borda luminosa**: `.sacred-border` com gradiente dourado nas bordas dos cards
-- **Shimmer animado**: Animacao de brilho passando sobre titulos e cards
-- **Particulas de luz**: Pseudo-elementos com pontos de luz (efeito estrelas)
-- **Gradiente cosmico**: Fundo com gradiente radial simulando nebulosa
+**Nova secao visual** (abaixo da reflexao, antes das fontes):
+- Card com icone de foguete/alvo (Target ou Flame do Lucide)
+- Titulo "Usando na Pratica" com estilo dourado
+- Paragrafo do `practical_use` com estilo destacado
+- Dois botoes no rodape da secao:
+  - **Copiar** (icone Copy): copia o texto do `practical_use` para a area de transferencia com toast de confirmacao
+  - **Feedback** (icone ThumbsUp/ThumbsDown): dois icones lado a lado que ao clicar mudam de cor (dourado) indicando que o usuario gostou ou nao. Feedback visual apenas (sem persistencia por enquanto)
 
-### 3. Landing Page (Landing.tsx)
+### 3. Traducoes (src/lib/i18n.ts)
 
-- Hero com fundo gradiente cosmico (azul escuro para preto) e brilho dourado central
-- Cards de features com glassmorphism escuro e bordas douradas
-- Secao do Mural Sagrado com efeito de luz irradiando do centro
-- Stats com numeros em dourado brilhante com glow
-- Testimonials com cards de vidro escuro e aspas douradas
-- Footer com gradiente sutil
-
-### 4. Header e Navegacao (Header.tsx, BottomNav.tsx)
-
-- Header com fundo glass escuro e borda inferior dourada sutil
-- Bottom nav com icones que ganham glow dourado quando ativos
-- Indicador ativo com barra dourada luminosa no topo
-
-### 5. Cards e Componentes (Verse, Practice, Prayers, Posts)
-
-- Todos os cards com fundo glass escuro (rgba dark + blur)
-- Bordas com gradiente dourado sutil
-- Titulos em fonte Cinzel com cor dourada
-- Botoes primarios com gradiente dourado e efeito glow no hover
-- Selectors de religiao com estilo pill dourado quando ativo
-- Barras de progresso com gradiente dourado
-
-### 6. Chat (ChatArea.tsx)
-
-- Bolhas do assistente com glass escuro e borda dourada sutil
-- Avatar do assistente com anel de glow dourado
-- Input com borda glass e glow no focus
-- Typing dots com cor dourada
-
-### 7. Mural Sagrado (TempleGallery, SacredPlace, PrayerNote)
-
-- Gallery com overlay de gradiente mais dramatico (preto para transparente)
-- Nomes dos templos com texto dourado e sombra de luz
-- Prayer notes com estilo pergaminho escuro (em vez de amber claro)
-- Bordas dos notes com efeito manuscrito luminoso
-
-### 8. Sidebar (AppSidebar.tsx)
-
-- Mantendo o fundo escuro atual, adicionando brilho dourado nos itens ativos
-- Separadores com linha dourada sutil
-
----
+Novas chaves em pt-BR, en e es:
+- `verse.practical_title`: "Usando na Pratica" / "Putting into Practice" / "Poniendo en Practica"
+- `verse.copied`: "Copiado!" / "Copied!" / "Copiado!"
+- `verse.feedback_thanks`: "Obrigado pelo feedback!" / "Thanks for your feedback!" / "Gracias por tu feedback!"
 
 ### Detalhes Tecnicos
 
@@ -84,23 +46,11 @@ O tema claro sera mantido como alternativa, mas o dark sera o padrao visual.
 
 | Arquivo | Mudancas |
 |---------|----------|
-| `src/index.css` | Nova paleta dark, variaveis CSS, classes de efeito (glow, shimmer, sacred-border), animacoes keyframe, gradientes cosmicos |
-| `tailwind.config.ts` | Novas animacoes (shimmer, glow-pulse), cores customizadas adicionais |
-| `src/pages/Landing.tsx` | Classes de estilo atualizadas para estetica cosmica premium |
-| `src/components/Header.tsx` | Glass escuro com borda dourada |
-| `src/components/BottomNav.tsx` | Icones com glow dourado ativo |
-| `src/components/ChatArea.tsx` | Bolhas com glass escuro, avatar com glow |
-| `src/pages/Verse.tsx` | Cards com glass escuro e bordas douradas |
-| `src/pages/Practice.tsx` | Mesmo tratamento de cards e selectors |
-| `src/pages/Prayers.tsx` | Cards e botoes com estetica dourada |
-| `src/pages/Posts.tsx` | Cards com glass escuro |
-| `src/components/mural/TempleGallery.tsx` | Overlay cosmico, texto dourado |
-| `src/components/mural/SacredPlace.tsx` | Hero com glow, notes escuros |
-| `src/components/mural/PrayerNote.tsx` | Estilo pergaminho escuro com borda luminosa |
-| `src/pages/Mural.tsx` | Tabs com estilo dourado |
-| `src/pages/Invite.tsx` | Card com glass e glow |
+| `supabase/functions/verse-of-day/index.ts` | Adicionar instrucao de `practical_use` em todos os prompts (pt-BR, en, es) e no formato JSON esperado |
+| `src/pages/Verse.tsx` | Novo campo no tipo, nova secao visual com card glass, botao copiar (navigator.clipboard) e icones de feedback com estado local |
+| `src/lib/i18n.ts` | 3 novas chaves de traducao nos 3 idiomas |
 
-**Nenhuma dependencia nova** -- tudo sera feito com CSS puro (variaveis, gradientes, box-shadow, backdrop-filter, animacoes keyframe).
+**Nenhuma dependencia nova** -- usa Lucide icons ja instalados (Copy, ThumbsUp, ThumbsDown, Target) e navigator.clipboard API nativa.
 
-**Nenhuma mudanca no banco de dados** -- redesign puramente visual.
+**Nenhuma mudanca no banco de dados.**
 
