@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2 } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2, Gift } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ReligionIcon from '@/components/ReligionIcon';
 import ActivityHistory from '@/components/ActivityHistory';
@@ -516,7 +516,13 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       {messages.length === 0 && (
         <div className="p-4 space-y-3 animate-fade-in">
           {user && (
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <Link to="/invite-friends">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary gap-1.5">
+                  <Gift className="h-4 w-4" />
+                  {t('nav.invite', language)}
+                </Button>
+              </Link>
               <ActivityHistory />
             </div>
           )}
