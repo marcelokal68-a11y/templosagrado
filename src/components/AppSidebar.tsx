@@ -25,7 +25,7 @@ const navItems = [
   { to: '/practice', labelKey: 'nav.practice', icon: CheckSquare },
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
   { to: '/learn', labelKey: 'nav.learn', icon: GraduationCap },
-  { to: '/pricing', labelKey: 'nav.pricing', icon: DollarSign },
+  
   { to: '/invite-friends', labelKey: 'nav.invite', icon: Gift },
 ];
 
