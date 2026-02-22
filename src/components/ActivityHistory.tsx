@@ -344,20 +344,20 @@ export default function ActivityHistory() {
 
       {/* Analysis Dialog */}
       <Dialog open={analysisOpen} onOpenChange={setAnalysisOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-2xl max-h-[85vh] overflow-y-auto rounded-lg mx-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-display">
-              <Brain className="h-5 w-5 text-primary" />
-              {t('history.analyze', language) || 'Analisando sua História no Templo Sagrado'}
+            <DialogTitle className="flex items-center gap-2 font-display text-base sm:text-lg">
+              <Brain className="h-5 w-5 text-primary shrink-0" />
+              <span className="truncate">{t('history.analyze', language) || 'Analisando sua História no Templo Sagrado'}</span>
             </DialogTitle>
           </DialogHeader>
 
           {!analysisResult ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="space-y-3 sm:space-y-4">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('history.analyze_desc', language) || 'Selecione os itens que deseja incluir na análise. O sacerdote-psicólogo analisará sua jornada espiritual.'}
               </p>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
+              <div className="space-y-2 max-h-48 sm:max-h-60 overflow-y-auto">
                 {items.map(item => (
                   <label key={item.id} className="flex items-start gap-2 p-2 rounded-lg border border-border hover:border-primary/30 cursor-pointer transition-all">
                     <Checkbox
@@ -370,7 +370,7 @@ export default function ActivityHistory() {
                         <span className="text-primary">{getTypeIcon(item.type)}</span>
                         <span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>
-                      <p className="text-sm font-medium truncate">{item.title}</p>
+                      <p className="text-xs sm:text-sm font-medium truncate">{item.title}</p>
                     </div>
                   </label>
                 ))}
@@ -387,18 +387,18 @@ export default function ActivityHistory() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="glass sacred-border rounded-lg p-4">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="glass sacred-border rounded-lg p-3 sm:p-4">
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">{analysisResult}</div>
+                  <div className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed">{analysisResult}</div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={copyAnalysis} className="gap-1.5">
+                <Button variant="outline" size="sm" onClick={copyAnalysis} className="gap-1.5 text-xs">
                   {analysisCopied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
                   {analysisCopied ? (t('posts.copied', language) || 'Copiado!') : (t('posts.copy', language) || 'Copiar')}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { setAnalysisResult(''); }} className="gap-1.5">
+                <Button variant="outline" size="sm" onClick={() => { setAnalysisResult(''); }} className="gap-1.5 text-xs">
                   <Brain className="h-3.5 w-3.5" />
                   {t('history.new_analysis', language) || 'Nova Análise'}
                 </Button>
