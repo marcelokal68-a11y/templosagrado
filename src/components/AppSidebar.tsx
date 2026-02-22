@@ -26,7 +26,7 @@ const navItems = [
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
   { to: '/learn', labelKey: 'nav.learn', icon: GraduationCap },
   
-  { to: '/invite-friends', labelKey: 'nav.invite', icon: Gift },
+  
 ];
 
 export default function AppSidebar() {
