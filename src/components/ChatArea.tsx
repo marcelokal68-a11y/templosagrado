@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ReligionIcon from '@/components/ReligionIcon';
-import ChatHistory from '@/components/ChatHistory';
+import ActivityHistory from '@/components/ActivityHistory';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -83,7 +83,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat } = useApp();
+  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo } = useApp();
   const religion = chatContext.religion || '';
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -98,19 +98,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const prevAffiliationRef = useRef<string>('');
-  const geoRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   // Capture timezone (always available) and geolocation (request once)
   const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { geoRef.current = { latitude: pos.coords.latitude, longitude: pos.coords.longitude }; },
-      () => { /* permission denied — fallback to timezone only */ },
-      { timeout: 5000, maximumAge: 600000 }
-    );
-  }, []);
+  // Geolocation now handled by AppContext (geo persistence)
 
   // Show undo toast when chat is cleared via affiliation change
   useEffect(() => {
@@ -295,7 +287,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           userId: user?.id,
           datetime: new Date().toISOString(),
           timezone,
-          geo: geoRef.current,
+          geo,
         }),
       });
 
@@ -371,6 +363,15 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           { ...ctx, role: 'user', content: userMsg.content },
           { ...ctx, role: 'assistant', content: assistantSoFar },
         ]).then(() => {});
+
+        // Insert into activity_history
+        (supabase.from('activity_history' as any) as any).insert({
+          user_id: user.id,
+          type: 'chat',
+          title: userMsg.content.length > 60 ? userMsg.content.slice(0, 60) + '...' : userMsg.content,
+          content: `👤 ${userMsg.content}\n\n🕊️ ${assistantSoFar}`,
+          metadata: { religion: chatContext.religion || null, philosophy: chatContext.philosophy || null },
+        }).then(() => {});
       }
 
       if (assistantSoFar.length > 0) {
@@ -488,7 +489,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             </select>
           </div>
           <div className="flex items-center gap-1">
-            <ChatHistory />
+            <ActivityHistory />
             <Button
               variant="ghost"
               size="sm"
@@ -512,7 +513,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         <div className="p-4 space-y-3 animate-fade-in">
           {user && (
             <div className="flex justify-end">
-              <ChatHistory />
+              <ActivityHistory />
             </div>
           )}
           <h3 className="font-display text-sm font-semibold text-muted-foreground">{t('chat.recommended', language)}</h3>

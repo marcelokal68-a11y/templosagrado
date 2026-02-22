@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_history: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -287,6 +317,8 @@ export type Database = {
           display_name: string | null
           id: string
           is_subscriber: boolean
+          latitude: number | null
+          longitude: number | null
           preferred_language: string
           preferred_religion: string | null
           questions_limit: number
@@ -301,6 +333,8 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_subscriber?: boolean
+          latitude?: number | null
+          longitude?: number | null
           preferred_language?: string
           preferred_religion?: string | null
           questions_limit?: number
@@ -315,6 +349,8 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_subscriber?: boolean
+          latitude?: number | null
+          longitude?: number | null
           preferred_language?: string
           preferred_religion?: string | null
           questions_limit?: number

@@ -21,7 +21,7 @@ interface VerseContent {
 }
 
 export default function Verse() {
-  const { language, chatContext } = useApp();
+  const { language, chatContext, user } = useApp();
   const [selectedReligion, setSelectedReligion] = useState(chatContext.religion || 'christian');
   const [content, setContent] = useState<VerseContent | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,6 +40,16 @@ export default function Verse() {
       if (error) throw error;
       if (data?.title || data?.explanation) {
         setContent(data);
+        // Insert into activity_history
+        if (user) {
+          (supabase.from('activity_history' as any) as any).insert({
+            user_id: user.id,
+            type: 'verse',
+            title: data.title || 'Versículo do Dia',
+            content: `${data.explanation || ''}\n\n${data.practical_use || ''}`,
+            metadata: { religion: religion || selectedReligion, reference: data.reference },
+          }).then(() => {});
+        }
       } else if (data?.verse) {
         // Legacy fallback
         setContent({ title: '', reference: '', explanation: data.verse, reflection: '', sources: '', scholarly_note: '' });
