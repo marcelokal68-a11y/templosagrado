@@ -1,7 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { Language } from '@/lib/i18n';
+import { Language, t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ChatContext {
   religion: string;
@@ -55,21 +65,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [hasPendingUndo, setHasPendingUndo] = useState(false);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Faith prompt state
+  const [faithPromptReligion, setFaithPromptReligion] = useState<string | null>(null);
+  const [faithPromptDismissed, setFaithPromptDismissed] = useState(false);
+  const hasPreferredReligionRef = useRef<boolean | null>(null);
+
   const clearChatWithUndo = useCallback(() => {
     if (messages.length === 0) return;
-    
-    // Clear any existing undo timer
-    if (undoTimerRef.current) {
-      clearTimeout(undoTimerRef.current);
-    }
-
-    // Save current messages to buffer
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setPreviousMessages([...messages]);
     setMessages([]);
     setChatInput('');
     setHasPendingUndo(true);
-
-    // Auto-discard buffer after 20 seconds
     undoTimerRef.current = setTimeout(() => {
       setPreviousMessages([]);
       setHasPendingUndo(false);
@@ -79,23 +86,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const undoClearChat = useCallback(() => {
     if (previousMessages.length === 0) return;
-    
-    if (undoTimerRef.current) {
-      clearTimeout(undoTimerRef.current);
-      undoTimerRef.current = null;
-    }
-
+    if (undoTimerRef.current) { clearTimeout(undoTimerRef.current); undoTimerRef.current = null; }
     setMessages(previousMessages);
     setPreviousMessages([]);
     setHasPendingUndo(false);
   }, [previousMessages]);
 
-  // Cleanup timer on unmount
   useEffect(() => {
-    return () => {
-      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
-    };
+    return () => { if (undoTimerRef.current) clearTimeout(undoTimerRef.current); };
   }, []);
+
+  // Watch for first religion selection → show faith prompt
+  useEffect(() => {
+    if (!user || faithPromptDismissed || hasPreferredReligionRef.current === true) return;
+    if (hasPreferredReligionRef.current === null) return; // still loading
+    const religion = chatContext.religion;
+    if (religion && !faithPromptReligion) {
+      setFaithPromptReligion(religion);
+    }
+  }, [chatContext.religion, user, faithPromptDismissed, faithPromptReligion]);
+
+  const handleFaithConfirm = async () => {
+    if (!user || !faithPromptReligion) return;
+    await supabase.from('profiles').update({ preferred_religion: faithPromptReligion } as any).eq('user_id', user.id);
+    hasPreferredReligionRef.current = true;
+    setFaithPromptReligion(null);
+  };
+
+  const handleFaithDismiss = () => {
+    setFaithPromptDismissed(true);
+    setFaithPromptReligion(null);
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -107,14 +128,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setQuestionsRemaining(10);
         setMessages([]);
         setChatInput('');
+        hasPreferredReligionRef.current = null;
       }
     });
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -129,9 +149,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (data) {
             setQuestionsRemaining(data.questions_limit - data.questions_used);
             if (data.preferred_language) setLanguage(data.preferred_language as Language);
-            if (data.preferred_religion) setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
-            
-            // Geo persistence: load from profile or request once
+            if (data.preferred_religion) {
+              setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
+              hasPreferredReligionRef.current = true;
+            } else {
+              hasPreferredReligionRef.current = false;
+            }
             if (data.latitude != null && data.longitude != null) {
               setGeo({ latitude: data.latitude, longitude: data.longitude });
             } else if (navigator.geolocation) {
@@ -139,10 +162,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 (pos) => {
                   const geoData = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
                   setGeo(geoData);
-                  // Save to profile
                   supabase.from('profiles').update(geoData as any).eq('user_id', user.id).then(() => {});
                 },
-                () => { /* permission denied */ },
+                () => {},
                 { timeout: 5000, maximumAge: 600000 }
               );
             }
@@ -151,9 +173,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  const faithReligionLabel = faithPromptReligion ? t(`religion.${faithPromptReligion}`, language) : '';
+
   return (
     <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo }}>
       {children}
+      <AlertDialog open={!!faithPromptReligion}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('learn.ask_faith', language).replace('{religion}', faithReligionLabel)}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('learn.ask_faith', language).replace('{religion}', faithReligionLabel)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleFaithDismiss}>
+              {t('learn.not_now', language)}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleFaithConfirm}>
+              {t('learn.yes', language)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppContext.Provider>
   );
 }
