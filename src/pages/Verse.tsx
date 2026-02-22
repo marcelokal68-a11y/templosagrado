@@ -10,6 +10,17 @@ import { cn } from '@/lib/utils';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
 
+// Safety: some fields may come as objects like {hebrew, transliteration} instead of strings
+const toStr = (val: unknown): string => {
+  if (val == null) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    const obj = val as Record<string, unknown>;
+    return String(obj.transliteration || obj.hebrew || Object.values(obj).filter(v => typeof v === 'string').join(' — ') || '');
+  }
+  return String(val);
+};
+
 interface VerseContent {
   title: string;
   reference: string;
@@ -166,7 +177,7 @@ export default function Verse() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  {content.title || t('verse.title', language)}
+                  {toStr(content.title) || t('verse.title', language)}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={handleNarrate} disabled={loadingAudio} className="flex items-center gap-1.5">
@@ -180,29 +191,29 @@ export default function Verse() {
                 </div>
               </div>
               {content.reference && (
-                <p className="text-xs text-muted-foreground mt-1">{content.reference}</p>
+                <p className="text-xs text-muted-foreground mt-1">{toStr(content.reference)}</p>
               )}
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-sm text-foreground leading-relaxed">{content.explanation}</p>
+              <p className="text-sm text-foreground leading-relaxed">{toStr(content.explanation)}</p>
 
               {content.reflection && (
                 <div className="bg-primary/8 rounded-lg p-3 border border-primary/15">
-                  <p className="text-sm text-foreground italic">✨ {content.reflection}</p>
+                  <p className="text-sm text-foreground italic">✨ {toStr(content.reflection)}</p>
                 </div>
               )}
 
               {content.sources && (
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <BookMarked className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                  <p><span className="font-medium">{t('practice.sources', language)}:</span> {content.sources}</p>
+                  <p><span className="font-medium">{t('practice.sources', language)}:</span> {toStr(content.sources)}</p>
                 </div>
               )}
 
               {content.scholarly_note && (
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
                   <GraduationCap className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                  <p><span className="font-medium">{t('practice.scholarly_note', language)}:</span> {content.scholarly_note}</p>
+                  <p><span className="font-medium">{t('practice.scholarly_note', language)}:</span> {toStr(content.scholarly_note)}</p>
                 </div>
               )}
 
@@ -212,7 +223,7 @@ export default function Verse() {
                     <Target className="h-4 w-4 text-primary" />
                     <h3 className="font-display text-sm font-semibold text-primary">{t('verse.practical_title', language)}</h3>
                   </div>
-                  <p className="text-sm text-foreground leading-relaxed">{content.practical_use}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{toStr(content.practical_use)}</p>
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-2">
                       <button
