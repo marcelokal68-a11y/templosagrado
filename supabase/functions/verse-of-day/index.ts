@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -428,7 +429,32 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const date = new Date().toISOString().slice(0, 10);
-    const prompt = getVersePrompt(religion || 'christian', language || 'pt-BR', date);
+    const rel = religion || 'christian';
+    const lang = language || 'pt-BR';
+
+    // Check cache first
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const { data: cached } = await sb
+      .from('daily_verse_cache')
+      .select('verse_data')
+      .eq('cache_date', date)
+      .eq('religion', rel)
+      .eq('language', lang)
+      .maybeSingle();
+
+    if (cached?.verse_data) {
+      console.log(`Cache hit: ${date}/${rel}/${lang}`);
+      return new Response(JSON.stringify(cached.verse_data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Cache miss — call AI
+    console.log(`Cache miss: ${date}/${rel}/${lang}, calling AI`);
+    const prompt = getVersePrompt(rel, lang, date);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -457,25 +483,30 @@ serve(async (req) => {
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content || "";
 
-    // Parse JSON from response (handle markdown code blocks)
     let parsed;
     try {
       const jsonStr = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
       parsed = JSON.parse(jsonStr);
     } catch {
       console.error("JSON parse error, raw:", raw);
-      // Fallback: return as simple verse
-      return new Response(JSON.stringify({
-        title: "",
-        reference: "",
-        explanation: raw,
-        reflection: "",
-        sources: "",
-        scholarly_note: "",
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      parsed = {
+        title: "", reference: "", explanation: raw,
+        reflection: "", sources: "", scholarly_note: "",
+      };
     }
+
+    // Store in cache (fire and forget)
+    sb.from('daily_verse_cache')
+      .upsert({
+        cache_date: date,
+        religion: rel,
+        language: lang,
+        verse_data: parsed,
+      }, { onConflict: 'cache_date,religion,language' })
+      .then(({ error }) => {
+        if (error) console.error("Cache write error:", error);
+        else console.log(`Cached: ${date}/${rel}/${lang}`);
+      });
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
