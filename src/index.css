@@ -6,32 +6,32 @@
 
 @layer base {
   :root {
-    --background: 225 28% 10%;
+    --background: 225 28% 14%;
     --foreground: 38 30% 90%;
 
-    --card: 225 25% 13%;
+    --card: 225 25% 17%;
     --card-foreground: 38 30% 90%;
 
-    --popover: 225 25% 13%;
+    --popover: 225 25% 17%;
     --popover-foreground: 38 30% 90%;
 
     --primary: 38 80% 55%;
     --primary-foreground: 225 28% 10%;
 
-    --secondary: 225 20% 18%;
+    --secondary: 225 20% 22%;
     --secondary-foreground: 38 25% 80%;
 
-    --muted: 225 15% 17%;
-    --muted-foreground: 225 10% 52%;
+    --muted: 225 15% 21%;
+    --muted-foreground: 225 10% 55%;
 
-    --accent: 225 30% 22%;
+    --accent: 225 30% 26%;
     --accent-foreground: 38 30% 90%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 225 15% 20%;
-    --input: 225 15% 20%;
+    --border: 225 15% 24%;
+    --input: 225 15% 24%;
     --ring: 38 80% 55%;
 
     --radius: 0.75rem;
@@ -40,76 +40,76 @@
     --sacred-gold: 38 80% 55%;
     --sacred-amber: 30 65% 45%;
     --sacred-cream: 38 30% 90%;
-    --sacred-warm: 225 15% 16%;
+    --sacred-warm: 225 15% 20%;
     --sacred-text: 38 30% 90%;
     --sacred-green: 150 30% 35%;
-    --sacred-green-light: 150 15% 18%;
+    --sacred-green-light: 150 15% 22%;
     --sacred-earth: 25 25% 50%;
     --sacred-bark: 20 20% 65%;
 
     /* Glass effects */
-    --glass-bg: 225 25% 12% / 0.75;
+    --glass-bg: 225 25% 16% / 0.75;
     --glass-border: 38 40% 30% / 0.2;
 
-    --sidebar-background: 225 30% 9%;
+    --sidebar-background: 225 30% 12%;
     --sidebar-foreground: 38 25% 85%;
     --sidebar-primary: 38 80% 55%;
     --sidebar-primary-foreground: 225 28% 10%;
-    --sidebar-accent: 225 25% 18%;
+    --sidebar-accent: 225 25% 22%;
     --sidebar-accent-foreground: 38 25% 85%;
-    --sidebar-border: 225 15% 18%;
+    --sidebar-border: 225 15% 22%;
     --sidebar-ring: 38 80% 55%;
   }
 
   .dark {
-    --background: 225 28% 10%;
+    --background: 225 28% 14%;
     --foreground: 38 30% 90%;
 
-    --card: 225 25% 13%;
+    --card: 225 25% 17%;
     --card-foreground: 38 30% 90%;
 
-    --popover: 225 25% 13%;
+    --popover: 225 25% 17%;
     --popover-foreground: 38 30% 90%;
 
     --primary: 38 80% 55%;
     --primary-foreground: 225 28% 10%;
 
-    --secondary: 225 20% 18%;
+    --secondary: 225 20% 22%;
     --secondary-foreground: 38 25% 80%;
 
-    --muted: 225 15% 17%;
-    --muted-foreground: 225 10% 52%;
+    --muted: 225 15% 21%;
+    --muted-foreground: 225 10% 55%;
 
-    --accent: 225 30% 22%;
+    --accent: 225 30% 26%;
     --accent-foreground: 38 30% 90%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 225 15% 20%;
-    --input: 225 15% 20%;
+    --border: 225 15% 24%;
+    --input: 225 15% 24%;
     --ring: 38 80% 55%;
 
     --sacred-gold: 38 80% 55%;
     --sacred-amber: 30 65% 45%;
     --sacred-cream: 38 30% 90%;
-    --sacred-warm: 225 15% 16%;
+    --sacred-warm: 225 15% 20%;
     --sacred-text: 38 30% 90%;
     --sacred-green: 150 30% 35%;
-    --sacred-green-light: 150 15% 18%;
+    --sacred-green-light: 150 15% 22%;
     --sacred-earth: 25 25% 50%;
     --sacred-bark: 20 20% 65%;
 
-    --glass-bg: 225 25% 12% / 0.75;
+    --glass-bg: 225 25% 16% / 0.75;
     --glass-border: 38 40% 30% / 0.2;
 
-    --sidebar-background: 225 30% 9%;
+    --sidebar-background: 225 30% 12%;
     --sidebar-foreground: 38 25% 85%;
     --sidebar-primary: 38 80% 55%;
     --sidebar-primary-foreground: 225 28% 10%;
-    --sidebar-accent: 225 25% 18%;
+    --sidebar-accent: 225 25% 22%;
     --sidebar-accent-foreground: 38 25% 85%;
-    --sidebar-border: 225 15% 18%;
+    --sidebar-border: 225 15% 22%;
     --sidebar-ring: 38 80% 55%;
   }
 }
