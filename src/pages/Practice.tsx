@@ -72,7 +72,7 @@ interface DailyContent {
 }
 
 export default function Practice() {
-  const { language, chatContext } = useApp();
+  const { language, chatContext, user } = useApp();
   const [religion, setReligion] = useState(chatContext.religion || '');
   const [philosophy, setPhilosophy] = useState(chatContext.philosophy || '');
   const [gender, setGender] = useState<'male' | 'female'>('male');
@@ -187,6 +187,23 @@ export default function Practice() {
 
   const items = getItems();
   const checkedCount = items.filter(i => checked[i]).length;
+
+  // Insert into activity_history when all items are checked
+  useEffect(() => {
+    if (items.length > 0 && checkedCount === items.length && user) {
+      const key = `practice_saved_${today}_${religion || philosophy}`;
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, 'true');
+        (supabase.from('activity_history' as any) as any).insert({
+          user_id: user.id,
+          type: 'practice',
+          title: `Prática completa: ${religion ? t(`religion.${religion}`, language) : t(`philosophy.${philosophy}`, language)}`,
+          content: items.map(i => `✅ ${t(`practice.item.${i}`, language)}`).join('\n'),
+          metadata: { religion: religion || null, philosophy: philosophy || null, date: today },
+        }).then(() => {});
+      }
+    }
+  }, [checkedCount, items.length]);
 
   return (
     <main className="flex-1 container max-w-2xl py-6 px-4 pb-24 space-y-6">

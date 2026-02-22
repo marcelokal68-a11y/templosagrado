@@ -29,6 +29,7 @@ interface AppContextType {
   clearChatWithUndo: () => void;
   undoClearChat: () => void;
   hasPendingUndo: boolean;
+  geo: { latitude: number; longitude: number } | null;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -47,6 +48,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     topic: '',
     philosophy: '',
   });
+  const [geo, setGeo] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Undo buffer
   const [previousMessages, setPreviousMessages] = useState<Msg[]>([]);
@@ -120,7 +122,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       supabase
         .from('profiles')
-        .select('questions_used, questions_limit, preferred_language, preferred_religion')
+        .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude')
         .eq('user_id', user.id)
         .maybeSingle()
         .then(({ data }) => {
@@ -128,13 +130,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setQuestionsRemaining(data.questions_limit - data.questions_used);
             if (data.preferred_language) setLanguage(data.preferred_language as Language);
             if (data.preferred_religion) setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
+            
+            // Geo persistence: load from profile or request once
+            if (data.latitude != null && data.longitude != null) {
+              setGeo({ latitude: data.latitude, longitude: data.longitude });
+            } else if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  const geoData = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+                  setGeo(geoData);
+                  // Save to profile
+                  supabase.from('profiles').update(geoData as any).eq('user_id', user.id).then(() => {});
+                },
+                () => { /* permission denied */ },
+                { timeout: 5000, maximumAge: 600000 }
+              );
+            }
           }
         });
     }
   }, [user]);
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo }}>
       {children}
     </AppContext.Provider>
   );

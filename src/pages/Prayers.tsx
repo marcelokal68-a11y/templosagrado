@@ -65,6 +65,17 @@ export default function Prayers() {
         generated_text: prayer,
       } as any);
 
+      // Insert into activity_history
+      if (user && prayer) {
+        (supabase.from('activity_history' as any) as any).insert({
+          user_id: user.id,
+          type: 'prayer',
+          title: intention.length > 60 ? intention.slice(0, 60) + '...' : intention,
+          content: prayer,
+          metadata: { religion: religion || null, philosophy: philosophy || null, name: name || null },
+        }).then(() => {});
+      }
+
       toast({ title: tk('prayers.success') });
     } catch (err: any) {
       toast({ title: t('chat.error', language), description: err.message, variant: 'destructive' });

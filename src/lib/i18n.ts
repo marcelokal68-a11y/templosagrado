@@ -560,6 +560,13 @@ const translations: Record<Language, Record<string, string>> = {
     'invite.friends_joined': 'amigos convidados entraram',
     'invite.share_title': 'Templo Sagrado — Convite Especial',
     'invite.share_text': '🕉️ Você recebeu um convite com 7 dias grátis de Premium no Templo Sagrado!',
+
+    // Activity History
+    'history.analyze': 'Analisando sua História no Templo Sagrado',
+    'history.analyze_desc': 'Selecione os itens que deseja incluir na análise. O sacerdote-psicólogo analisará sua jornada espiritual.',
+    'history.analyzing': 'Analisando...',
+    'history.start_analysis': 'Iniciar Análise',
+    'history.new_analysis': 'Nova Análise',
   },
   'en': {
     'nav.chat': 'Chat',
@@ -1090,6 +1097,13 @@ const translations: Record<Language, Record<string, string>> = {
     'invite.friends_joined': 'invited friends joined',
     'invite.share_title': 'Sacred Temple — Special Invite',
     'invite.share_text': '🕉️ You received an invite with 7 free days of Premium at Sacred Temple!',
+
+    // Activity History
+    'history.analyze': 'Analyzing your History at the Sacred Temple',
+    'history.analyze_desc': 'Select the items you want to include in the analysis. The priest-psychologist will analyze your spiritual journey.',
+    'history.analyzing': 'Analyzing...',
+    'history.start_analysis': 'Start Analysis',
+    'history.new_analysis': 'New Analysis',
   },
   'es': {
     'nav.chat': 'Chat',
@@ -1620,6 +1634,13 @@ const translations: Record<Language, Record<string, string>> = {
     'invite.friends_joined': 'amigos invitados se unieron',
     'invite.share_title': 'Templo Sagrado — Invitación Especial',
     'invite.share_text': '🕉️ ¡Recibiste una invitación con 7 días gratis de Premium en el Templo Sagrado!',
+
+    // Activity History
+    'history.analyze': 'Analizando tu Historia en el Templo Sagrado',
+    'history.analyze_desc': 'Selecciona los ítems que deseas incluir en el análisis. El sacerdote-psicólogo analizará tu viaje espiritual.',
+    'history.analyzing': 'Analizando...',
+    'history.start_analysis': 'Iniciar Análisis',
+    'history.new_analysis': 'Nuevo Análisis',
   },
 };
 
