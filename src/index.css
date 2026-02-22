@@ -244,3 +244,8 @@
   0%, 100% { box-shadow: 0 0 15px hsl(38 80% 55% / 0.15); }
   50% { box-shadow: 0 0 30px hsl(38 80% 55% / 0.3), 0 0 60px hsl(38 80% 55% / 0.1); }
 }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.8; }
+}

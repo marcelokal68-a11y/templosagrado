@@ -247,7 +247,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           selected={chatContext.philosophy}
           onSelect={handlePhilosophySelect}
           defaultOpen={true}
-          activeColor="bg-violet-500 text-white border-violet-500"
+          activeColor="bg-amber-600 text-white border-amber-600"
         />
       )}
 
@@ -258,7 +258,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         selected={chatContext.need}
         onSelect={(v) => setChatContext(prev => ({ ...prev, need: v }))}
         defaultOpen={false}
-        activeColor="bg-emerald-500 text-white border-emerald-500"
+        activeColor="bg-amber-600 text-white border-amber-600"
       />
       <CollapsibleChipGroup
         label={t('panel.mood', language)}
@@ -267,7 +267,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         selected={chatContext.mood}
         onSelect={(v) => setChatContext(prev => ({ ...prev, mood: v }))}
         defaultOpen={false}
-        activeColor="bg-rose-400 text-white border-rose-400"
+        activeColor="bg-amber-500 text-white border-amber-500"
       />
       <CollapsibleChipGroup
         label={t('panel.topics', language)}
@@ -276,7 +276,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
         defaultOpen={false}
-        activeColor="bg-sky-500 text-white border-sky-500"
+        activeColor="bg-amber-700 text-white border-amber-700"
       />
 
       {/* Spotify Background Music */}
