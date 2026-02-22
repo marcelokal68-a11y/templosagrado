@@ -7,15 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, Copy, Check, Mail, RefreshCw, Sparkles, Lightbulb } from 'lucide-react';
+import { Heart, Copy, Check, Mail, RefreshCw, Sparkles, User, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
 const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism'];
 
+type Mode = 'send' | 'practice' | null;
+
 export default function Prayers() {
   const { language, user, chatContext } = useApp();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [mode, setMode] = useState<Mode>(null);
   const [name, setName] = useState('');
   const [intention, setIntention] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,10 +29,9 @@ export default function Prayers() {
   const [copied, setCopied] = useState(false);
   const [generatedPrayer, setGeneratedPrayer] = useState('');
   const [recipientEmails, setRecipientEmails] = useState('');
-  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const isPhilosophy = !!philosophy && !religion;
-  const tk = (key: string) => isPhilosophy ? t(`${key}_thought`, language) : t(key, language);
 
   const handleGenerate = async () => {
     if (!religion && !philosophy) {
@@ -56,7 +60,6 @@ export default function Prayers() {
       const prayer = data?.prayer || '';
       setGeneratedPrayer(prayer);
 
-      // Save to database
       await supabase.from('prayers').insert({
         user_id: user?.id || null,
         name: name || null,
@@ -65,7 +68,6 @@ export default function Prayers() {
         generated_text: prayer,
       } as any);
 
-      // Insert into activity_history
       if (user && prayer) {
         (supabase.from('activity_history' as any) as any).insert({
           user_id: user.id,
@@ -76,7 +78,7 @@ export default function Prayers() {
         }).then(() => {});
       }
 
-      toast({ title: tk('prayers.success') });
+      toast({ title: t('prayers.success', language) });
     } catch (err: any) {
       toast({ title: t('chat.error', language), description: err.message, variant: 'destructive' });
     } finally {
@@ -90,8 +92,6 @@ export default function Prayers() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const [sendingEmail, setSendingEmail] = useState(false);
-
   const sendEmailViaResend = async (emails: string) => {
     setSendingEmail(true);
     try {
@@ -102,21 +102,12 @@ export default function Prayers() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast({ title: t('prayers.email_sent', language) || 'Email enviado com sucesso!' });
-      setShowEmailInput(false);
       setRecipientEmails('');
     } catch (err: any) {
       toast({ title: t('chat.error', language), description: err.message, variant: 'destructive' });
     } finally {
       setSendingEmail(false);
     }
-  };
-
-  const handleSendEmail = () => {
-    if (!recipientEmails.trim()) {
-      toast({ title: t('prayers.email_others', language), variant: 'destructive' });
-      return;
-    }
-    sendEmailViaResend(recipientEmails.trim());
   };
 
   const handleSendToMe = () => {
@@ -127,14 +118,65 @@ export default function Prayers() {
     sendEmailViaResend(user.email);
   };
 
+  // Mode selector screen
+  if (mode === null) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-6">
+        <div className="text-center mb-2">
+          <Sparkles className="h-10 w-10 text-primary mx-auto mb-2" />
+          <h1 className="font-display text-2xl font-bold text-foreground">{t('prayers.title', language)}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('prayers.subtitle', language)}</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+          <Card
+            className="cursor-pointer hover:border-primary/50 hover:shadow-lg transition-all group"
+            onClick={() => setMode('send')}
+          >
+            <CardContent className="flex flex-col items-center justify-center p-6 gap-3 text-center">
+              <div className="h-14 w-14 rounded-full sacred-gradient flex items-center justify-center sacred-glow">
+                <Mail className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-foreground">{t('prayers.mode_send', language)}</h3>
+              <p className="text-xs text-muted-foreground">{t('prayers.mode_send_desc', language)}</p>
+            </CardContent>
+          </Card>
+          <Card
+            className="cursor-pointer hover:border-primary/50 hover:shadow-lg transition-all group"
+            onClick={() => setMode('practice')}
+          >
+            <CardContent className="flex flex-col items-center justify-center p-6 gap-3 text-center">
+              <div className="h-14 w-14 rounded-full sacred-gradient flex items-center justify-center sacred-glow">
+                <User className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-foreground">{t('prayers.mode_practice', language)}</h3>
+              <p className="text-xs text-muted-foreground">{t('prayers.mode_practice_desc', language)}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const outputTitle = isPhilosophy ? t('prayers.your_reflection', language) : t('prayers.your_prayer', language);
+  const canGenerate = intention.trim() && (religion || philosophy);
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-4 gap-6 overflow-y-auto">
+    <div className="flex-1 flex flex-col items-center justify-start p-4 gap-6 overflow-y-auto pb-28">
       {/* Prayer Form */}
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-start -ml-2 -mt-2 mb-1"
+            onClick={() => { setMode(null); setGeneratedPrayer(''); }}
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {t('prayers.back_to_modes', language)}
+          </Button>
           <Sparkles className="h-10 w-10 text-primary mx-auto mb-2" />
-          <CardTitle className="font-display text-2xl">{tk('prayers.title')}</CardTitle>
-          <CardDescription>{tk('prayers.subtitle')}</CardDescription>
+          <CardTitle className="font-display text-2xl">{t('prayers.title', language)}</CardTitle>
+          <CardDescription>{t('prayers.subtitle', language)}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -176,8 +218,8 @@ export default function Prayers() {
                     className={cn(
                       "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                       philosophy === p
-                        ? "bg-accent text-accent-foreground border-accent/50 shadow-sm"
-                        : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-accent/10 hover:border-accent/30"
+                        ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
+                        : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
                     )}
                   >
                     {t(`philosophy.${p}`, language)}
@@ -186,31 +228,30 @@ export default function Prayers() {
               </div>
             </div>
 
-            <Input placeholder={t('prayers.name', language)} value={name} onChange={e => setName(e.target.value)} />
+            {/* Name field */}
+            {mode === 'send' ? (
+              <Input placeholder={t('prayers.recipient_name', language)} value={name} onChange={e => setName(e.target.value)} />
+            ) : (
+              <Input placeholder={t('prayers.name', language)} value={name} onChange={e => setName(e.target.value)} />
+            )}
+
             <Textarea
-              placeholder={tk('prayers.intention')}
+              placeholder={t('prayers.intention', language)}
               value={intention}
               onChange={e => setIntention(e.target.value)}
               required
-              rows={4}
+              rows={3}
             />
-            <Button
-              onClick={handleGenerate}
-              className="w-full"
-              disabled={loading || !intention.trim() || (!religion && !philosophy)}
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  {tk('prayers.generating')}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  {tk('prayers.generate')}
-                </>
-              )}
-            </Button>
+
+            {/* Inline email for send mode */}
+            {mode === 'send' && (
+              <Input
+                type="email"
+                placeholder={t('prayers.recipient_email', language)}
+                value={recipientEmails}
+                onChange={e => setRecipientEmails(e.target.value)}
+              />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -219,15 +260,14 @@ export default function Prayers() {
       {generatedPrayer && (
         <Card className="w-full max-w-lg glass sacred-border">
           <CardHeader className="text-center pb-3">
-            {isPhilosophy ? <Lightbulb className="h-8 w-8 text-primary mx-auto mb-1" /> : <Heart className="h-8 w-8 text-primary mx-auto mb-1" />}
-            <CardTitle className="font-display text-xl">{tk('prayers.generated')}</CardTitle>
+            {isPhilosophy ? <Sparkles className="h-8 w-8 text-primary mx-auto mb-1" /> : <Heart className="h-8 w-8 text-primary mx-auto mb-1" />}
+            <CardTitle className="font-display text-xl">{outputTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 italic">
               {generatedPrayer}
             </div>
 
-            {/* Action buttons */}
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 {copied ? <Check className="h-4 w-4 text-primary mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
@@ -239,7 +279,7 @@ export default function Prayers() {
                 onClick={() => { setGeneratedPrayer(''); handleGenerate(); }}
               >
                 <RefreshCw className="h-4 w-4 mr-1" />
-                {tk('prayers.regenerate')}
+                {t('prayers.regenerate', language)}
               </Button>
               {user?.email && (
                 <Button variant="outline" size="sm" onClick={handleSendToMe}>
@@ -247,30 +287,59 @@ export default function Prayers() {
                   {t('prayers.email_to_me', language)}
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => setShowEmailInput(!showEmailInput)}>
-                <Mail className="h-4 w-4 mr-1" />
-                {t('prayers.email_others', language)}
-              </Button>
-            </div>
-
-            {/* Email input */}
-            {showEmailInput && (
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder={t('prayers.email_placeholder', language)}
-                  value={recipientEmails}
-                  onChange={e => setRecipientEmails(e.target.value)}
-                  className="flex-1"
-                />
-                <Button size="sm" onClick={handleSendEmail} disabled={!recipientEmails.trim() || sendingEmail}>
-                  {sendingEmail ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : null}
+              {mode === 'send' && recipientEmails.trim() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => sendEmailViaResend(recipientEmails.trim())}
+                  disabled={sendingEmail}
+                >
+                  {sendingEmail ? <RefreshCw className="h-4 w-4 animate-spin mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
                   {t('prayers.send_email', language)}
                 </Button>
-              </div>
-            )}
+              )}
+              {mode === 'practice' && (
+                <Button variant="outline" size="sm" onClick={() => {
+                  setRecipientEmails('');
+                  const email = prompt(t('prayers.email_placeholder', language));
+                  if (email) sendEmailViaResend(email);
+                }}>
+                  <Mail className="h-4 w-4 mr-1" />
+                  {t('prayers.email_others', language)}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Sticky generate button on mobile */}
+      {!generatedPrayer && (
+        <div className={cn(
+          "w-full max-w-lg",
+          isMobile && "fixed bottom-16 left-0 right-0 p-4 z-40 bg-gradient-to-t from-background via-background to-transparent"
+        )}>
+          <Button
+            onClick={handleGenerate}
+            className={cn(
+              "w-full h-12 text-base sacred-gradient text-primary-foreground sacred-glow font-semibold",
+              isMobile && "max-w-lg mx-auto"
+            )}
+            disabled={loading || !canGenerate}
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+                {t('prayers.generating', language)}
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-5 w-5 mr-2" />
+                {t('prayers.generate', language)}
+              </>
+            )}
+          </Button>
+        </div>
       )}
     </div>
   );
