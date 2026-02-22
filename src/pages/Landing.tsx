@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck, Globe, ScrollText, Shield, Quote } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, CheckSquare, Sparkles, ArrowRight, SlidersHorizontal, ShieldCheck, Globe, ScrollText, Shield, Quote, Crown, Infinity } from 'lucide-react';
 
 const traditions = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -242,7 +242,64 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Traditions */}
+      {/* Pricing Highlight */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 sacred-gradient-subtle pointer-events-none" />
+        <div className="container relative py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+              {t('pricing.title', language)}
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-xl mx-auto">
+              {t('pricing.cancel_note', language)}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
+              {/* Free */}
+              <Card className="glass sacred-border">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <span className="text-3xl">🆓</span>
+                  <h3 className="font-display text-lg font-semibold text-foreground">{t('pricing.free', language)}</h3>
+                  <p className="text-3xl font-bold font-display">R$0</p>
+                  <p className="text-sm text-muted-foreground">{t('pricing.free_questions', language)}</p>
+                </CardContent>
+              </Card>
+
+              {/* Premium */}
+              <Card className="glass sacred-border sacred-glow">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <span className="text-3xl">⭐</span>
+                  <h3 className="font-display text-lg font-semibold text-foreground">{t('pricing.monthly', language)}</h3>
+                  <p className="text-3xl font-bold font-display">R$19,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                  <p className="text-sm text-muted-foreground">{t('pricing.monthly_questions', language)}</p>
+                  <p className="text-xs text-muted-foreground">ou R$199/ano (-17%)</p>
+                </CardContent>
+              </Card>
+
+              {/* TOP */}
+              <Card className="glass border-2 border-yellow-500/50">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <Crown className="h-8 w-8 text-yellow-500" />
+                  <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-1">
+                    TOP <Infinity className="h-4 w-4 text-yellow-500" />
+                  </h3>
+                  <p className="text-3xl font-bold font-display">R$39,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                  <p className="text-sm font-semibold text-yellow-500">{t('pricing.top_questions', language)}</p>
+                  <p className="text-xs text-muted-foreground">ou R$399/ano (-17%)</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Link to="/pricing">
+              <Button size="lg" className="gap-2 text-base px-10 sacred-gradient text-primary-foreground border-0 sacred-glow hover:sacred-glow-strong transition-shadow mt-4">
+                <ArrowRight className="h-5 w-5" />
+                {t('pricing.subscribe', language)}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-primary/10">
         <div className="container py-16 px-4 text-center">
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-3">
