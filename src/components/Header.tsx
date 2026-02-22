@@ -4,7 +4,7 @@ import { t, Language, languageNames } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, PanelLeftClose, PanelLeft, Gem } from 'lucide-react';
+import { LogIn, LogOut, PanelLeftClose, PanelLeft, Gem, ArrowLeft } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export default function Header() {
@@ -16,6 +16,14 @@ export default function Header() {
   const hiddenPaths = ['/landing', '/auth', '/invite'];
   const showSidebarToggle = user && !hiddenPaths.some(p => location.pathname.startsWith(p));
 
+  const isHome = location.pathname === '/';
+  const isSubpage = user && !isHome && !hiddenPaths.some(p => location.pathname.startsWith(p));
+
+  const getBackPath = () => {
+    if (location.pathname.startsWith('/learn/')) return '/learn';
+    return '/';
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/landing');
@@ -25,6 +33,18 @@ export default function Header() {
     <header className="sticky top-0 z-50 glass-strong safe-top border-b border-primary/10">
       <div className="flex h-12 md:h-14 items-center justify-between px-3 md:px-4">
         <div className="flex items-center gap-2">
+          {/* Mobile: back arrow or logout */}
+          {user && isSubpage && (
+            <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 text-primary" onClick={() => navigate(getBackPath())}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          {user && isHome && (
+            <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 text-foreground/70 hover:text-primary" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+          {/* Desktop: sidebar toggle */}
           {showSidebarToggle && (
             <Button variant="ghost" size="icon" className="hidden md:flex h-8 w-8 text-foreground/70 hover:text-primary" onClick={toggleSidebar}>
               {state === 'collapsed' ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
