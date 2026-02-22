@@ -42,12 +42,17 @@ export default function AppSidebar() {
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const resp = await supabase.functions.invoke('admin', {
-        body: { action: 'check-role' },
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-      });
-      setIsAdmin(resp.data?.isAdmin ?? false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) { setIsAdmin(false); return; }
+        const resp = await supabase.functions.invoke('admin', {
+          body: { action: 'check-role' },
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        setIsAdmin(resp.data?.isAdmin ?? false);
+      } catch {
+        setIsAdmin(false);
+      }
     })();
   }, [user]);
 
