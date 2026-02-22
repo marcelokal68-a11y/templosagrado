@@ -119,7 +119,7 @@ export default function Pricing() {
               <CardDescription>{t('pricing.monthly_desc', language)}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-3xl font-bold font-display">R$10<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+              <p className="text-3xl font-bold font-display">R$19,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="h-4 w-4 text-primary" />
                 {t('pricing.monthly_questions', language)}
@@ -142,7 +142,7 @@ export default function Pricing() {
 
           {/* Annual */}
           <Card className={`relative ${isCurrentPlan(PLANS.annual.productId) ? 'border-primary shadow-lg' : ''}`}>
-            <div className="absolute -top-3 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+            <div className="absolute -top-3 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
               -17%
             </div>
             <CardHeader>
@@ -150,7 +150,7 @@ export default function Pricing() {
               <CardDescription>Economize com o plano anual</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-3xl font-bold font-display">R$100<span className="text-sm font-normal text-muted-foreground">/ano</span></p>
+              <p className="text-3xl font-bold font-display">R$199<span className="text-sm font-normal text-muted-foreground">/ano</span></p>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="h-4 w-4 text-primary" />
                 {t('pricing.monthly_questions', language)}
