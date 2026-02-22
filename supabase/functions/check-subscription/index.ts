@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// TOP plan product IDs get unlimited questions
+const TOP_PRODUCT_IDS = ["prod_U1h1ABi9FUgLYT", "prod_U1h1lIOr9aKvmO"];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,13 +58,15 @@ serve(async (req) => {
       subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
       productId = sub.items.data[0].price.product as string;
 
-      // Update profile
+      const isTop = TOP_PRODUCT_IDS.includes(productId);
+      const questionsLimit = isTop ? 999999 : 60;
+
       await supabaseClient
         .from("profiles")
         .update({
           is_subscriber: true,
           subscription_id: sub.id,
-          questions_limit: 30,
+          questions_limit: questionsLimit,
         })
         .eq("user_id", user.id);
     } else {
