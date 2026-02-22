@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, Check, Loader2, Feather } from 'lucide-react';
+import PublishToMural from '@/components/mural/PublishToMural';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
@@ -174,6 +175,7 @@ export default function Posts() {
                     {copiedIndex === i ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
                     {copiedIndex === i ? (t('posts.copied', language) || 'Copiado!') : (t('posts.copy', language) || 'Copiar')}
                   </Button>
+                  <PublishToMural originalContent={post.content} />
                 </div>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{post.content}</p>
               </div>

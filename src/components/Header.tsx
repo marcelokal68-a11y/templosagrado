@@ -4,11 +4,11 @@ import { t, Language, languageNames } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { LogIn, LogOut, PanelLeftClose, PanelLeft, Gem } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export default function Header() {
-  const { language, setLanguage, user } = useApp();
+  const { language, setLanguage, user, isSubscriber } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const { toggleSidebar, state } = useSidebar();
@@ -49,6 +49,14 @@ export default function Header() {
               ))}
             </SelectContent>
           </Select>
+
+          {user && !isSubscriber && (
+            <Link to="/pricing">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary animate-pulse hover:animate-none">
+                <Gem className="h-4 w-4" />
+              </Button>
+            </Link>
+          )}
 
           {user ? (
             <div className="hidden md:flex items-center gap-2">

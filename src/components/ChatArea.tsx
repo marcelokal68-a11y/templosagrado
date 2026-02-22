@@ -8,6 +8,7 @@ import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2 } fr
 import { Badge } from '@/components/ui/badge';
 import ReligionIcon from '@/components/ReligionIcon';
 import ActivityHistory from '@/components/ActivityHistory';
+import PublishToMural from '@/components/mural/PublishToMural';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
@@ -50,27 +51,30 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, reli
           <p className="whitespace-pre-wrap">{msg.content}</p>
         </div>
         {!isUser && msg.content.length > 0 && (
-          <button
-            onClick={() => onNarrate(msg.content, index)}
-            disabled={loadingAudio === index}
-            className={cn(
-              "self-start flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl border transition-all",
-              playingIndex === index
-                ? "text-primary bg-primary/15 border-primary/30 shadow-sm"
-                : loadingAudio === index
-                  ? "text-muted-foreground bg-muted/50 border-border"
-                  : "text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 border-border"
-            )}
-          >
-            {loadingAudio === index ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : playingIndex === index ? (
-              <VolumeX className="h-5 w-5" />
-            ) : (
-              <Volume2 className="h-5 w-5" />
-            )}
-            <span>{loadingAudio === index ? 'Carregando...' : playingIndex === index ? 'Parar' : '🔊 Ouvir'}</span>
-          </button>
+          <div className="self-start flex items-center gap-1">
+            <button
+              onClick={() => onNarrate(msg.content, index)}
+              disabled={loadingAudio === index}
+              className={cn(
+                "flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl border transition-all",
+                playingIndex === index
+                  ? "text-primary bg-primary/15 border-primary/30 shadow-sm"
+                  : loadingAudio === index
+                    ? "text-muted-foreground bg-muted/50 border-border"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 border-border"
+              )}
+            >
+              {loadingAudio === index ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : playingIndex === index ? (
+                <VolumeX className="h-5 w-5" />
+              ) : (
+                <Volume2 className="h-5 w-5" />
+              )}
+              <span>{loadingAudio === index ? 'Carregando...' : playingIndex === index ? 'Parar' : '🔊 Ouvir'}</span>
+            </button>
+            <PublishToMural originalContent={msg.content} />
+          </div>
         )}
       </div>
       {isUser && (
