@@ -21,10 +21,11 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No auth header");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("No auth header");
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) throw new Error("Not authenticated");
+    const { data: claims, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claims?.claims?.sub) throw new Error("Not authenticated");
+    const user = { id: claims.claims.sub as string, email: claims.claims.email as string };
 
     const { action, ...body } = await req.json();
 
