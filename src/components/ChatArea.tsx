@@ -563,14 +563,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               "text-[11px] font-medium",
               user
                 ? questionsRemaining > 5
-                  ? "border-green-500/40 text-green-600 bg-green-500/10"
+                  ? "border-amber-500/40 text-amber-700 bg-amber-500/10"
                   : questionsRemaining > 2
-                    ? "border-yellow-500/40 text-yellow-600 bg-yellow-500/10"
+                    ? "border-amber-400/40 text-amber-600 bg-amber-400/10"
                     : "border-destructive/40 text-destructive bg-destructive/10 animate-pulse"
                 : (10 - getAnonCount()) > 5
-                  ? "border-green-500/40 text-green-600 bg-green-500/10"
+                  ? "border-amber-500/40 text-amber-700 bg-amber-500/10"
                   : (10 - getAnonCount()) > 2
-                    ? "border-yellow-500/40 text-yellow-600 bg-yellow-500/10"
+                    ? "border-amber-400/40 text-amber-600 bg-amber-400/10"
                     : "border-destructive/40 text-destructive bg-destructive/10 animate-pulse"
             )}
           >

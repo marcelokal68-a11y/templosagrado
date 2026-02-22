@@ -7,6 +7,7 @@ import { AppProvider } from "@/contexts/AppContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/components/Header";
 import AppSidebar from "@/components/AppSidebar";
+import TwinklingStars from "@/components/TwinklingStars";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
@@ -36,7 +37,8 @@ const App = () => (
       <BrowserRouter>
         <AppProvider>
           <SidebarProvider>
-            <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
+            <div className="flex flex-col min-h-screen w-full overflow-x-hidden relative">
+              <TwinklingStars />
               <Header />
               <div className="flex flex-1 w-full">
                 <AppSidebar />
