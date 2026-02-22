@@ -6,32 +6,32 @@
 
 @layer base {
   :root {
-    --background: 225 30% 6%;
+    --background: 225 28% 10%;
     --foreground: 38 30% 90%;
 
-    --card: 225 25% 9%;
+    --card: 225 25% 13%;
     --card-foreground: 38 30% 90%;
 
-    --popover: 225 25% 9%;
+    --popover: 225 25% 13%;
     --popover-foreground: 38 30% 90%;
 
     --primary: 38 80% 55%;
-    --primary-foreground: 225 30% 6%;
+    --primary-foreground: 225 28% 10%;
 
-    --secondary: 225 20% 14%;
+    --secondary: 225 20% 18%;
     --secondary-foreground: 38 25% 80%;
 
-    --muted: 225 15% 13%;
-    --muted-foreground: 225 10% 50%;
+    --muted: 225 15% 17%;
+    --muted-foreground: 225 10% 52%;
 
-    --accent: 225 30% 18%;
+    --accent: 225 30% 22%;
     --accent-foreground: 38 30% 90%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 225 15% 16%;
-    --input: 225 15% 16%;
+    --border: 225 15% 20%;
+    --input: 225 15% 20%;
     --ring: 38 80% 55%;
 
     --radius: 0.75rem;
@@ -40,76 +40,76 @@
     --sacred-gold: 38 80% 55%;
     --sacred-amber: 30 65% 45%;
     --sacred-cream: 38 30% 90%;
-    --sacred-warm: 225 15% 12%;
+    --sacred-warm: 225 15% 16%;
     --sacred-text: 38 30% 90%;
     --sacred-green: 150 30% 35%;
-    --sacred-green-light: 150 15% 14%;
+    --sacred-green-light: 150 15% 18%;
     --sacred-earth: 25 25% 50%;
     --sacred-bark: 20 20% 65%;
 
     /* Glass effects */
-    --glass-bg: 225 25% 8% / 0.75;
+    --glass-bg: 225 25% 12% / 0.75;
     --glass-border: 38 40% 30% / 0.2;
 
-    --sidebar-background: 225 30% 5%;
+    --sidebar-background: 225 30% 9%;
     --sidebar-foreground: 38 25% 85%;
     --sidebar-primary: 38 80% 55%;
-    --sidebar-primary-foreground: 225 30% 6%;
-    --sidebar-accent: 225 25% 14%;
+    --sidebar-primary-foreground: 225 28% 10%;
+    --sidebar-accent: 225 25% 18%;
     --sidebar-accent-foreground: 38 25% 85%;
-    --sidebar-border: 225 15% 14%;
+    --sidebar-border: 225 15% 18%;
     --sidebar-ring: 38 80% 55%;
   }
 
   .dark {
-    --background: 225 30% 6%;
+    --background: 225 28% 10%;
     --foreground: 38 30% 90%;
 
-    --card: 225 25% 9%;
+    --card: 225 25% 13%;
     --card-foreground: 38 30% 90%;
 
-    --popover: 225 25% 9%;
+    --popover: 225 25% 13%;
     --popover-foreground: 38 30% 90%;
 
     --primary: 38 80% 55%;
-    --primary-foreground: 225 30% 6%;
+    --primary-foreground: 225 28% 10%;
 
-    --secondary: 225 20% 14%;
+    --secondary: 225 20% 18%;
     --secondary-foreground: 38 25% 80%;
 
-    --muted: 225 15% 13%;
-    --muted-foreground: 225 10% 50%;
+    --muted: 225 15% 17%;
+    --muted-foreground: 225 10% 52%;
 
-    --accent: 225 30% 18%;
+    --accent: 225 30% 22%;
     --accent-foreground: 38 30% 90%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 225 15% 16%;
-    --input: 225 15% 16%;
+    --border: 225 15% 20%;
+    --input: 225 15% 20%;
     --ring: 38 80% 55%;
 
     --sacred-gold: 38 80% 55%;
     --sacred-amber: 30 65% 45%;
     --sacred-cream: 38 30% 90%;
-    --sacred-warm: 225 15% 12%;
+    --sacred-warm: 225 15% 16%;
     --sacred-text: 38 30% 90%;
     --sacred-green: 150 30% 35%;
-    --sacred-green-light: 150 15% 14%;
+    --sacred-green-light: 150 15% 18%;
     --sacred-earth: 25 25% 50%;
     --sacred-bark: 20 20% 65%;
 
-    --glass-bg: 225 25% 8% / 0.75;
+    --glass-bg: 225 25% 12% / 0.75;
     --glass-border: 38 40% 30% / 0.2;
 
-    --sidebar-background: 225 30% 5%;
+    --sidebar-background: 225 30% 9%;
     --sidebar-foreground: 38 25% 85%;
     --sidebar-primary: 38 80% 55%;
-    --sidebar-primary-foreground: 225 30% 6%;
-    --sidebar-accent: 225 25% 14%;
+    --sidebar-primary-foreground: 225 28% 10%;
+    --sidebar-accent: 225 25% 18%;
     --sidebar-accent-foreground: 38 25% 85%;
-    --sidebar-border: 225 15% 14%;
+    --sidebar-border: 225 15% 18%;
     --sidebar-ring: 38 80% 55%;
   }
 }
@@ -188,11 +188,11 @@
 
   /* Cosmic background */
   .cosmic-bg {
-    background: radial-gradient(ellipse at 50% 0%, hsl(225 40% 15%) 0%, hsl(225 30% 6%) 70%);
+    background: radial-gradient(ellipse at 50% 0%, hsl(225 40% 19%) 0%, hsl(225 28% 10%) 70%);
   }
 
   .cosmic-bg-deep {
-    background: radial-gradient(ellipse at 30% 20%, hsl(225 35% 12%) 0%, hsl(225 30% 6%) 50%, hsl(230 25% 4%) 100%);
+    background: radial-gradient(ellipse at 30% 20%, hsl(225 35% 16%) 0%, hsl(225 28% 10%) 50%, hsl(230 25% 8%) 100%);
   }
 
   /* Shimmer animation for titles */
