@@ -23,13 +23,17 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("No authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(userError.message);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    
+    // Use admin client to get user from token
+    const { data: { user }, error: userError } = await supabaseClient.auth.admin.getUserById(
+      // First decode JWT to get user id
+      JSON.parse(atob(token.split('.')[1])).sub
+    );
+    if (userError || !user) throw new Error("User not authenticated");
+    if (!user.email) throw new Error("User email not found");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
