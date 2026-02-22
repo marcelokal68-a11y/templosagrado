@@ -518,7 +518,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           {user && (
             <div className="flex justify-between items-center">
               <Link to="/invite-friends">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary gap-1.5">
+                <Button variant="outline" size="sm" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
                   <Gift className="h-4 w-4" />
                   {t('nav.invite', language)}
                 </Button>
