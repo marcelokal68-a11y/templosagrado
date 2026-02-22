@@ -22,6 +22,7 @@ import Mural from "./pages/Mural";
 import Learn from "./pages/Learn";
 import LearnTopic from "./pages/LearnTopic";
 import Landing from "./pages/Landing";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 import QuickTutorial from "./components/QuickTutorial";
@@ -58,6 +59,7 @@ const App = () => (
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
+                    <Route path="/install" element={<Install />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
