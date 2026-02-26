@@ -1,40 +1,30 @@
 
-# Melhorar Navegacao Mobile
 
-## Problemas Identificados
+## Plan: Botão de Reset Total + Separação de Contexto Religião/Filosofia
 
-1. **Botao de logout invisivel no mobile** - O botao de logout esta com `hidden md:flex`, so aparece no desktop
-2. **Sem seta de voltar** - Paginas internas (Prayers, Verse, Learn, Posts, Practice, Mural, Admin, Invite) nao tem como voltar no mobile
-3. **Paginas inacessiveis** - Posts, Practice e Mural so estao na sidebar (desktop)
+### Problema Atual
+1. O botão "Limpar conversa" apaga **todos** os `chat_messages` do usuário, mas não apaga `activity_history` nem reseta memórias
+2. A função `sacred-chat` (backend) busca histórico de **outras** afiliações para dar contexto cruzado — ao mudar de religião para filosofia, dados da religião vazam para a filosofia e vice-versa
 
-## Solucao
+### Mudanças
 
-### 1. Adicionar seta de voltar e botao de logout no Header (mobile)
+**1. Botão "Limpar Tudo" no ChatArea.tsx**
+- Adicionar botão que apaga: `chat_messages` + `activity_history` + limpa mensagens locais
+- Confirmar com AlertDialog antes de executar
+- Posicionar junto ao botão existente de "Limpar conversa"
 
-No Header, para telas mobile:
-- Se o usuario esta em uma subpagina (nao e `/`), mostrar uma **seta de voltar** no lado esquerdo que navega para a pagina anterior ou para `/`
-- Se o usuario esta na pagina principal (`/`), mostrar um **botao de logout** no lugar da seta
-- Manter o logo visivel, mas compacto
+**2. Separar histórico no backend (sacred-chat/index.ts)**
+- Alterar `fetchUserHistory` para **não** buscar histórico de outras afiliações
+- Quando contexto é filosofia: buscar apenas mensagens de filosofia (ignorar religião)
+- Quando contexto é religião: buscar apenas mensagens de religião (ignorar filosofia)
+- Remover o cruzamento de dados entre modos
 
-### 2. Logica de navegacao
+**3. Adicionar i18n**
+- Chaves para "Limpar tudo", "Confirmar exclusão de todo histórico"
 
-- Paginas como `/prayers`, `/verse`, `/learn`, `/posts`, `/practice`, `/mural` - seta volta para `/`
-- `/learn/:topic` - seta volta para `/learn`
-- `/admin`, `/invite-friends` - seta volta para `/`
-- Se nao logado, mostrar botao de login
-- Se logado e na home, mostrar botao de logout (redireciona para `/landing`)
+### Detalhes Técnicos
 
-## Detalhes Tecnicos
+`fetchUserHistory` atualmente usa `.or(philosophy.neq.X)` para buscar de OUTRAS afiliações. Será alterado para buscar apenas da mesma afiliação atual, ou retornar vazio se não houver afiliação selecionada.
 
-### Arquivo: `src/components/Header.tsx`
+O botão de reset executa duas queries DELETE em paralelo (`chat_messages` e `activity_history`) filtradas por `user_id`.
 
-Alteracoes:
-- Importar `ArrowLeft` do lucide-react
-- Adicionar logica para determinar se e subpagina (`pathname !== '/'`)
-- No mobile (`md:hidden`):
-  - Subpagina + logado: mostrar seta de voltar
-  - Home + logado: mostrar botao de logout (icone `LogOut`)
-  - Nao logado: manter botao de login atual
-- Remover `hidden md:flex` do bloco de logout para que o icone de logout apareca no mobile tambem (apenas na home)
-
-A seta de voltar tera o mesmo estilo dourado dos outros elementos de navegacao para manter consistencia visual.
