@@ -104,6 +104,9 @@ Use this information to:
 
 async function fetchUserHistory(userId: string, currentReligion: string, currentPhilosophy: string): Promise<string> {
   try {
+    // If no affiliation is selected, skip history to avoid cross-context leaks
+    if (!currentReligion && !currentPhilosophy) return '';
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
@@ -115,10 +118,11 @@ async function fetchUserHistory(userId: string, currentReligion: string, current
       .order('created_at', { ascending: false })
       .limit(10);
 
+    // Only fetch history from the SAME affiliation — never cross-context
     if (currentPhilosophy) {
-      query = query.or(`philosophy.neq.${currentPhilosophy},philosophy.is.null`);
+      query = query.eq('philosophy', currentPhilosophy);
     } else if (currentReligion) {
-      query = query.or(`religion.neq.${currentReligion},religion.is.null`);
+      query = query.eq('religion', currentReligion);
     }
 
     const { data } = await query;
@@ -128,10 +132,10 @@ async function fetchUserHistory(userId: string, currentReligion: string, current
     if (userMessages.length === 0) return '';
 
     const topics = userMessages.map(m => m.content.slice(0, 100)).join('; ');
-    const affiliations = [...new Set(data.map(m => m.religion || m.philosophy).filter(Boolean))];
+    const currentAffiliation = currentPhilosophy || currentReligion;
 
     return `HISTORICO DO FIEL (sessoes anteriores):
-O fiel ja conversou sobre os seguintes temas em sessoes anteriores (${affiliations.join(', ')}): ${topics}.
+O fiel ja conversou sobre os seguintes temas em sessoes anteriores (${currentAffiliation}): ${topics}.
 Use esse contexto para oferecer continuidade e referencias ao historico quando relevante, mas foque na sessao atual.`;
   } catch (e) {
     console.error("Error fetching history:", e);

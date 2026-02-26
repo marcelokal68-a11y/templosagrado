@@ -4,7 +4,18 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2, Gift } from 'lucide-react';
+import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2, Gift, XCircle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import ReligionIcon from '@/components/ReligionIcon';
 import ActivityHistory from '@/components/ActivityHistory';
@@ -508,8 +519,46 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               }}
             >
               <Trash2 className="h-4 w-4" />
-              {t('chat.clear', language) || 'Limpar conversa'}
+              {t('chat.clear', language)}
             </Button>
+            {user && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive gap-1.5"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    {t('chat.clear_all', language)}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('chat.clear_all_title', language)}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('chat.clear_all_desc', language)}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('panel.keep', language)}</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={async () => {
+                        await Promise.all([
+                          supabase.from('chat_messages').delete().eq('user_id', user!.id),
+                          supabase.from('activity_history').delete().eq('user_id', user!.id),
+                        ]);
+                        stopAudio();
+                        audioCacheRef.current.clear();
+                        setMessages([]);
+                        toast({ title: t('chat.clear_all_done', language) });
+                      }}
+                    >
+                      {t('chat.clear_all', language)}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
       )}

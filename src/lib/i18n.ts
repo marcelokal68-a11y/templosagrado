@@ -29,6 +29,10 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.narrate': 'Ouvir',
     'chat.narrate_stop': 'Parar',
     'chat.clear': 'Limpar conversa',
+    'chat.clear_all': 'Limpar tudo',
+    'chat.clear_all_title': 'Apagar todo o histórico?',
+    'chat.clear_all_desc': 'Isso apagará todas as suas mensagens, histórico de atividades e memórias do chat. Esta ação não pode ser desfeita.',
+    'chat.clear_all_done': 'Todo o histórico foi apagado',
     
     // History
     'history.title': 'Histórico',
@@ -617,6 +621,10 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.narrate': 'Listen',
     'chat.narrate_stop': 'Stop',
     'chat.clear': 'Clear chat',
+    'chat.clear_all': 'Clear all',
+    'chat.clear_all_title': 'Delete all history?',
+    'chat.clear_all_desc': 'This will delete all your messages, activity history, and chat memories. This action cannot be undone.',
+    'chat.clear_all_done': 'All history has been deleted',
     
     'history.title': 'History',
     'history.delete_all': 'Delete all',
@@ -1177,6 +1185,10 @@ const translations: Record<Language, Record<string, string>> = {
     'chat.narrate': 'Escuchar',
     'chat.narrate_stop': 'Detener',
     'chat.clear': 'Limpiar chat',
+    'chat.clear_all': 'Limpiar todo',
+    'chat.clear_all_title': '¿Eliminar todo el historial?',
+    'chat.clear_all_desc': 'Esto eliminará todos sus mensajes, historial de actividades y memorias del chat. Esta acción no se puede deshacer.',
+    'chat.clear_all_done': 'Todo el historial ha sido eliminado',
     
     'history.title': 'Historial',
     'history.delete_all': 'Borrar todo',
