@@ -563,7 +563,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       <div className="border-t border-border/40 bg-background">
         {/* Blocked state — upgrade banner */}
         {isBlocked ? (
-          <div className="px-4 py-4 text-center space-y-3">
+          <div className="px-4 py-4 text-center space-y-3"
+               style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))' }}>
             <div className="flex items-center justify-center gap-2 text-primary">
               <Lock className="h-5 w-5" />
               <span className="text-sm font-semibold">Limite de mensagens atingido</span>
@@ -650,7 +651,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             </div>
 
             {/* Input row */}
-            <div className="flex items-end gap-2 px-3 pb-3 pt-1">
+            <div className="flex items-end gap-2 px-3 pb-3 pt-1"
+                 style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
               <Textarea
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}

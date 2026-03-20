@@ -18,7 +18,8 @@ export default function BottomNav() {
   const visibleItems = user ? items : items.filter(i => i.to === '/');
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden glass-strong safe-bottom border-t border-primary/10">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden glass-strong border-t border-primary/10"
+         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex items-center justify-around h-14">
         {visibleItems.map(({ to, icon: Icon, labelKey }) => {
           const active = pathname === to;

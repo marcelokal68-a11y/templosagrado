@@ -40,7 +40,8 @@ export default function Index() {
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
-      <div className="flex-1 flex flex-col min-w-0 pb-[56px] md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 md:pb-0"
+           style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' }}>
         <ChatArea ref={chatRef} />
       </div>
 
@@ -51,7 +52,8 @@ export default function Index() {
             <Button
               variant="ghost"
               size="icon"
-              className="fixed bottom-[5rem] right-3 z-40 rounded-full h-10 w-10 bg-card border border-border/50 shadow-md text-muted-foreground hover:text-primary"
+              className="fixed z-40 rounded-full h-10 w-10 bg-card border border-border/50 shadow-md text-muted-foreground hover:text-primary"
+              style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))', right: '0.75rem' }}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
