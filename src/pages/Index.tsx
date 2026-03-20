@@ -29,7 +29,7 @@ export default function Index() {
 
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
-      {/* Mobile: chat takes full height, input always visible */}
+      {/* Mobile: chat occupies full space, filters in sidebar */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 md:hidden">
         <ChatArea ref={chatRef} />
       </div>
