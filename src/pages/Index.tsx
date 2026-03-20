@@ -52,7 +52,8 @@ export default function Index() {
             <Button
               variant="ghost"
               size="icon"
-              className="fixed bottom-[5rem] right-3 z-40 rounded-full h-10 w-10 bg-card border border-border/50 shadow-md text-muted-foreground hover:text-primary"
+              className="fixed z-40 rounded-full h-10 w-10 bg-card border border-border/50 shadow-md text-muted-foreground hover:text-primary"
+              style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))', right: '0.75rem' }}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
