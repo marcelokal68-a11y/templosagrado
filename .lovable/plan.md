@@ -1,28 +1,15 @@
 
 
-# Alinhar Landing Page às Features Reais do MVP
+# "Começar Agora" → Chat Direto (Free Trial)
 
-## Problemas encontrados
+## Problema
+O botão "Começar Agora" na landing page leva para `/auth` (login). O usuário deveria ir direto para o chat (`/`) e experimentar o free trial (10 mensagens grátis) antes de precisar criar conta.
 
-1. **Descrição do Chat** menciona "12+ tradições religiosas e filosóficas" — o MVP tem 5
-2. **Seção de Paz** lista "judeus, cristãos, muçulmanos, budistas, hindus" — religiões fora do MVP
-3. **Mural - Templos Temáticos** menciona "Muro das Lamentações à Kaaba" — referências fora do MVP
-4. **Versões en/es** também têm "12+ traditions" — precisam ser corrigidas
-
-## Mudanças
-
-### `src/lib/i18n.ts`
-
-| Chave | Atual | Corrigido |
-|-------|-------|-----------|
-| `feat_chat_desc` (pt) | "...de 12+ tradições religiosas e filosóficas" | "...das principais tradições de fé brasileiras" |
-| `feat_chat_desc` (en/es) | "...from 12+ religious..." | "...from the main faith traditions" |
-| `peace_desc` (pt) | "...judeus, cristãos, muçulmanos, budistas, hindus, espíritas e livres pensadores..." | "...católicos, evangélicos, espíritas, praticantes de matriz africana e buscadores de sabedoria..." |
-| `mural_feat1_desc` (pt) | "...do Muro das Lamentações à Kaaba" | "Cada tradição tem seu espaço sagrado para orar e refletir" |
-| Mesmas chaves em en/es | Equivalentes | Alinhados ao MVP |
+## Mudança
 
 ### `src/pages/Landing.tsx`
-- Nenhuma mudança estrutural — apenas os textos via i18n serão atualizados
+- Trocar o `navigate('/auth')` do botão "Começar Agora" para `navigate('/')`
+- O chat já permite acesso sem login (free trial via `ProtectedRoute` + `FREE_TRIAL_ROUTES`)
 
-Total: **1 arquivo** editado (`i18n.ts`), ~8 strings corrigidas nas 3 línguas.
+1 arquivo, 1 linha alterada.
 
