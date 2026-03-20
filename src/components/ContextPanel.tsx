@@ -1,7 +1,7 @@
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Sparkles, Church, BookOpen, Music } from 'lucide-react';
+import { Sparkles, Church, BookOpen, Music, Flame, Sun, Leaf, Heart, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,80 +15,54 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
-const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
-const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
-const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism', 'shamanism', 'taoism', 'anthroposophy', 'cosmism', 'ubuntu'];
-
 const SPOTIFY_PLAYLISTS: Record<string, string> = {
   christian: '0Z5jq2YzMqMrqEQWMEVj9T',
   catholic: '25lg9pkqwUaa7nOcIvd4ta',
   protestant: '0Z5jq2YzMqMrqEQWMEVj9T',
-  mormon: '37i9dQZF1DX4vth7idTQMe',
-  jewish: '3d8ALeO6Op4V4gBY0JuGcO',
-  islam: '37i9dQZF1DWVYkjGjalkYY',
-  buddhist: '1RJKluktWr9Dh7fXhhRkHV',
-  hindu: '5cqh7Bs1h4z5pzrBZO9LLd',
   spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',
   umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',
   candomble: '3kg2IhbcbiRE4ZmvYWlUdw',
   agnostic: '1RJKluktWr9Dh7fXhhRkHV',
   stoicism: '0As0R4eZyxaMKAqZfW9zUL',
-  logosophy: '5rzRAZvCFie84nUaz0sypb',
-  humanism: '37i9dQZF1DWVFeEut75IAL',
-  taoism: '0w3U6XHnNOGKrXdZLH3r2L',
-  shamanism: '5NGZfEoKJlQYDpWfSvBf0F',
-  epicureanism: '37i9dQZF1DWVFeEut75IAL',
-  existentialism: '07UPzxWbrgZnIposHWaoXI',
-  transcendentalism: '5rzRAZvCFie84nUaz0sypb',
-  pantheism: '0w3U6XHnNOGKrXdZLH3r2L',
-  absurdism: '07UPzxWbrgZnIposHWaoXI',
-  rationalism: '37i9dQZF1DWVFeEut75IAL',
-  optimistic_nihilism: '07UPzxWbrgZnIposHWaoXI',
-  utilitarianism: '37i9dQZF1DWVFeEut75IAL',
-  pragmatism: '37i9dQZF1DWVFeEut75IAL',
-  altruism: '5rzRAZvCFie84nUaz0sypb',
-  objectivism: '37i9dQZF1DWVFeEut75IAL',
-  transhumanism: '5rzRAZvCFie84nUaz0sypb',
-  anthroposophy: '5rzRAZvCFie84nUaz0sypb',
-  cosmism: '5rzRAZvCFie84nUaz0sypb',
-  ubuntu: '3kg2IhbcbiRE4ZmvYWlUdw',
+  philosophy: '37i9dQZF1DWVFeEut75IAL',
   default: '1RJKluktWr9Dh7fXhhRkHV',
 };
 
 const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', 'finances', 'relationship', 'family', 'politics', 'other'];
 
 const TOPICS_BY_RELIGION: Record<string, string[]> = {
-  christian: ['jesus', 'heaven', 'hell', 'salvation', 'prayer_topic', 'sacrifices', ...UNIVERSAL_TOPICS],
   catholic: ['jesus', 'heaven', 'hell', 'salvation', 'saints', 'mary', 'sacraments', 'prayer_topic', 'sacrifices', ...UNIVERSAL_TOPICS],
   protestant: ['jesus', 'heaven', 'hell', 'salvation', 'grace', 'scripture', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  mormon: ['jesus', 'heaven', 'salvation', 'book_of_mormon', 'revelation', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  jewish: ['torah', 'shabbat', 'tikkun_olam', 'prophets', 'covenant', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  islam: ['quran', 'ramadan', 'pilgrimage', 'prophets_islam', 'charity', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  buddhist: ['nirvana', 'karma', 'dharma', 'meditation', 'suffering', 'enlightenment', ...UNIVERSAL_TOPICS],
-  hindu: ['dharma_hindu', 'karma_hindu', 'moksha', 'vedas', 'yoga', 'meditation', ...UNIVERSAL_TOPICS],
   spiritist: ['spirits', 'reincarnation', 'charity_spiritist', 'mediumship', 'gospel_kardec', ...UNIVERSAL_TOPICS],
-  umbanda: ['orishas', 'rituals', 'ancestors', 'offerings', 'mediumship_umbanda', ...UNIVERSAL_TOPICS],
   candomble: ['orishas_candomble', 'rituals_candomble', 'ancestors_candomble', 'ifa', 'offerings_candomble', ...UNIVERSAL_TOPICS],
   agnostic: ['ethics', 'philosophy', 'meaning', 'nature', 'science', ...UNIVERSAL_TOPICS],
 };
 
-function getTopicsForReligion(religion: string): string[] {
+function getTopicsForSelection(religion: string): string[] {
   if (!religion) return [...UNIVERSAL_TOPICS];
   return TOPICS_BY_RELIGION[religion] || [...UNIVERSAL_TOPICS];
 }
 
-function ChipGroup({ label, items, prefix, selected, onSelect, activeColor = "bg-primary text-primary-foreground border-primary", icon }: {
-  label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void; activeColor?: string; icon?: React.ReactNode;
+const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
+const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
+
+// The 5 MVP options
+const FAITH_OPTIONS = [
+  { key: 'catholic', label: 'Católico', sublabel: 'Tradição Católica', icon: Church, mode: 'religion' as const },
+  { key: 'protestant', label: 'Evangélico', sublabel: 'Tradição Protestante', icon: Flame, mode: 'religion' as const },
+  { key: 'spiritist', label: 'Espírita', sublabel: 'Doutrina Espírita', icon: Sun, mode: 'religion' as const },
+  { key: 'candomble', label: 'Matriz Africana', sublabel: 'Umbanda & Candomblé', icon: Leaf, mode: 'religion' as const },
+  { key: 'philosophy', label: 'Filosofia & Sabedoria', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
+];
+
+function ChipGroup({ label, items, prefix, selected, onSelect }: {
+  label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void;
 }) {
   const { language } = useApp();
 
   return (
     <div className="space-y-2">
-      <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
-        {icon}
-        {label}
-      </h3>
+      <h3 className="text-sm font-semibold text-foreground">{label}</h3>
       <div className="flex flex-wrap gap-1.5">
         {items.map(item => (
           <button
@@ -97,7 +71,7 @@ function ChipGroup({ label, items, prefix, selected, onSelect, activeColor = "bg
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
               selected === item
-                ? `${activeColor} shadow-sm`
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
                 : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
             )}
           >
@@ -111,13 +85,11 @@ function ChipGroup({ label, items, prefix, selected, onSelect, activeColor = "bg
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
   const { language, chatContext, setChatContext, clearChatWithUndo } = useApp();
-  const [activeMode, setActiveMode] = useState<'religion' | 'philosophy'>(
-    chatContext.philosophy ? 'philosophy' : 'religion'
-  );
   const [showConfirm, setShowConfirm] = useState(false);
-  const [pendingMode, setPendingMode] = useState<'religion' | 'philosophy' | null>(null);
+  const [pendingOption, setPendingOption] = useState<typeof FAITH_OPTIONS[0] | null>(null);
 
-  const topics = getTopicsForReligion(chatContext.religion);
+  const currentSelection = chatContext.religion || chatContext.philosophy || '';
+  const topics = getTopicsForSelection(chatContext.religion);
 
   const currentTopicValid = !chatContext.topic || topics.includes(chatContext.topic);
   if (!currentTopicValid) {
@@ -126,38 +98,44 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const hasContext = chatContext.religion || chatContext.need || chatContext.mood || chatContext.topic || chatContext.philosophy;
 
-  const handleModeSwitch = (newMode: 'religion' | 'philosophy') => {
-    if (newMode === activeMode) return;
-    const hasSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
-    if (hasSelection) {
-      setPendingMode(newMode);
+  const handleOptionSelect = (option: typeof FAITH_OPTIONS[0]) => {
+    const isAlreadySelected =
+      (option.mode === 'religion' && chatContext.religion === option.key) ||
+      (option.mode === 'philosophy' && chatContext.philosophy === option.key);
+
+    if (isAlreadySelected) {
+      // Deselect
+      setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
+      return;
+    }
+
+    // If there's already a selection from a different mode, confirm the switch
+    const hasExisting = chatContext.religion || chatContext.philosophy;
+    if (hasExisting) {
+      setPendingOption(option);
       setShowConfirm(true);
     } else {
-      setActiveMode(newMode);
+      applyOption(option);
+    }
+  };
+
+  const applyOption = (option: typeof FAITH_OPTIONS[0]) => {
+    clearChatWithUndo();
+    if (option.mode === 'religion') {
+      setChatContext(prev => ({ ...prev, religion: option.key, philosophy: '', topic: '' }));
+    } else {
+      setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
     }
   };
 
   const confirmSwitch = () => {
-    clearChatWithUndo();
+    if (pendingOption) applyOption(pendingOption);
+    setShowConfirm(false);
+    setPendingOption(null);
+  };
+
+  const handleSkip = () => {
     setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
-    setActiveMode(pendingMode!);
-    setShowConfirm(false);
-    setPendingMode(null);
-  };
-
-  const cancelSwitch = () => {
-    setShowConfirm(false);
-    setPendingMode(null);
-  };
-
-  const getCurrentLabel = () => {
-    if (activeMode === 'religion' && chatContext.religion) return t(`religion.${chatContext.religion}`, language);
-    if (activeMode === 'philosophy' && chatContext.philosophy) return t(`philosophy.${chatContext.philosophy}`, language);
-    return '';
-  };
-
-  const getTargetLabel = () => {
-    return pendingMode === 'religion' ? t('panel.mode_religion', language) : t('panel.mode_philosophy', language);
   };
 
   const handleGenerate = () => {
@@ -165,79 +143,72 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     onClose?.();
   };
 
-  const handleReligionSelect = (v: string) => {
-    if (v && v !== chatContext.religion) clearChatWithUndo();
-    setChatContext(prev => ({ ...prev, religion: v, topic: '' }));
-  };
-
-  const handlePhilosophySelect = (v: string) => {
-    if (v && v !== chatContext.philosophy) clearChatWithUndo();
-    setChatContext(prev => ({ ...prev, philosophy: v, topic: '' }));
-  };
-
-  const activeSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
-  const playlistId = SPOTIFY_PLAYLISTS[activeSelection] || SPOTIFY_PLAYLISTS.default;
+  const activeKey = chatContext.religion || chatContext.philosophy || '';
+  const playlistId = SPOTIFY_PLAYLISTS[activeKey] || SPOTIFY_PLAYLISTS.default;
 
   return (
-    <div className="space-y-4 p-4">
-      {/* Mode Selector */}
-      <div className="flex gap-2 pb-3 border-b border-amber-200">
+    <div className="space-y-5 p-4">
+      {/* Faith selection — 5 large cards */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Escolha seu caminho</h3>
+        <div className="space-y-2">
+          {FAITH_OPTIONS.map((option) => {
+            const Icon = option.icon;
+            const isActive =
+              (option.mode === 'religion' && chatContext.religion === option.key) ||
+              (option.mode === 'philosophy' && chatContext.philosophy === option.key);
+
+            return (
+              <button
+                key={option.key}
+                onClick={() => handleOptionSelect(option)}
+                className={cn(
+                  "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border transition-all duration-200 text-left",
+                  "active:scale-[0.98]",
+                  isActive
+                    ? "bg-primary/10 border-primary/40 shadow-sm shadow-primary/10"
+                    : "bg-card border-border/60 hover:bg-muted/50 hover:border-border"
+                )}
+              >
+                <div className={cn(
+                  "flex items-center justify-center h-10 w-10 rounded-lg shrink-0 transition-colors",
+                  isActive ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                )}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    "text-sm font-semibold leading-tight",
+                    isActive ? "text-primary" : "text-foreground"
+                  )}>
+                    {option.label}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{option.sublabel}</p>
+                </div>
+                {isActive && (
+                  <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Skip link */}
         <button
-          onClick={() => handleModeSwitch('religion')}
-          className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 font-semibold text-sm flex items-center justify-center gap-2 border transition-all",
-            activeMode === 'religion'
-              ? "bg-gradient-to-b from-amber-700 to-amber-900 text-amber-50 shadow-lg shadow-amber-900/30 border-amber-600"
-              : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-          )}
+          onClick={handleSkip}
+          className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
         >
-          <Church className="h-4 w-4" />
-          {t('panel.mode_religion', language)}
-        </button>
-        <button
-          onClick={() => handleModeSwitch('philosophy')}
-          className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 font-semibold text-sm flex items-center justify-center gap-2 border transition-all",
-            activeMode === 'philosophy'
-              ? "bg-gradient-to-b from-amber-700 to-amber-900 text-amber-50 shadow-lg shadow-amber-900/30 border-amber-600"
-              : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-          )}
-        >
-          <BookOpen className="h-4 w-4" />
-          {t('panel.mode_philosophy', language)}
+          Prefiro não especificar
         </button>
       </div>
 
-      {/* Religion or Philosophy chips — always visible */}
-      {activeMode === 'religion' && (
-        <ChipGroup
-          label={t('panel.religion', language)}
-          items={religions}
-          prefix="religion"
-          selected={chatContext.religion}
-          onSelect={handleReligionSelect}
-          activeColor="sacred-gradient text-primary-foreground border-amber-500"
-        />
-      )}
-
-      {activeMode === 'philosophy' && (
-        <ChipGroup
-          label={t('panel.philosophy', language)}
-          items={philosophies}
-          prefix="philosophy"
-          selected={chatContext.philosophy}
-          onSelect={handlePhilosophySelect}
-          activeColor="sacred-gradient text-primary-foreground border-amber-500"
-        />
-      )}
-
+      {/* Need & Mood chips */}
       <ChipGroup
         label={t('panel.need', language)}
         items={needs}
         prefix="need"
         selected={chatContext.need}
         onSelect={(v) => setChatContext(prev => ({ ...prev, need: v }))}
-        activeColor="sacred-gradient text-primary-foreground border-amber-500"
       />
 
       <ChipGroup
@@ -246,7 +217,6 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         prefix="mood"
         selected={chatContext.mood}
         onSelect={(v) => setChatContext(prev => ({ ...prev, mood: v }))}
-        activeColor="sacred-gradient text-primary-foreground border-amber-500"
       />
 
       <ChipGroup
@@ -255,12 +225,11 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         prefix="topic"
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
-        activeColor="sacred-gradient text-primary-foreground border-amber-500"
       />
 
-      {/* Spotify Background Music — always visible */}
+      {/* Spotify */}
       <div className="space-y-2">
-        <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Music className="h-4 w-4" />
           {t('panel.music', language)}
         </h3>
@@ -278,7 +247,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       </div>
 
       {onGenerate && hasContext && (
-        <div className="pt-3">
+        <div className="pt-2">
           <Button onClick={handleGenerate} className="w-full gap-2">
             <Sparkles className="h-4 w-4" />
             {t('panel.generate', language)}
@@ -290,16 +259,18 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('panel.switch_title', language)}</AlertDialogTitle>
+            <AlertDialogTitle>Mudar de caminho?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('panel.switch_message', language)
-                .replace(/\\{current\\}/g, getCurrentLabel())
-                .replace(/\\{target\\}/g, getTargetLabel())}
+              Ao trocar, sua conversa atual será limpa para começar uma nova jornada.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelSwitch}>{t('panel.keep', language)}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSwitch}>{t('panel.switch', language)}</AlertDialogAction>
+            <AlertDialogCancel onClick={() => { setShowConfirm(false); setPendingOption(null); }}>
+              Manter
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSwitch}>
+              Trocar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
