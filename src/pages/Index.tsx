@@ -28,18 +28,18 @@ export default function Index() {
   };
 
   return (
-    <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
+    <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Mobile: chat takes full height, input always visible */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 md:hidden">
         <ChatArea ref={chatRef} />
       </div>
 
-      {/* Desktop: chat + side panel */}
-      <div className="hidden md:flex flex-1 min-w-0 h-full">
-        <div className="flex-1 flex flex-col min-w-0 h-full">
+      {/* Desktop: chat + side panel — each column scrolls independently */}
+      <div className="hidden md:flex flex-1 min-w-0 min-h-0 h-full">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           <ChatArea ref={chatRef} />
         </div>
-        <div className="w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50 h-full">
+        <div className="w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50 min-h-0 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="p-4 border-b border-border">
               <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
