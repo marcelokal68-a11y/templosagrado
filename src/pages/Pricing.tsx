@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Star, Loader2, Settings, Crown, Infinity } from 'lucide-react';
+import { Check, Loader2, Settings, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 const PLANS = {
   monthly: {
@@ -30,6 +30,34 @@ const PLANS = {
 const TOP_PRODUCT_IDS = [PLANS.topMonthly.productId, PLANS.topAnnual.productId];
 const PREMIUM_PRODUCT_IDS = [PLANS.monthly.productId, PLANS.annual.productId];
 
+const FREE_FEATURES = [
+  '10 mensagens por dia',
+  'Chat com o Divino',
+  'Histórico básico',
+];
+
+const FREE_LIMITATIONS = [
+  'Sem versículo exclusivo',
+  'Sem publicar no mural',
+  'Sem áudio das respostas',
+];
+
+const PRO_FEATURES = [
+  '60 mensagens por dia',
+  'Chat ilimitado com o Divino',
+  'Versículo do Dia exclusivo',
+  'Publicar no Mural Sagrado',
+  'Áudio das respostas',
+  'Histórico completo',
+  'Prática diária guiada',
+];
+
+const TOP_EXTRAS = [
+  'Mensagens ilimitadas',
+  'Acesso antecipado a novidades',
+  'Suporte prioritário',
+];
+
 export default function Pricing() {
   const { language, user } = useApp();
   const { toast } = useToast();
@@ -38,10 +66,11 @@ export default function Pricing() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<{ subscribed: boolean; product_id?: string; subscription_end?: string } | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
-      toast({ title: t('pricing.success', language) || 'Assinatura realizada com sucesso!' });
+      toast({ title: 'Assinatura realizada com sucesso! 🎉' });
       checkSub();
     }
   }, [searchParams]);
@@ -91,135 +120,197 @@ export default function Pricing() {
     } catch {} finally { setLoadingPortal(false); }
   };
 
-  const isCurrentPlan = (productId: string) => subscription?.subscribed && subscription.product_id === productId;
   const isTopUser = subscription?.subscribed && TOP_PRODUCT_IDS.includes(subscription.product_id || '');
   const isPremiumUser = subscription?.subscribed && PREMIUM_PRODUCT_IDS.includes(subscription.product_id || '');
-
-  const ManageButton = () => (
-    <Button variant="outline" className="w-full" onClick={handleManage} disabled={loadingPortal}>
-      {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
-      {t('pricing.manage', language)}
-    </Button>
-  );
+  const isSubscribed = subscription?.subscribed;
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <div className="max-w-5xl w-full">
-        <h1 className="font-display text-3xl font-bold text-center mb-2">{t('pricing.title', language)}</h1>
-        <p className="text-center text-muted-foreground text-sm mb-8">{t('pricing.cancel_note', language)}</p>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Free */}
-          <Card className="relative">
-            <CardHeader>
-              <CardTitle className="font-display text-lg">{t('pricing.free', language)}</CardTitle>
-              <CardDescription className="text-xs">{t('pricing.free_desc', language)}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-3xl font-bold font-display">R$0</p>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="h-4 w-4 text-primary" />
-                {t('pricing.free_questions', language)}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" disabled>
-                {!subscription?.subscribed ? t('pricing.current', language) : t('pricing.free', language)}
-              </Button>
-            </CardFooter>
-          </Card>
+    <div className="flex-1 overflow-y-auto pb-20 md:pb-8">
+      <div className="max-w-lg mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 ring-1 ring-primary/20">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+            Escolha seu plano
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Cancele quando quiser. Sem compromisso.
+          </p>
+        </div>
 
-          {/* Monthly */}
-          <Card className={`relative ${isCurrentPlan(PLANS.monthly.productId) ? 'border-primary shadow-lg' : ''}`}>
-            {!subscription?.subscribed && (
-              <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                <Star className="h-3 w-3" /> Popular
+        {/* Billing toggle */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <button
+            onClick={() => setBillingCycle('monthly')}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+              billingCycle === 'monthly'
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Mensal
+          </button>
+          <button
+            onClick={() => setBillingCycle('annual')}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-sm font-medium transition-colors relative",
+              billingCycle === 'annual'
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Anual
+            <span className="absolute -top-2 -right-2 bg-green-600 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+              -17%
+            </span>
+          </button>
+        </div>
+
+        {/* Plans — stacked on mobile */}
+        <div className="space-y-4">
+          {/* Free Plan */}
+          <div className={cn(
+            "rounded-2xl border p-5 transition-all",
+            !isSubscribed ? "border-primary/30 bg-primary/5" : "border-border/50 bg-card"
+          )}>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Gratuito</h3>
+                <p className="text-xs text-muted-foreground">Para conhecer o Templo</p>
+              </div>
+              <span className="text-2xl font-bold font-display text-foreground">R$0</span>
+            </div>
+            <div className="space-y-2 mb-4">
+              {FREE_FEATURES.map((f) => (
+                <div key={f} className="flex items-center gap-2 text-sm text-foreground/80">
+                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>{f}</span>
+                </div>
+              ))}
+              {FREE_LIMITATIONS.map((f) => (
+                <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground/60">
+                  <X className="h-3.5 w-3.5 shrink-0" />
+                  <span>{f}</span>
+                </div>
+              ))}
+            </div>
+            {!isSubscribed && (
+              <Button variant="outline" className="w-full" disabled>
+                Plano atual
+              </Button>
+            )}
+          </div>
+
+          {/* Pro Plan */}
+          <div className={cn(
+            "rounded-2xl border-2 p-5 transition-all relative",
+            isPremiumUser ? "border-primary bg-primary/5 shadow-lg" : "border-primary/50 bg-card"
+          )}>
+            {!isSubscribed && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                ⭐ Mais popular
               </div>
             )}
-            <CardHeader>
-              <CardTitle className="font-display text-lg">{t('pricing.monthly', language)}</CardTitle>
-              <CardDescription className="text-xs">{t('pricing.monthly_desc', language)}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-3xl font-bold font-display">R$19,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="h-4 w-4 text-primary" />
-                {t('pricing.monthly_questions', language)}
+            <div className="flex items-center justify-between mb-3 mt-1">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Pro</h3>
+                <p className="text-xs text-muted-foreground">Para sua jornada diária</p>
               </div>
-            </CardContent>
-            <CardFooter className="flex-col gap-2">
-              {isCurrentPlan(PLANS.monthly.productId) ? <ManageButton /> : (
-                <Button className="w-full" onClick={() => handleSubscribe('monthly')} disabled={!!loadingPlan || !!subscription?.subscribed}>
-                  {loadingPlan === 'monthly' && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  {t('pricing.subscribe', language)}
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-
-          {/* Annual */}
-          <Card className={`relative ${isCurrentPlan(PLANS.annual.productId) ? 'border-primary shadow-lg' : ''}`}>
-            <div className="absolute -top-3 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
-              -17%
+              <div className="text-right">
+                <span className="text-2xl font-bold font-display text-foreground">
+                  {billingCycle === 'monthly' ? 'R$19,90' : 'R$199'}
+                </span>
+                <span className="text-xs text-muted-foreground block">
+                  /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                </span>
+              </div>
             </div>
-            <CardHeader>
-              <CardTitle className="font-display text-lg">Anual</CardTitle>
-              <CardDescription className="text-xs">Economize com o plano anual</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-3xl font-bold font-display">R$199<span className="text-sm font-normal text-muted-foreground">/ano</span></p>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="h-4 w-4 text-primary" />
-                {t('pricing.monthly_questions', language)}
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col gap-2">
-              {isCurrentPlan(PLANS.annual.productId) ? <ManageButton /> : (
-                <Button className="w-full" onClick={() => handleSubscribe('annual')} disabled={!!loadingPlan || !!subscription?.subscribed}>
-                  {loadingPlan === 'annual' && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  {t('pricing.subscribe', language)}
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-
-          {/* TOP */}
-          <Card className={`relative border-2 ${isTopUser ? 'border-yellow-500 shadow-xl' : 'border-yellow-500/50'}`}>
-            <div className="absolute -top-3 right-4 bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-              <Crown className="h-3 w-3" /> TOP
-            </div>
-            <CardHeader>
-              <CardTitle className="font-display text-lg flex items-center gap-2">
-                {t('pricing.top', language)} <Infinity className="h-5 w-5 text-yellow-500" />
-              </CardTitle>
-              <CardDescription className="text-xs">{t('pricing.top_desc', language)}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-1">
-                <p className="text-3xl font-bold font-display">R$39,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                <p className="text-sm text-muted-foreground">ou R$399<span className="text-xs">/ano (-17%)</span></p>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Infinity className="h-4 w-4 text-yellow-500" />
-                {t('pricing.top_questions', language)}
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col gap-2">
-              {isTopUser ? <ManageButton /> : (
-                <div className="w-full space-y-2">
-                  <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={() => handleSubscribe('topMonthly')} disabled={!!loadingPlan || !!subscription?.subscribed}>
-                    {loadingPlan === 'topMonthly' && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                    {t('pricing.subscribe', language)} - Mensal
-                  </Button>
-                  <Button variant="outline" className="w-full border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10" onClick={() => handleSubscribe('topAnnual')} disabled={!!loadingPlan || !!subscription?.subscribed}>
-                    {loadingPlan === 'topAnnual' && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                    {t('pricing.subscribe', language)} - Anual
-                  </Button>
+            <div className="space-y-2 mb-4">
+              {PRO_FEATURES.map((f) => (
+                <div key={f} className="flex items-center gap-2 text-sm text-foreground/80">
+                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>{f}</span>
                 </div>
-              )}
-              <p className="text-xs text-muted-foreground text-center">{t('pricing.pix_note', language)}</p>
-            </CardFooter>
-          </Card>
+              ))}
+            </div>
+            {isPremiumUser ? (
+              <Button variant="outline" className="w-full" onClick={handleManage} disabled={loadingPortal}>
+                {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
+                Gerenciar assinatura
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
+                onClick={() => handleSubscribe(billingCycle === 'monthly' ? 'monthly' : 'annual')}
+                disabled={!!loadingPlan || isTopUser}
+              >
+                {(loadingPlan === 'monthly' || loadingPlan === 'annual') && <Loader2 className="h-4 w-4 animate-spin" />}
+                <Sparkles className="h-4 w-4" />
+                Assinar Pro
+              </Button>
+            )}
+          </div>
+
+          {/* TOP Plan */}
+          <div className={cn(
+            "rounded-2xl border-2 p-5 transition-all relative",
+            isTopUser ? "border-amber-500 bg-amber-500/5 shadow-lg" : "border-amber-500/30 bg-card"
+          )}>
+            <div className="absolute -top-3 right-4 bg-amber-500 text-black px-3 py-1 rounded-full text-xs font-bold">
+              TOP
+            </div>
+            <div className="flex items-center justify-between mb-3 mt-1">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Ilimitado</h3>
+                <p className="text-xs text-muted-foreground">Para devotos dedicados</p>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold font-display text-foreground">
+                  {billingCycle === 'monthly' ? 'R$39,90' : 'R$399'}
+                </span>
+                <span className="text-xs text-muted-foreground block">
+                  /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2 mb-4">
+              {PRO_FEATURES.map((f) => (
+                <div key={f} className="flex items-center gap-2 text-sm text-foreground/80">
+                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>{f}</span>
+                </div>
+              ))}
+              {TOP_EXTRAS.map((f) => (
+                <div key={f} className="flex items-center gap-2 text-sm font-medium text-amber-700">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                  <span>{f}</span>
+                </div>
+              ))}
+            </div>
+            {isTopUser ? (
+              <Button variant="outline" className="w-full border-amber-500/30" onClick={handleManage} disabled={loadingPortal}>
+                {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
+                Gerenciar assinatura
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-amber-500 text-black hover:bg-amber-600 gap-1.5"
+                onClick={() => handleSubscribe(billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual')}
+                disabled={!!loadingPlan || !!isSubscribed}
+              >
+                {(loadingPlan === 'topMonthly' || loadingPlan === 'topAnnual') && <Loader2 className="h-4 w-4 animate-spin" />}
+                Assinar Ilimitado
+              </Button>
+            )}
+          </div>
         </div>
+
+        <p className="text-center text-[11px] text-muted-foreground mt-6">
+          Pagamento seguro via Stripe. PIX disponível no checkout.
+        </p>
       </div>
     </div>
   );
