@@ -650,7 +650,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             </div>
 
             {/* Input row */}
-            <div className="flex items-end gap-2 px-3 pb-3 pt-1">
+            <div className="flex items-end gap-2 px-3 pb-3 pt-1"
+                 style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
               <Textarea
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
