@@ -53,10 +53,10 @@ export default function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-primary hover:bg-primary/10"
+                className="h-10 w-10 text-primary hover:bg-primary/10"
                 onClick={() => navigate(getBackPath())}
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-6 w-6" />
               </Button>
             ) : (
               <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
