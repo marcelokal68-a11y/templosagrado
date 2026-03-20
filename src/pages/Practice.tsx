@@ -363,7 +363,7 @@ export default function Practice() {
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">{dailyContent.explanation}</p>
                 <div className="bg-primary/8 rounded-lg p-3 border border-primary/15">
-                  <p className="text-sm text-foreground italic">✨ {dailyContent.reflection}</p>
+                  <p className="text-sm text-foreground">✨ {dailyContent.reflection}</p>
                 </div>
 
                 {/* Sources */}
