@@ -1,44 +1,41 @@
 
+## Plano de correção: scroll independente no chat web + input sempre visível
 
-# Corrigir Layout do Chat Desktop + Aumentar Logo
+### Diagnóstico rápido
+Hoje o scroll da página está “acoplado” ao painel da direita. Quando o painel cresce, a página inteira cresce junto e o campo de envio do chat vai para baixo.  
+Objetivo: no desktop, **cada coluna ter seu próprio scroll** e o input ficar fixo no rodapé do chat (sem precisar rolar a página).
 
-## Problema
+### O que vou implementar
 
-Na versão web (desktop), o `ChatArea` e o `ContextPanel` estão dentro de um layout flexível, mas o `ChatArea` usa `h-full` internamente com `flex-1 overflow-y-auto` para a area de mensagens. O problema é que no mobile, tudo está dentro de um `ScrollArea` único — o chat, o welcome state e o ContextPanel — forçando o usuario a rolar a pagina inteira para encontrar o campo de input. No desktop está OK pois o chat tem seu proprio scroll, mas no mobile o `ScrollArea` engloba tudo.
+1. **Travar a altura da área principal no viewport (desktop)**
+   - Ajustar os containers pai para usar `min-h-0` + `overflow-hidden` (cadeia completa de flex).
+   - Arquivo: `src/App.tsx`
+   - Resultado esperado: o `body` não vira a área de scroll do chat.
 
-Analisando mais a fundo: no desktop (`md:flex`), o `ChatArea` está em `flex-1 flex flex-col min-w-0` e o `ContextPanel` em um painel lateral fixo com `ScrollArea h-full`. O `ChatArea` internamente é `flex flex-col h-full` com scroll proprio. Isso deveria funcionar no desktop.
+2. **Refatorar o layout da Home para colunas realmente independentes**
+   - Trocar a lógica de altura baseada em `calc(100vh - header)` por altura herdada do pai (`h-full`/`min-h-0`) para evitar “estouro”.
+   - Garantir `min-h-0` nos wrappers do chat e do painel direito.
+   - Arquivo: `src/pages/Index.tsx`
 
-O problema real: o container pai tem `h-[calc(100vh-3.5rem)]`, e no desktop o `ChatArea` deve preencher todo o espaço com o input fixo na parte inferior. Vou verificar se `h-full` está propagando corretamente.
+3. **Fixar o compositor de mensagem no rodapé do chat**
+   - Garantir que o `ChatArea` possa encolher corretamente com `min-h-0`.
+   - Deixar só a área de mensagens com `overflow-y-auto` e manter a barra de input como `shrink-0`.
+   - Arquivo: `src/components/ChatArea.tsx`
 
-O `ChatArea` retorna `div className="flex flex-col h-full"` — a area de mensagens tem `flex-1 overflow-y-auto` e o input fica fixo embaixo. No desktop, o container pai é `flex-1 flex flex-col min-w-0` sem altura explícita. O `h-full` do ChatArea precisa de um container com altura definida.
+4. **Mostrar barra de rolagem clara no painel direito (desktop)**
+   - Configurar o `ScrollArea` do painel de opções com rolagem explícita (ex.: `type="always"` no desktop) para deixar claro que ali é uma coluna rolável separada.
+   - Arquivo: `src/pages/Index.tsx` (uso do `ScrollArea`)
 
-## Solução
+### Detalhes técnicos
+- Classes-chave que vou padronizar na cadeia: `flex`, `flex-1`, `h-full`, `min-h-0`, `overflow-hidden`.
+- O princípio será:
+  - **Página**: sem scroll global para o chat.
+  - **Chat**: scroll interno na lista de mensagens.
+  - **Painel direito**: scroll interno próprio.
+- Isso elimina o efeito de “o input foi parar lá embaixo”.
 
-### 1. Corrigir propagação de altura no desktop (Index.tsx)
-
-O container do ChatArea no desktop (`div.flex-1.flex.flex-col.min-w-0`) precisa ter `h-full` para que o `h-full` do ChatArea funcione. Sem isso, o ChatArea não sabe qual é "100% da altura" e expande todo o conteúdo.
-
-Mudança em `src/pages/Index.tsx`:
-- Desktop: adicionar `h-full` ao container do ChatArea
-- Mobile: reestruturar para que o ChatArea tenha altura fixa com input sempre visível, e o ContextPanel fique acessível via scroll separado ou dentro da sidebar
-
-### 2. Mobile — input sempre visível
-
-No mobile, atualmente `ChatArea` + `ContextPanel` estão dentro de um `ScrollArea` único. Isso faz o input do chat desaparecer ao rolar. Solução:
-- Remover o `ScrollArea` wrapper no mobile
-- Dar ao `ChatArea` altura fixa (`flex-1`) para que ele ocupe a tela com seu proprio scroll interno
-- Mover o `ContextPanel` para a sidebar (drawer) no mobile, já que o fluxo principal é o chat
-
-### 3. Aumentar logo (Header.tsx)
-
-- Aumentar o logo de `h-7 md:h-8` para `h-9 md:h-10`
-
-## Arquivos a editar
-
-### `src/pages/Index.tsx`
-- **Mobile**: remover `ScrollArea`, dar ao ChatArea o espaço completo com `flex-1 min-h-0`. Remover ContextPanel do fluxo mobile (já está na sidebar ou pode ser adicionado como um botão de configurações)
-- **Desktop**: adicionar `h-full` ao container do ChatArea para propagação correta de altura
-
-### `src/components/Header.tsx`
-- Logo: `h-7 md:h-8` → `h-9 md:h-10`
-
+### Critérios de aceite (web)
+- Ao abrir `/`, o campo “Pergunte…” já aparece no rodapé do chat sem rolar a página.
+- Rolar o chat **não** move o painel da direita.
+- Rolar o painel da direita **não** move o chat.
+- A página não ganha scroll vertical por causa do conteúdo da direita.
