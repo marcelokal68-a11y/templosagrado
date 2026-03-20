@@ -3,21 +3,11 @@ import ContextPanel from '@/components/ContextPanel';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
-import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { SlidersHorizontal } from 'lucide-react';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { useRef } from 'react';
 
 export default function Index() {
   const { language, chatContext } = useApp();
   const chatRef = useRef<{ sendAutoMessage: (msg: string) => void }>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleGenerate = () => {
     const parts: string[] = [];
@@ -35,47 +25,39 @@ export default function Index() {
 
     const msg = langMap[language] || langMap['pt-BR'];
     chatRef.current?.sendAutoMessage(msg);
-    setDrawerOpen(false);
   };
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
-      <div className="flex-1 flex flex-col min-w-0 md:pb-0"
+      {/* Mobile: vertical scroll with chat + context below */}
+      <div className="flex-1 flex flex-col min-w-0 md:hidden"
            style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' }}>
-        <ChatArea ref={chatRef} />
-      </div>
-
-      {/* Mobile settings drawer — accessible from header menu or this small trigger */}
-      <div className="md:hidden">
-        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <DrawerTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="fixed z-40 rounded-full h-10 w-10 bg-card border border-border/50 shadow-md text-muted-foreground hover:text-primary"
-              style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))', right: '0.75rem' }}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent className="max-h-[85vh]">
-            <DrawerHeader className="border-b border-border pb-3">
-              <DrawerTitle className="font-display text-lg">{t('chat.subtitle', language)}</DrawerTitle>
-            </DrawerHeader>
-            <ScrollArea className="overflow-y-auto px-1 pb-6" style={{ maxHeight: 'calc(85vh - 60px)' }}>
-              <ContextPanel onGenerate={handleGenerate} onClose={() => setDrawerOpen(false)} />
-            </ScrollArea>
-          </DrawerContent>
-        </Drawer>
-      </div>
-
-      <div className="hidden md:block w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50">
-        <ScrollArea className="h-full">
-          <div className="p-4 border-b border-border">
-            <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
+        <ScrollArea className="flex-1">
+          <ChatArea ref={chatRef} />
+          <div className="border-t border-border bg-card/50">
+            <div className="px-1 pb-4">
+              <div className="p-4 border-b border-border">
+                <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
+              </div>
+              <ContextPanel onGenerate={handleGenerate} />
+            </div>
           </div>
-          <ContextPanel onGenerate={handleGenerate} />
         </ScrollArea>
+      </div>
+
+      {/* Desktop: chat + side panel */}
+      <div className="hidden md:flex flex-1 min-w-0">
+        <div className="flex-1 flex flex-col min-w-0">
+          <ChatArea ref={chatRef} />
+        </div>
+        <div className="w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50">
+          <ScrollArea className="h-full">
+            <div className="p-4 border-b border-border">
+              <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
+            </div>
+            <ContextPanel onGenerate={handleGenerate} />
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
