@@ -38,13 +38,13 @@
     --radius: 0.75rem;
 
     /* Sacred palette — adapted to clean style */
-    --sacred-gold: 160 60% 33%;
-    --sacred-amber: 160 50% 28%;
+    --sacred-gold: 38 80% 45%;
+    --sacred-amber: 30 65% 38%;
     --sacred-cream: 0 0% 97%;
     --sacred-warm: 0 0% 96%;
     --sacred-text: 0 0% 5%;
-    --sacred-green: 160 60% 33%;
-    --sacred-green-light: 160 15% 94%;
+    --sacred-green: 38 80% 45%;
+    --sacred-green-light: 38 15% 94%;
     --sacred-earth: 0 0% 40%;
     --sacred-bark: 0 0% 35%;
 
