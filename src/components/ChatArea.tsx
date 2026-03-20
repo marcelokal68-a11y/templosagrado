@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Volume2, VolumeX, Trash2, Gauge, Mic, MicOff, Undo2, Gift, XCircle } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,11 +14,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import ReligionIcon from '@/components/ReligionIcon';
-import ActivityHistory from '@/components/ActivityHistory';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import PublishToMural from '@/components/mural/PublishToMural';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -33,66 +35,78 @@ const STT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-st
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1 px-2">
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-      <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div className="flex items-center gap-1.5 px-1 py-1">
+      <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+      <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+      <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
     </div>
   );
 }
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, religion }: {
-  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; onNarrate: (text: string, index: number) => void; religion: string;
+/* Minimalist sun icon for the divine avatar */
+function DivineIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" />
+    </svg>
+  );
+}
+
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy }: {
+  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
+  onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
 }) {
   const isUser = msg.role === 'user';
+  
   return (
-    <div className={cn("flex gap-3 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+      {/* Divine avatar */}
       {!isUser && (
-        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1 ring-1 ring-primary/30 shadow-[0_0_10px_hsl(38_80%_55%_/_0.15)]">
-          <ReligionIcon religion={religion} />
+        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center mt-auto ring-1 ring-primary/20">
+          <DivineIcon />
         </div>
       )}
-      <div className="flex flex-col gap-1 max-w-[80%]">
+      
+      <div className={cn("flex flex-col gap-0.5", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
         <div className={cn(
-          "rounded-2xl px-4 py-3 text-sm leading-relaxed",
+          "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed shadow-sm",
           isUser
-            ? "sacred-gradient text-primary-foreground rounded-br-md"
-            : "glass sacred-border rounded-bl-md"
+            ? "bg-primary text-primary-foreground rounded-br-sm"
+            : "bg-card border border-border/50 text-foreground rounded-bl-sm"
         )}>
           <p className="whitespace-pre-wrap">{msg.content}</p>
         </div>
+        
+        {/* Action row for assistant messages — compact, below bubble */}
         {!isUser && msg.content.length > 0 && (
-          <div className="self-start flex items-center gap-1">
+          <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+               style={{ opacity: 1 }}>
             <button
               onClick={() => onNarrate(msg.content, index)}
               disabled={loadingAudio === index}
-              className={cn(
-                "flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl border transition-all",
-                playingIndex === index
-                  ? "text-primary bg-primary/15 border-primary/30 shadow-sm"
-                  : loadingAudio === index
-                    ? "text-muted-foreground bg-muted/50 border-border"
-                    : "text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 border-border"
-              )}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Ouvir"
             >
               {loadingAudio === index ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : playingIndex === index ? (
-                <VolumeX className="h-5 w-5" />
+                <VolumeX className="h-3.5 w-3.5 text-primary" />
               ) : (
-                <Volume2 className="h-5 w-5" />
+                <Volume2 className="h-3.5 w-3.5" />
               )}
-              <span>{loadingAudio === index ? 'Carregando...' : playingIndex === index ? 'Parar' : '🔊 Ouvir'}</span>
+            </button>
+            <button
+              onClick={() => onCopy(msg.content)}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Copiar"
+            >
+              <Copy className="h-3.5 w-3.5" />
             </button>
             <PublishToMural originalContent={msg.content} />
           </div>
         )}
       </div>
-      {isUser && (
-        <div className="shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center mt-1">
-          <span className="text-xs font-semibold text-secondary-foreground">Eu</span>
-        </div>
-      )}
     </div>
   );
 }
@@ -106,6 +120,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [ttsSpeed, setTtsSpeed] = useState(1.15);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -113,13 +128,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const prevAffiliationRef = useRef<string>('');
+  const navigate = useNavigate();
 
-  // Capture timezone (always available) and geolocation (request once)
   const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
-  // Geolocation now handled by AppContext (geo persistence)
-
-  // Show undo toast when chat is cleared via affiliation change
   useEffect(() => {
     if (hasPendingUndo) {
       toast({
@@ -127,7 +139,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         description: t('chat.cleared_desc', language) || 'A conversa foi limpa ao trocar de afiliação.',
         action: (
           <ToastAction altText="Desfazer" onClick={undoClearChat}>
-            <Undo2 className="h-4 w-4 mr-1" />
             {t('chat.undo', language) || 'Desfazer'}
           </ToastAction>
         ),
@@ -148,7 +159,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
     const currentAffiliation = chatContext.philosophy || chatContext.religion || '';
     
-    // Build query with affiliation filter
     let query = supabase
       .from('chat_messages')
       .select('role, content, created_at')
@@ -165,7 +175,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       if (data && data.length > 0) {
         setMessages(data.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })));
       } else {
-        // Only clear if affiliation actually changed (not on initial load with no messages)
         if (prevAffiliationRef.current !== currentAffiliation) {
           setMessages([]);
         }
@@ -255,14 +264,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
   }, [playingIndex, stopAudio, language, toast]);
 
-  const navigate = useNavigate();
-
   const getAnonCount = () => parseInt(localStorage.getItem('anon_chat_count') || '0', 10);
   const incrementAnonCount = () => {
     const count = getAnonCount() + 1;
     localStorage.setItem('anon_chat_count', count.toString());
     return count;
   };
+
+  const handleCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: 'Copiado!' });
+  }, [toast]);
 
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -379,7 +391,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           { ...ctx, role: 'assistant', content: assistantSoFar },
         ]).then(() => {});
 
-        // Insert into activity_history
         (supabase.from('activity_history' as any) as any).insert({
           user_id: user.id,
           type: 'chat',
@@ -481,116 +492,39 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  return (
-    <div className="flex flex-col h-full">
-      {messages.length > 0 && (
-        <div className="flex justify-between items-center gap-1 p-2 border-b border-primary/10">
-          <div className="flex items-center gap-1.5">
-            <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
-            <select
-              value={ttsSpeed}
-              onChange={e => {
-                setTtsSpeed(parseFloat(e.target.value));
-                audioCacheRef.current.clear();
-                stopAudio();
-              }}
-              className="text-xs bg-transparent border border-border rounded px-1.5 py-0.5 text-muted-foreground focus:outline-none"
-            >
-              <option value={0.8}>0.8×</option>
-              <option value={0.9}>0.9×</option>
-              <option value={1.0}>1.0×</option>
-              <option value={1.15}>1.15×</option>
-              <option value={1.2}>1.2×</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <ActivityHistory />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-destructive gap-1.5"
-              onClick={async () => {
-                if (user) {
-                  await supabase.from('chat_messages').delete().eq('user_id', user.id);
-                }
-                stopAudio();
-                audioCacheRef.current.clear();
-                setMessages([]);
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-              {t('chat.clear', language)}
-            </Button>
-            {user && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-destructive gap-1.5"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    {t('chat.clear_all', language)}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{t('chat.clear_all_title', language)}</AlertDialogTitle>
-                    <AlertDialogDescription>{t('chat.clear_all_desc', language)}</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t('panel.keep', language)}</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      onClick={async () => {
-                        await Promise.all([
-                          supabase.from('chat_messages').delete().eq('user_id', user!.id),
-                          supabase.from('activity_history').delete().eq('user_id', user!.id),
-                        ]);
-                        stopAudio();
-                        audioCacheRef.current.clear();
-                        setMessages([]);
-                        toast({ title: t('chat.clear_all_done', language) });
-                      }}
-                    >
-                      {t('chat.clear_all', language)}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        </div>
-      )}
-      {messages.length === 0 && (
-        <div className="p-4 space-y-3 animate-fade-in">
-          {user && (
-            <div className="flex justify-between items-center">
-              <Link to="/invite-friends">
-                <Button variant="outline" size="sm" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-                  <Gift className="h-4 w-4" />
-                  {t('nav.invite', language)}
-                </Button>
-              </Link>
-              <ActivityHistory />
-            </div>
-          )}
-          <h3 className="font-display text-sm font-semibold text-muted-foreground">{t('chat.recommended', language)}</h3>
-          <div className="space-y-2">
-            {questions.map((q, i) => (
-              <button
-                key={i}
-                onClick={() => setChatInput(q)}
-                className="block w-full text-left px-4 py-3 rounded-lg glass sacred-border hover:sacred-glow transition-all text-sm hover-scale"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+  const remainingCount = user ? questionsRemaining : Math.max(0, 10 - getAnonCount());
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 mobile-scroll">
+  return (
+    <div className="flex flex-col h-full bg-background">
+      {/* Messages area */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-4 mobile-scroll">
+        {/* Empty state — welcome + suggested questions */}
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full py-8 animate-fade-in">
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 ring-1 ring-primary/20">
+              <DivineIcon />
+            </div>
+            <h3 className="text-base font-medium text-foreground mb-1">
+              {t('chat.title', language)}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6 text-center max-w-[280px]">
+              {t('chat.recommended', language)}
+            </p>
+            <div className="w-full max-w-md space-y-2 px-2">
+              {questions.map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => setChatInput(q)}
+                  className="block w-full text-left px-4 py-3 rounded-xl bg-card border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all text-sm text-foreground/80"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Messages */}
         {messages.map((msg, i) => (
           <MessageBubble
             key={i}
@@ -599,79 +533,139 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             playingIndex={playingIndex}
             loadingAudio={loadingAudio}
             onNarrate={playNarration}
-            religion={religion}
+            onCopy={handleCopy}
           />
         ))}
+        
+        {/* Typing indicator */}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
-          <div className="flex gap-3 justify-start animate-fade-in">
-            <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1 ring-1 ring-primary/30 shadow-[0_0_10px_hsl(38_80%_55%_/_0.15)]">
-              <ReligionIcon religion={religion} />
+          <div className="flex gap-2 justify-start animate-fade-in">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center mt-auto ring-1 ring-primary/20">
+              <DivineIcon />
             </div>
-            <div className="glass sacred-border rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="bg-card border border-border/50 rounded-2xl rounded-bl-sm px-4 py-3">
               <TypingDots />
             </div>
           </div>
         )}
       </div>
 
-      <div className="border-t border-primary/10">
-        <div className="flex items-center justify-between px-4 py-1.5 bg-secondary/30">
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-[11px] font-medium",
-              user
-                ? questionsRemaining > 5
-                  ? "border-amber-500/40 text-amber-700 bg-amber-500/10"
-                  : questionsRemaining > 2
-                    ? "border-amber-400/40 text-amber-600 bg-amber-400/10"
-                    : "border-destructive/40 text-destructive bg-destructive/10 animate-pulse"
-                : (10 - getAnonCount()) > 5
-                  ? "border-amber-500/40 text-amber-700 bg-amber-500/10"
-                  : (10 - getAnonCount()) > 2
-                    ? "border-amber-400/40 text-amber-600 bg-amber-400/10"
-                    : "border-destructive/40 text-destructive bg-destructive/10 animate-pulse"
+      {/* Fixed bottom input area */}
+      <div className="border-t border-border/40 bg-background">
+        {/* Status bar — minimal */}
+        <div className="flex items-center justify-between px-4 py-1">
+          <span className={cn(
+            "text-[11px] font-medium",
+            remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive"
+          )}>
+            {remainingCount} {t('chat.questions_remaining', language)}
+          </span>
+          <div className="flex items-center gap-1">
+            {!user && (
+              <Link to="/auth" className="text-[11px] text-primary hover:underline font-medium">
+                Fazer login
+              </Link>
             )}
-          >
-            {user
-              ? `${questionsRemaining} ${t('chat.questions_remaining', language)}`
-              : `${Math.max(0, 10 - getAnonCount())} ${t('chat.questions_remaining', language)}`
-            }
-          </Badge>
-          {!user && (
-            <Link to="/auth" className="text-[11px] text-primary hover:underline font-medium">
-              Fazer login
-            </Link>
-          )}
-          {user && questionsRemaining <= 3 && (
-            <Link to="/pricing" className="text-[11px] text-primary hover:underline font-medium">
-              {t('chat.upgrade', language)}
-            </Link>
-          )}
+            {user && questionsRemaining <= 3 && (
+              <Link to="/pricing" className="text-[11px] text-primary hover:underline font-medium">
+                {t('chat.upgrade', language)}
+              </Link>
+            )}
+            {messages.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      if (user) {
+                        await supabase.from('chat_messages').delete().eq('user_id', user.id);
+                      }
+                      stopAudio();
+                      audioCacheRef.current.clear();
+                      setMessages([]);
+                    }}
+                    className="text-muted-foreground"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t('chat.clear', language)}
+                  </DropdownMenuItem>
+                  {user && (
+                    <DropdownMenuItem
+                      onClick={() => setShowClearAllDialog(true)}
+                      className="text-destructive"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      {t('chat.clear_all', language)}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2 p-3 md:p-4 pt-2 md:pt-3">
+
+        {/* Input row */}
+        <div className="flex items-end gap-2 px-3 pb-3 pt-1">
           <Textarea
             value={chatInput}
             onChange={e => setChatInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('chat.placeholder', language)}
-            className="min-h-[44px] max-h-[100px] md:max-h-[120px] resize-none text-base"
+            className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-card border-border/50 focus-visible:ring-primary/30"
             rows={1}
           />
           <Button
             onClick={toggleRecording}
             disabled={isTranscribing}
             size="icon"
-            variant={isRecording ? "destructive" : "outline"}
-            className={cn("shrink-0 h-11 w-11 md:h-10 md:w-10", isRecording && "animate-pulse")}
+            variant={isRecording ? "destructive" : "ghost"}
+            className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
           >
-            {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
           </Button>
-          <Button onClick={sendMessage} disabled={isLoading || !chatInput.trim()} size="icon" className="shrink-0 h-11 w-11 md:h-10 md:w-10 sacred-gradient text-primary-foreground border-0">
-            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+          <Button
+            onClick={sendMessage}
+            disabled={isLoading || !chatInput.trim()}
+            size="icon"
+            className="shrink-0 h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+          >
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
           </Button>
         </div>
       </div>
+
+      {/* Clear all dialog */}
+      <AlertDialog open={showClearAllDialog} onOpenChange={setShowClearAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('chat.clear_all_title', language)}</AlertDialogTitle>
+            <AlertDialogDescription>{t('chat.clear_all_desc', language)}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('panel.keep', language)}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                await Promise.all([
+                  supabase.from('chat_messages').delete().eq('user_id', user!.id),
+                  supabase.from('activity_history').delete().eq('user_id', user!.id),
+                ]);
+                stopAudio();
+                audioCacheRef.current.clear();
+                setMessages([]);
+                setShowClearAllDialog(false);
+                toast({ title: t('chat.clear_all_done', language) });
+              }}
+            >
+              {t('chat.clear_all', language)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 });

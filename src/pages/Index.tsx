@@ -5,8 +5,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, Feather, CheckSquare, ScrollText } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { SlidersHorizontal } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -14,12 +13,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
-
-const mobileShortcuts = [
-  { to: '/posts', icon: Feather, labelKey: 'nav.posts' },
-  { to: '/practice', icon: CheckSquare, labelKey: 'nav.practice' },
-  { to: '/mural', icon: ScrollText, labelKey: 'nav.mural' },
-] as const;
 
 export default function Index() {
   const { language, chatContext } = useApp();
@@ -46,32 +39,21 @@ export default function Index() {
   };
 
   return (
-    <div className="flex flex-1 overflow-hidden h-[calc(100vh-3rem)] md:h-[calc(100vh-3.5rem)]">
+    <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
       <div className="flex-1 flex flex-col min-w-0 pb-[56px] md:pb-0">
-        <div className="md:hidden flex gap-2 px-3 py-2 border-b border-border/50 overflow-x-auto shrink-0">
-          {mobileShortcuts.map(({ to, icon: Icon, labelKey }) => (
-            <Link
-              key={to}
-              to={to}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors shrink-0"
-            >
-              <Icon className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium whitespace-nowrap">{t(labelKey, language)}</span>
-            </Link>
-          ))}
-        </div>
         <ChatArea ref={chatRef} />
       </div>
 
+      {/* Mobile settings drawer — accessible from header menu or this small trigger */}
       <div className="md:hidden">
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              className="fixed bottom-[7.5rem] right-3 z-40 shadow-lg rounded-full h-11 w-11 bg-primary text-primary-foreground border-0"
+              className="fixed bottom-[5rem] right-3 z-40 rounded-full h-10 w-10 bg-card border border-border/50 shadow-md text-muted-foreground hover:text-primary"
             >
-              <SlidersHorizontal className="h-5 w-5" />
+              <SlidersHorizontal className="h-4 w-4" />
             </Button>
           </DrawerTrigger>
           <DrawerContent className="max-h-[85vh]">
