@@ -30,6 +30,7 @@ export default function Header() {
 
   // Drawer items for logged-in users
   const loggedInItems = [
+    { label: 'Meu Perfil', icon: User, action: () => navigate('/profile') },
     { label: t('nav.prayers', language), icon: Heart, action: () => navigate('/prayers') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
     { label: 'Mural', icon: ScrollText, action: () => navigate('/mural') },
