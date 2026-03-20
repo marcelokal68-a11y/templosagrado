@@ -246,11 +246,11 @@ function PrayerCard({ post, reactions, comments, currentUserId, displayName, onA
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-              {(post.is_anonymous ? 'A' : (post.display_name || '?')[0]).toUpperCase()}
+              {(post.is_anonymous ? 'A' : friendlyName(post.display_name)[0]).toUpperCase()}
             </div>
             <div>
               <span className="text-sm font-medium text-foreground">
-                {post.is_anonymous ? 'Anônimo' : (post.display_name || 'Alguém')}
+                {post.is_anonymous ? 'Anônimo' : friendlyName(post.display_name)}
               </span>
               <span className="text-[11px] text-muted-foreground ml-2">{timeAgo}</span>
             </div>
