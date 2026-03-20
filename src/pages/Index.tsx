@@ -30,8 +30,7 @@ export default function Index() {
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
       {/* Mobile: vertical scroll with chat + context below */}
-      <div className="flex-1 flex flex-col min-w-0 md:hidden"
-           style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="flex-1 flex flex-col min-w-0 md:hidden">
         <ScrollArea className="flex-1">
           <ChatArea ref={chatRef} />
           <div className="border-t border-border bg-card/50">
