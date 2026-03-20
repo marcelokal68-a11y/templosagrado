@@ -8,6 +8,13 @@ import { cn } from '@/lib/utils';
 import { SendHorizonal, Loader2, MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { containsProfanity } from '@/lib/profanityFilter';
 
+// If display_name looks like an email, show only the part before @
+function friendlyName(name: string | null): string {
+  if (!name) return 'Alguém';
+  if (name.includes('@')) return name.split('@')[0];
+  return name;
+}
+
 interface Post {
   id: string;
   content: string;
@@ -239,11 +246,11 @@ function PrayerCard({ post, reactions, comments, currentUserId, displayName, onA
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-              {(post.is_anonymous ? 'A' : (post.display_name || '?')[0]).toUpperCase()}
+              {(post.is_anonymous ? 'A' : friendlyName(post.display_name)[0]).toUpperCase()}
             </div>
             <div>
               <span className="text-sm font-medium text-foreground">
-                {post.is_anonymous ? 'Anônimo' : (post.display_name || 'Alguém')}
+                {post.is_anonymous ? 'Anônimo' : friendlyName(post.display_name)}
               </span>
               <span className="text-[11px] text-muted-foreground ml-2">{timeAgo}</span>
             </div>
@@ -289,11 +296,11 @@ function PrayerCard({ post, reactions, comments, currentUserId, displayName, onA
               {comments.map(comment => (
                 <div key={comment.id} className="flex gap-2">
                   <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 mt-0.5">
-                    {(comment.display_name || '?')[0].toUpperCase()}
+                    {friendlyName(comment.display_name)[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-xs font-medium text-foreground">{comment.display_name || 'Alguém'}</span>
+                      <span className="text-xs font-medium text-foreground">{friendlyName(comment.display_name)}</span>
                       <span className="text-[10px] text-muted-foreground">{getTimeAgo(comment.created_at)}</span>
                       {currentUserId === comment.user_id && (
                         <button onClick={() => handleDeleteComment(comment.id)} className="text-muted-foreground hover:text-destructive ml-auto">

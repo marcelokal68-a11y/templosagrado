@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 import { BookOpen, Loader2, Sparkles, Volume2, VolumeX, BookMarked, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
-const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism', 'shamanism', 'taoism', 'anthroposophy', 'cosmism', 'ubuntu'];
+const MVP_RELIGIONS = ['catholic', 'protestant', 'spiritist', 'candomble'];
+const MVP_PHILOSOPHIES = ['stoicism', 'humanism', 'existentialism'];
 
 const CHECKLISTS: Record<string, { items: string[]; genderSpecific?: boolean }> = {
   jewish: { genderSpecific: true, items: [] },
@@ -216,7 +216,7 @@ export default function Practice() {
 
       {/* Religion selector */}
       <div className="flex flex-wrap gap-2 justify-center">
-        {religions.map(r => (
+        {MVP_RELIGIONS.map(r => (
           <button
             key={r}
             onClick={() => { setReligion(religion === r ? '' : r); setPhilosophy(''); setChecked({}); }}
@@ -240,7 +240,7 @@ export default function Practice() {
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground text-center">{t('panel.philosophy', language)}</h3>
         <div className="flex flex-wrap gap-2 justify-center">
-          {philosophies.map(p => (
+          {MVP_PHILOSOPHIES.map(p => (
             <button
               key={p}
               onClick={() => { setPhilosophy(philosophy === p ? '' : p); setReligion(''); setChecked({}); }}
