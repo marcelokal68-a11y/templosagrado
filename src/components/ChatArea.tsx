@@ -77,10 +77,10 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
       
       <div className={cn("flex flex-col gap-0.5", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
         <div className={cn(
-          "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed shadow-sm",
+          "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed",
           isUser
-            ? "bg-primary text-primary-foreground rounded-br-sm"
-            : "bg-card border border-border/50 text-foreground rounded-bl-sm"
+            ? "bg-foreground text-background rounded-br-sm"
+            : "bg-card border border-border text-foreground rounded-bl-sm"
         )}>
           <p className="whitespace-pre-wrap">{msg.content}</p>
         </div>
