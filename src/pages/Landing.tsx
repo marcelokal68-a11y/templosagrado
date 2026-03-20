@@ -41,7 +41,7 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-2 md:mt-4 animate-fade-in w-full sm:w-auto">
-            <Link to="/auth" className="w-full sm:w-auto">
+            <Link to="/" className="w-full sm:w-auto">
               <Button size="lg" className="gap-2 text-base px-10 sacred-gradient text-primary-foreground border-0 w-full sm:w-auto h-12">
                 <Sparkles className="h-5 w-5" />
                 Começar Agora
@@ -200,7 +200,7 @@ export default function Landing() {
           10 perguntas grátis para começar. Planos a partir de R$19,90/mês para acesso ilimitado.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/auth">
+          <Link to="/">
             <Button size="lg" className="gap-2 px-8 sacred-gradient text-primary-foreground border-0 h-12">
               <Sparkles className="h-5 w-5" />
               Começar Grátis
