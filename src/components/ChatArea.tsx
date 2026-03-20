@@ -77,10 +77,10 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
       
       <div className={cn("flex flex-col gap-0.5", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
         <div className={cn(
-          "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed shadow-sm",
+          "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed",
           isUser
-            ? "bg-primary text-primary-foreground rounded-br-sm"
-            : "bg-card border border-border/50 text-foreground rounded-bl-sm"
+            ? "bg-foreground text-background rounded-br-sm"
+            : "bg-card border border-border text-foreground rounded-bl-sm"
         )}>
           <p className="whitespace-pre-wrap">{msg.content}</p>
         </div>
@@ -650,7 +650,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               </div>
             </div>
 
-            {/* Input row */}
+            {/* Input row — ChatGPT style */}
             <div className="flex items-end gap-2 px-3 pb-3 pt-1"
                  style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
               <Textarea
@@ -658,7 +658,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('chat.placeholder', language)}
-                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-card border-border/50 focus-visible:ring-primary/30"
+                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
                 rows={1}
               />
               <Button
@@ -674,7 +674,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 onClick={sendMessage}
                 disabled={isLoading || !chatInput.trim()}
                 size="icon"
-                className="shrink-0 h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
               </Button>
