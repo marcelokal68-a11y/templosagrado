@@ -41,7 +41,7 @@ const translations: Record<Language, Record<string, string>> = {
     'history.deleted': 'Histórico apagado',
     
     // Posts
-    'nav.posts': 'Post',
+    'nav.posts': 'Publicações',
     'posts.title': 'Criar Post',
     'posts.subtitle': 'Transforme respostas do chat em posts para redes sociais',
     'posts.select': '1. Selecione uma resposta',
@@ -631,7 +631,7 @@ const translations: Record<Language, Record<string, string>> = {
     'history.empty': 'No saved messages.',
     'history.deleted': 'History deleted',
     
-    'nav.posts': 'Post',
+    'nav.posts': 'Publications',
     'posts.title': 'Create Post',
     'posts.subtitle': 'Transform chat responses into social media posts',
     'posts.select': '1. Select a response',
@@ -1195,7 +1195,7 @@ const translations: Record<Language, Record<string, string>> = {
     'history.empty': 'Sin mensajes guardados.',
     'history.deleted': 'Historial borrado',
     
-    'nav.posts': 'Post',
+    'nav.posts': 'Publicaciones',
     'posts.title': 'Crear Post',
     'posts.subtitle': 'Transforma respuestas del chat en posts para redes sociales',
     'posts.select': '1. Selecciona una respuesta',

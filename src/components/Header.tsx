@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, Heart, BookOpen, Settings, History, X, GraduationCap } from 'lucide-react';
+import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, Heart, BookOpen, Settings, History, X, GraduationCap, ScrollText, FileText } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -36,13 +36,15 @@ export default function Header() {
     { label: t('nav.prayers', language), icon: Heart, action: () => navigate('/prayers') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
     { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
+    { label: 'Mural', icon: ScrollText, action: () => navigate('/mural') },
+    { label: t('nav.posts', language), icon: FileText, action: () => navigate('/posts') },
     { label: t('nav.history', language) || 'Histórico', icon: History, action: () => {} },
     { label: 'Configurações', icon: Settings, action: () => {} },
     ...(!isSubscriber ? [{ label: 'Plano', icon: Gem, action: () => navigate('/pricing') }] : []),
   ];
 
   return (
-    <header className="sticky top-0 z-50 safe-top border-b border-border/40 bg-background/95 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-50 safe-top border-b border-border/40 bg-background/95 backdrop-blur-md">
       <div className="flex h-14 items-center justify-between px-3">
         {/* Left side */}
         <div className="flex items-center gap-2">
@@ -51,10 +53,10 @@ export default function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-primary hover:bg-primary/10"
+                className="h-10 w-10 text-primary hover:bg-primary/10"
                 onClick={() => navigate(getBackPath())}
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-6 w-6" />
               </Button>
             ) : (
               <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -62,9 +64,9 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 text-foreground/70 hover:text-primary hover:bg-primary/10"
+                    className="h-10 w-10 text-foreground/70 hover:text-primary hover:bg-primary/10"
                   >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border/40">
@@ -89,10 +91,10 @@ export default function Header() {
                           item.action();
                           setDrawerOpen(false);
                         }}
-                        className="flex items-center gap-3 px-5 py-3.5 text-foreground/80 hover:bg-primary/8 hover:text-primary transition-colors text-left"
+                        className="flex items-center gap-3 px-5 py-4 text-foreground/80 hover:bg-primary/8 hover:text-primary transition-colors text-left"
                       >
-                        <item.icon className="h-5 w-5 text-primary/70" />
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <item.icon className="h-6 w-6 text-primary/70" />
+                        <span className="text-base font-medium">{item.label}</span>
                       </button>
                     ))}
                   </nav>
@@ -131,10 +133,10 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+              className="h-10 w-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
               onClick={() => setDrawerOpen(true)}
             >
-              <User className="h-4.5 w-4.5" />
+              <User className="h-5 w-5" />
             </Button>
           ) : (
             <Link to="/auth">
