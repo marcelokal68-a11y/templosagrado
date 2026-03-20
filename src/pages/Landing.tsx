@@ -35,9 +35,7 @@ export default function Landing() {
         <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 30%, hsl(38 80% 55% / 0.08) 0%, transparent 60%)' }} />
         <div className="container relative py-10 md:py-28 flex flex-col items-center text-center gap-4 md:gap-6 px-4">
           <img src={temploLogo} alt="Templo Sagrado" className="h-16 md:h-24 animate-fade-in" />
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight max-w-3xl animate-fade-in text-foreground">
-            {t('landing.hero_title', language)}
-          </h1>
+          <h1 className="sr-only">{t('landing.hero_title', language)}</h1>
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-fade-in">
             {t('landing.hero_subtitle', language)}
           </p>

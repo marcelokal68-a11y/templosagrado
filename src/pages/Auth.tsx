@@ -67,7 +67,7 @@ export default function Auth() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <img src={temploLogo} alt="Templo Sagrado" className="h-14 mx-auto mb-2" />
-          <CardTitle className="font-display text-2xl">{t('chat.title', language)}</CardTitle>
+          <CardTitle className="sr-only">{t('chat.title', language)}</CardTitle>
           <CardDescription>{t('auth.subtitle', language)}</CardDescription>
           <p className="text-xs text-muted-foreground mt-1">
             {isLogin ? t('auth.login', language) : t('auth.signup', language)}
