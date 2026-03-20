@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
+import temploLogo from '@/assets/templo-logo.png';
 
 export default function Auth() {
   const { language, user } = useApp();
@@ -65,7 +66,7 @@ export default function Auth() {
     <div className="flex-1 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <span className="text-5xl mb-2 block">🕉️</span>
+          <img src={temploLogo} alt="Templo Sagrado" className="h-14 mx-auto mb-2" />
           <CardTitle className="font-display text-2xl">{t('chat.title', language)}</CardTitle>
           <CardDescription>{t('auth.subtitle', language)}</CardDescription>
           <p className="text-xs text-muted-foreground mt-1">
