@@ -561,91 +561,160 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
       {/* Fixed bottom input area */}
       <div className="border-t border-border/40 bg-background">
-        {/* Status bar — minimal */}
-        <div className="flex items-center justify-between px-4 py-1">
-          <span className={cn(
-            "text-[11px] font-medium",
-            remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive"
-          )}>
-            {remainingCount} {t('chat.questions_remaining', language)}
-          </span>
-          <div className="flex items-center gap-1">
-            {!user && (
-              <Link to="/auth" className="text-[11px] text-primary hover:underline font-medium">
-                Fazer login
-              </Link>
-            )}
-            {user && questionsRemaining <= 3 && (
-              <Link to="/pricing" className="text-[11px] text-primary hover:underline font-medium">
-                {t('chat.upgrade', language)}
-              </Link>
-            )}
-            {messages.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      if (user) {
-                        await supabase.from('chat_messages').delete().eq('user_id', user.id);
-                      }
-                      stopAudio();
-                      audioCacheRef.current.clear();
-                      setMessages([]);
-                    }}
-                    className="text-muted-foreground"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    {t('chat.clear', language)}
-                  </DropdownMenuItem>
-                  {user && (
-                    <DropdownMenuItem
-                      onClick={() => setShowClearAllDialog(true)}
-                      className="text-destructive"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      {t('chat.clear_all', language)}
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+        {/* Blocked state — upgrade banner */}
+        {isBlocked ? (
+          <div className="px-4 py-4 text-center space-y-3">
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <Lock className="h-5 w-5" />
+              <span className="text-sm font-semibold">Limite de mensagens atingido</span>
+            </div>
+            <p className="text-xs text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
+              Para continuar sua jornada de reflexão e receber orientações ilimitadas, faça o upgrade para o Templo Sagrado Pro.
+            </p>
+            <div className="flex gap-2 justify-center">
+              {!user ? (
+                <Link to="/auth">
+                  <Button size="sm" className="bg-primary text-primary-foreground">
+                    Fazer login
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/pricing">
+                  <Button size="sm" className="bg-primary text-primary-foreground gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Upgrade Pro
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Remaining messages banner */}
+            <div className="flex items-center justify-between px-4 py-1">
+              <span className={cn(
+                "text-[11px] font-medium",
+                remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
+              )}>
+                {remainingCount} {t('chat.questions_remaining', language)}
+              </span>
+              <div className="flex items-center gap-1">
+                {!user && (
+                  <Link to="/auth" className="text-[11px] text-primary hover:underline font-medium">
+                    Fazer login
+                  </Link>
+                )}
+                {user && questionsRemaining <= 3 && (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="text-[11px] text-primary hover:underline font-medium"
+                  >
+                    {t('chat.upgrade', language)}
+                  </button>
+                )}
+                {messages.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          if (user) {
+                            await supabase.from('chat_messages').delete().eq('user_id', user.id);
+                          }
+                          stopAudio();
+                          audioCacheRef.current.clear();
+                          setMessages([]);
+                        }}
+                        className="text-muted-foreground"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t('chat.clear', language)}
+                      </DropdownMenuItem>
+                      {user && (
+                        <DropdownMenuItem
+                          onClick={() => setShowClearAllDialog(true)}
+                          className="text-destructive"
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          {t('chat.clear_all', language)}
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </div>
 
-        {/* Input row */}
-        <div className="flex items-end gap-2 px-3 pb-3 pt-1">
-          <Textarea
-            value={chatInput}
-            onChange={e => setChatInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={t('chat.placeholder', language)}
-            className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-card border-border/50 focus-visible:ring-primary/30"
-            rows={1}
-          />
-          <Button
-            onClick={toggleRecording}
-            disabled={isTranscribing}
-            size="icon"
-            variant={isRecording ? "destructive" : "ghost"}
-            className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
-          >
-            {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
-          </Button>
-          <Button
-            onClick={sendMessage}
-            disabled={isLoading || !chatInput.trim()}
-            size="icon"
-            className="shrink-0 h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
-          >
-            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
-          </Button>
-        </div>
+            {/* Input row */}
+            <div className="flex items-end gap-2 px-3 pb-3 pt-1">
+              <Textarea
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={t('chat.placeholder', language)}
+                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-card border-border/50 focus-visible:ring-primary/30"
+                rows={1}
+              />
+              <Button
+                onClick={toggleRecording}
+                disabled={isTranscribing}
+                size="icon"
+                variant={isRecording ? "destructive" : "ghost"}
+                className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
+              >
+                {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
+              </Button>
+              <Button
+                onClick={sendMessage}
+                disabled={isLoading || !chatInput.trim()}
+                size="icon"
+                className="shrink-0 h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+              >
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
+              </Button>
+            </div>
+          </>
+        )}
       </div>
+
+      {/* Upgrade modal */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Templo Sagrado Pro
+            </DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed pt-2">
+              Continue sua jornada de reflexão e receba orientações ilimitadas, versículos diários exclusivos e acesso a todas as funcionalidades.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="flex items-start gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <span>Mensagens ilimitadas com o Divino</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <span>Versículo do Dia exclusivo</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <span>Publicar no Mural Sagrado</span>
+            </div>
+          </div>
+          <Link to="/pricing" onClick={() => setShowUpgradeModal(false)}>
+            <Button className="w-full bg-primary text-primary-foreground gap-1.5">
+              <Sparkles className="h-4 w-4" />
+              Ver planos a partir de R$19,90/mês
+            </Button>
+          </Link>
+        </DialogContent>
+      </Dialog>
 
       {/* Clear all dialog */}
       <AlertDialog open={showClearAllDialog} onOpenChange={setShowClearAllDialog}>
