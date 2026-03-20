@@ -1,17 +1,16 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
-import { t, Language, languageNames } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, Heart, BookOpen, Settings, History, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import temploLogo from '@/assets/templo-logo.png';
 
 export default function Header() {
-  const { language, setLanguage, user, isSubscriber } = useApp();
+  const { language, user, isSubscriber } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -38,6 +37,8 @@ export default function Header() {
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
     { label: t('nav.history', language) || 'Histórico', icon: History, action: () => {} },
     { label: 'Configurações', icon: Settings, action: () => {} },
+    // Plano — only for non-subscribers
+    ...(!isSubscriber ? [{ label: 'Plano', icon: Gem, action: () => navigate('/pricing') }] : []),
   ];
 
   return (
@@ -45,7 +46,6 @@ export default function Header() {
       <div className="flex h-14 items-center justify-between px-3">
         {/* Left side */}
         <div className="flex items-center gap-2">
-          {/* Hamburger / Back / Logout */}
           {user && !shouldHideNav ? (
             isSubpage ? (
               <Button
@@ -67,7 +67,7 @@ export default function Header() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-72 p-0 bg-background border-r border-border/40">
+                <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border/40">
                   {/* Drawer header */}
                   <div className="flex items-center justify-between px-4 py-4 border-b border-border/30">
                     <div className="flex items-center gap-2">
@@ -126,25 +126,6 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-1.5">
-          <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-            <SelectTrigger className="w-[90px] md:w-[110px] h-8 text-xs border-border/30 bg-secondary/30 focus:ring-primary/30">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(languageNames) as Language[]).map(lang => (
-                <SelectItem key={lang} value={lang}>{languageNames[lang]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {user && !isSubscriber && (
-            <Link to="/pricing">
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary animate-pulse hover:animate-none hover:bg-primary/10">
-                <Gem className="h-4 w-4" />
-              </Button>
-            </Link>
-          )}
-
           {/* Profile icon (logged in) or Login button */}
           {user ? (
             <Button

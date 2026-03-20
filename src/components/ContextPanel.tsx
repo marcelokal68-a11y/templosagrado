@@ -1,8 +1,7 @@
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Sparkles, Church, BookOpen, Music } from 'lucide-react';
+import { Sparkles, Church, BookOpen, Music } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -79,40 +78,34 @@ function getTopicsForReligion(religion: string): string[] {
   return TOPICS_BY_RELIGION[religion] || [...UNIVERSAL_TOPICS];
 }
 
-function CollapsibleChipGroup({ label, items, prefix, selected, onSelect, defaultOpen = true, activeColor = "bg-primary text-primary-foreground border-primary" }: {
-  label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void; defaultOpen?: boolean; activeColor?: string;
+function ChipGroup({ label, items, prefix, selected, onSelect, activeColor = "bg-primary text-primary-foreground border-primary", icon }: {
+  label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void; activeColor?: string; icon?: React.ReactNode;
 }) {
   const { language } = useApp();
-  const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 group">
-        <h3 className="font-display text-sm font-semibold text-foreground">{label}</h3>
-        <ChevronDown className={cn(
-          "h-4 w-4 text-muted-foreground transition-transform duration-200",
-          open && "rotate-180"
-        )} />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-        <div className="flex flex-wrap gap-1.5 pb-2">
-          {items.map(item => (
-            <button
-              key={item}
-              onClick={() => onSelect(selected === item ? '' : item)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                selected === item
-                  ? `${activeColor} shadow-sm`
-                  : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
-              )}
-            >
-              {t(`${prefix}.${item}`, language)}
-            </button>
-          ))}
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+    <div className="space-y-2">
+      <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+        {icon}
+        {label}
+      </h3>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map(item => (
+          <button
+            key={item}
+            onClick={() => onSelect(selected === item ? '' : item)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+              selected === item
+                ? `${activeColor} shadow-sm`
+                : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+            )}
+          >
+            {t(`${prefix}.${item}`, language)}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -135,7 +128,6 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const handleModeSwitch = (newMode: 'religion' | 'philosophy') => {
     if (newMode === activeMode) return;
-
     const hasSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
     if (hasSelection) {
       setPendingMode(newMode);
@@ -159,19 +151,13 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
   };
 
   const getCurrentLabel = () => {
-    if (activeMode === 'religion' && chatContext.religion) {
-      return t(`religion.${chatContext.religion}`, language);
-    }
-    if (activeMode === 'philosophy' && chatContext.philosophy) {
-      return t(`philosophy.${chatContext.philosophy}`, language);
-    }
+    if (activeMode === 'religion' && chatContext.religion) return t(`religion.${chatContext.religion}`, language);
+    if (activeMode === 'philosophy' && chatContext.philosophy) return t(`philosophy.${chatContext.philosophy}`, language);
     return '';
   };
 
   const getTargetLabel = () => {
-    return pendingMode === 'religion'
-      ? t('panel.mode_religion', language)
-      : t('panel.mode_philosophy', language);
+    return pendingMode === 'religion' ? t('panel.mode_religion', language) : t('panel.mode_philosophy', language);
   };
 
   const handleGenerate = () => {
@@ -180,25 +166,22 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
   };
 
   const handleReligionSelect = (v: string) => {
-    // If selecting a different religion (not deselecting), clear chat with undo
-    if (v && v !== chatContext.religion) {
-      clearChatWithUndo();
-    }
+    if (v && v !== chatContext.religion) clearChatWithUndo();
     setChatContext(prev => ({ ...prev, religion: v, topic: '' }));
   };
 
   const handlePhilosophySelect = (v: string) => {
-    // If selecting a different philosophy (not deselecting), clear chat with undo
-    if (v && v !== chatContext.philosophy) {
-      clearChatWithUndo();
-    }
+    if (v && v !== chatContext.philosophy) clearChatWithUndo();
     setChatContext(prev => ({ ...prev, philosophy: v, topic: '' }));
   };
 
+  const activeSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
+  const playlistId = SPOTIFY_PLAYLISTS[activeSelection] || SPOTIFY_PLAYLISTS.default;
+
   return (
-    <div className="space-y-1 p-4">
+    <div className="space-y-4 p-4">
       {/* Mode Selector */}
-      <div className="flex gap-2 pb-3 mb-2 border-b border-amber-200">
+      <div className="flex gap-2 pb-3 border-b border-amber-200">
         <button
           onClick={() => handleModeSwitch('religion')}
           className={cn(
@@ -225,89 +208,74 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         </button>
       </div>
 
-      {/* Religion section */}
+      {/* Religion or Philosophy chips — always visible */}
       {activeMode === 'religion' && (
-        <CollapsibleChipGroup
+        <ChipGroup
           label={t('panel.religion', language)}
           items={religions}
           prefix="religion"
           selected={chatContext.religion}
           onSelect={handleReligionSelect}
-          defaultOpen={true}
           activeColor="sacred-gradient text-primary-foreground border-amber-500"
         />
       )}
 
-      {/* Philosophy section */}
       {activeMode === 'philosophy' && (
-        <CollapsibleChipGroup
+        <ChipGroup
           label={t('panel.philosophy', language)}
           items={philosophies}
           prefix="philosophy"
           selected={chatContext.philosophy}
           onSelect={handlePhilosophySelect}
-          defaultOpen={true}
-        activeColor="sacred-gradient text-primary-foreground border-amber-500"
+          activeColor="sacred-gradient text-primary-foreground border-amber-500"
         />
       )}
 
-      <CollapsibleChipGroup
+      <ChipGroup
         label={t('panel.need', language)}
         items={needs}
         prefix="need"
         selected={chatContext.need}
         onSelect={(v) => setChatContext(prev => ({ ...prev, need: v }))}
-        defaultOpen={false}
         activeColor="sacred-gradient text-primary-foreground border-amber-500"
       />
-      <CollapsibleChipGroup
+
+      <ChipGroup
         label={t('panel.mood', language)}
         items={moods}
         prefix="mood"
         selected={chatContext.mood}
         onSelect={(v) => setChatContext(prev => ({ ...prev, mood: v }))}
-        defaultOpen={false}
         activeColor="sacred-gradient text-primary-foreground border-amber-500"
       />
-      <CollapsibleChipGroup
+
+      <ChipGroup
         label={t('panel.topics', language)}
         items={topics}
         prefix="topic"
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
-        defaultOpen={false}
         activeColor="sacred-gradient text-primary-foreground border-amber-500"
       />
 
-      {/* Spotify Background Music */}
-      {(() => {
-        const activeSelection = activeMode === 'religion' ? chatContext.religion : chatContext.philosophy;
-        const playlistId = SPOTIFY_PLAYLISTS[activeSelection] || SPOTIFY_PLAYLISTS.default;
-        return (
-          <Collapsible>
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 group">
-              <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
-                <Music className="h-4 w-4" />
-                {t('panel.music', language)}
-              </h3>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-              <div className="rounded-xl overflow-hidden border border-border pb-2">
-                <iframe
-                  key={playlistId}
-                  src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`}
-                  width="100%"
-                  height="152"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                  className="rounded-xl"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        );
-      })()}
+      {/* Spotify Background Music — always visible */}
+      <div className="space-y-2">
+        <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+          <Music className="h-4 w-4" />
+          {t('panel.music', language)}
+        </h3>
+        <div className="rounded-xl overflow-hidden border border-border">
+          <iframe
+            key={playlistId}
+            src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`}
+            width="100%"
+            height="152"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            className="rounded-xl"
+          />
+        </div>
+      </div>
 
       {onGenerate && hasContext && (
         <div className="pt-3">
