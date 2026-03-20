@@ -296,11 +296,11 @@ function PrayerCard({ post, reactions, comments, currentUserId, displayName, onA
               {comments.map(comment => (
                 <div key={comment.id} className="flex gap-2">
                   <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 mt-0.5">
-                    {(comment.display_name || '?')[0].toUpperCase()}
+                    {friendlyName(comment.display_name)[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-xs font-medium text-foreground">{comment.display_name || 'Alguém'}</span>
+                      <span className="text-xs font-medium text-foreground">{friendlyName(comment.display_name)}</span>
                       <span className="text-[10px] text-muted-foreground">{getTimeAgo(comment.created_at)}</span>
                       {currentUserId === comment.user_id && (
                         <button onClick={() => handleDeleteComment(comment.id)} className="text-muted-foreground hover:text-destructive ml-auto">
