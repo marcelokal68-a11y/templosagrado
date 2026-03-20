@@ -242,6 +242,7 @@ ${topicInstruction}
 ${historySection}
 ${temporalContext}
 ${religionDetection}
+${traditionTone}
 
 MEMORY & CONTINUITY:
 You have continuous memory of this conversation. The messages include previous interactions from past sessions.
