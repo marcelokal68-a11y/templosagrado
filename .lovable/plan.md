@@ -1,43 +1,40 @@
 
 
-# Ajustes Mobile: Input, Login, Filtros e Compactação
+# Ajustes Mobile: Header Fixo, Ícones Maiores, Sidebar Revisada
 
 ## Problemas identificados
 
-1. **Input muito perto da barra inferior do iOS** — a barra de input fica colada na BottomNav, e no iOS o toque pode acionar a barra de endereços
-2. **Botão de login muito pequeno** — texto de 11px difícil de clicar
-3. **Filtros (Católico, Evangélico etc.) não aparecem no mobile** — o ContextPanel só é renderizado no desktop (painel lateral direito). No mobile, não há como acessá-lo
-4. **Placeholder "Digite sua pergunta..." muito longo** — corta no mobile
-5. **Chat precisa ser mais compacto no mobile** — welcome state ocupa muito espaço vertical
+1. **Header não está fixo no mobile** — ao rolar, o header sobe junto com o conteúdo, perdendo acesso ao menu hambúrguer
+2. **Ícone do menu hambúrguer muito pequeno** — público brasileiro mais velho precisa de alvos maiores
+3. **"Post" na sidebar não faz sentido** — o item "Post" (nav.posts) é confuso; precisa renomear para algo mais claro como "Publicações" ou "Criar Post"
+4. **Mural não aparece na sidebar mobile (drawer)** — está apenas na sidebar desktop; falta no drawer do Header
 
 ## Mudanças
 
-### 1. Afastar input da BottomNav (`ChatArea.tsx`)
-- Adicionar `mb-16` (64px) ou `pb-16` ao container do input no mobile para compensar a altura da BottomNav (56px + safe area)
-- Alternativa: usar `calc` com a altura da bottom nav
+### 1. Fixar Header no mobile (`src/components/Header.tsx`)
+- O header já tem `sticky top-0 z-50`, que deveria funcionar. O problema é que o container pai (`div.flex.flex-col.h-screen.overflow-hidden` no App.tsx) usa `overflow-hidden`, o que impede `sticky` de funcionar corretamente dentro de contextos flex
+- Trocar de `sticky top-0` para `fixed top-0 left-0 right-0` no header
+- Adicionar padding-top correspondente ao container abaixo do header (`pt-14`) para compensar
 
-### 2. Aumentar botão de login (`ChatArea.tsx`)
-- Banner de "Fazer login" e "Limite atingido": aumentar de `text-[11px]` para `text-sm`, e o `Button size="sm"` para `size="default"` com padding maior
-- Tornar o link de login mais clicável (min-height 44px)
+### 2. Aumentar ícones do menu hambúrguer e botões do Header (`src/components/Header.tsx`)
+- Menu hambúrguer: `h-5 w-5` → `h-6 w-6`, botão: `h-9 w-9` → `h-10 w-10`
+- Ícone de perfil: mesmo aumento
+- Itens dentro do drawer: ícones de `h-5 w-5` → `h-6 w-6`, texto de `text-sm` → `text-base`, padding de `py-3.5` → `py-4`
 
-### 3. Mostrar filtros no mobile (`Index.tsx`)
-- Adicionar o `ContextPanel` abaixo do `ChatArea` no layout mobile, dentro de um container com scroll
-- Ficará acessível ao rolar para baixo, abaixo do chat
-- Estrutura: `ChatArea (flex-1 com scroll)` + `ContextPanel (auto height, scrollável)`
-- O ContextPanel no mobile será mais compacto (menos padding)
+### 3. Adicionar Mural ao drawer mobile (`src/components/Header.tsx`)
+- Adicionar item `{ label: 'Mural', icon: ScrollText, action: () => navigate('/mural') }` na lista `drawerItems`
 
-### 4. Encurtar placeholder (`ChatArea.tsx`)
-- Trocar o placeholder longo por algo curto: "Envie sua mensagem..." ou "Sua mensagem..."
-- Adicionar chave i18n `chat.placeholder_short` ou alterar a existente
+### 4. Renomear "Post" para "Publicações" (`src/lib/i18n.ts` + `src/components/Header.tsx`)
+- Na i18n: `'nav.posts': 'Post'` → `'nav.posts': 'Publicações'`
+- Adicionar "Publicações" ao drawer se ainda não estiver lá
+- Na sidebar desktop, o label já puxará da i18n automaticamente
 
-### 5. Compactar welcome state no mobile (`ChatArea.tsx`)
-- Reduzir padding do empty state: `py-8` → `py-4`
-- Reduzir tamanho do ícone e margens
-- Reduzir espaçamento entre perguntas sugeridas
+### 5. Compensar header fixo (`src/App.tsx`)
+- Adicionar `pt-14` ao container que vem logo abaixo do Header para que o conteúdo não fique escondido atrás dele
 
 ## Arquivos a editar
 
-- `src/components/ChatArea.tsx` — input spacing, login size, placeholder, welcome compactação
-- `src/pages/Index.tsx` — adicionar ContextPanel no mobile abaixo do chat
-- `src/lib/i18n.ts` — atualizar placeholder se necessário
+- `src/components/Header.tsx` — header fixo, ícones maiores, adicionar Mural e Publicações ao drawer
+- `src/App.tsx` — padding-top para compensar header fixo
+- `src/lib/i18n.ts` — renomear "Post" → "Publicações" (pt-BR), "Publications" (en), "Publicaciones" (es)
 
