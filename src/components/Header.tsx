@@ -36,6 +36,8 @@ export default function Header() {
     { label: t('nav.prayers', language), icon: Heart, action: () => navigate('/prayers') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
     { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
+    { label: 'Mural', icon: ScrollText, action: () => navigate('/mural') },
+    { label: t('nav.posts', language), icon: FileText, action: () => navigate('/posts') },
     { label: t('nav.history', language) || 'Histórico', icon: History, action: () => {} },
     { label: 'Configurações', icon: Settings, action: () => {} },
     ...(!isSubscriber ? [{ label: 'Plano', icon: Gem, action: () => navigate('/pricing') }] : []),
