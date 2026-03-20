@@ -133,10 +133,10 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+              className="h-10 w-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
               onClick={() => setDrawerOpen(true)}
             >
-              <User className="h-4.5 w-4.5" />
+              <User className="h-5 w-5" />
             </Button>
           ) : (
             <Link to="/auth">

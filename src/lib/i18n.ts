@@ -1195,7 +1195,7 @@ const translations: Record<Language, Record<string, string>> = {
     'history.empty': 'Sin mensajes guardados.',
     'history.deleted': 'Historial borrado',
     
-    'nav.posts': 'Post',
+    'nav.posts': 'Publicaciones',
     'posts.title': 'Crear Post',
     'posts.subtitle': 'Transforma respuestas del chat en posts para redes sociales',
     'posts.select': '1. Selecciona una respuesta',
