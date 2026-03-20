@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 5%;
 
-    --primary: 160 60% 33%;
+    --primary: 38 80% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
@@ -33,18 +33,18 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 160 60% 33%;
+    --ring: 38 80% 45%;
 
     --radius: 0.75rem;
 
     /* Sacred palette — adapted to clean style */
-    --sacred-gold: 160 60% 33%;
-    --sacred-amber: 160 50% 28%;
+    --sacred-gold: 38 80% 45%;
+    --sacred-amber: 30 65% 38%;
     --sacred-cream: 0 0% 97%;
     --sacred-warm: 0 0% 96%;
     --sacred-text: 0 0% 5%;
-    --sacred-green: 160 60% 33%;
-    --sacred-green-light: 160 15% 94%;
+    --sacred-green: 38 80% 45%;
+    --sacred-green-light: 38 15% 94%;
     --sacred-earth: 0 0% 40%;
     --sacred-bark: 0 0% 35%;
 
@@ -54,12 +54,12 @@
 
     --sidebar-background: 0 0% 97.5%;
     --sidebar-foreground: 0 0% 17%;
-    --sidebar-primary: 160 60% 33%;
+    --sidebar-primary: 38 80% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 93%;
     --sidebar-accent-foreground: 0 0% 17%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 160 60% 33%;
+    --sidebar-ring: 38 80% 45%;
   }
 
   .dark {
@@ -72,7 +72,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 5%;
 
-    --primary: 160 60% 33%;
+    --primary: 38 80% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
@@ -89,15 +89,15 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 160 60% 33%;
+    --ring: 38 80% 45%;
 
-    --sacred-gold: 160 60% 33%;
-    --sacred-amber: 160 50% 28%;
+    --sacred-gold: 38 80% 45%;
+    --sacred-amber: 30 65% 38%;
     --sacred-cream: 0 0% 97%;
     --sacred-warm: 0 0% 96%;
     --sacred-text: 0 0% 5%;
-    --sacred-green: 160 60% 33%;
-    --sacred-green-light: 160 15% 94%;
+    --sacred-green: 38 80% 45%;
+    --sacred-green-light: 38 15% 94%;
     --sacred-earth: 0 0% 40%;
     --sacred-bark: 0 0% 35%;
 
@@ -106,12 +106,12 @@
 
     --sidebar-background: 0 0% 97.5%;
     --sidebar-foreground: 0 0% 17%;
-    --sidebar-primary: 160 60% 33%;
+    --sidebar-primary: 38 80% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 93%;
     --sidebar-accent-foreground: 0 0% 17%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 160 60% 33%;
+    --sidebar-ring: 38 80% 45%;
   }
 }
 
