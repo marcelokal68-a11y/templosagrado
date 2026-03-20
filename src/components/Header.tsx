@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, Heart, BookOpen, Settings, History, X } from 'lucide-react';
+import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, Heart, BookOpen, Settings, History, X, GraduationCap } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -35,9 +35,9 @@ export default function Header() {
     { label: 'Perfil', icon: User, action: () => {} },
     { label: t('nav.prayers', language), icon: Heart, action: () => navigate('/prayers') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
+    { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
     { label: t('nav.history', language) || 'Histórico', icon: History, action: () => {} },
     { label: 'Configurações', icon: Settings, action: () => {} },
-    // Plano — only for non-subscribers
     ...(!isSubscriber ? [{ label: 'Plano', icon: Gem, action: () => navigate('/pricing') }] : []),
   ];
 
