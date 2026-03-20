@@ -661,8 +661,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
                 rows={1}
               />
-                rows={1}
-              />
               <Button
                 onClick={toggleRecording}
                 disabled={isTranscribing}
