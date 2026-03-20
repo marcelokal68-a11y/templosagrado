@@ -91,10 +91,10 @@ export default function Header() {
                           item.action();
                           setDrawerOpen(false);
                         }}
-                        className="flex items-center gap-3 px-5 py-3.5 text-foreground/80 hover:bg-primary/8 hover:text-primary transition-colors text-left"
+                        className="flex items-center gap-3 px-5 py-4 text-foreground/80 hover:bg-primary/8 hover:text-primary transition-colors text-left"
                       >
-                        <item.icon className="h-5 w-5 text-primary/70" />
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <item.icon className="h-6 w-6 text-primary/70" />
+                        <span className="text-base font-medium">{item.label}</span>
                       </button>
                     ))}
                   </nav>
