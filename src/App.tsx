@@ -64,7 +64,7 @@ const App = () => (
                   </Routes>
                 </main>
               </div>
-              <BottomNav />
+              {/* BottomNav removed — items moved to sidebar drawer */}
               <QuickTutorial />
             </div>
           </SidebarProvider>

@@ -35,9 +35,9 @@ export default function Header() {
     { label: 'Perfil', icon: User, action: () => {} },
     { label: t('nav.prayers', language), icon: Heart, action: () => navigate('/prayers') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
+    { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
     { label: t('nav.history', language) || 'Histórico', icon: History, action: () => {} },
     { label: 'Configurações', icon: Settings, action: () => {} },
-    // Plano — only for non-subscribers
     ...(!isSubscriber ? [{ label: 'Plano', icon: Gem, action: () => navigate('/pricing') }] : []),
   ];
 
