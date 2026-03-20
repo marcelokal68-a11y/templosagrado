@@ -44,7 +44,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 safe-top border-b border-border/40 bg-background/95 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-50 safe-top border-b border-border/40 bg-background/95 backdrop-blur-md">
       <div className="flex h-14 items-center justify-between px-3">
         {/* Left side */}
         <div className="flex items-center gap-2">
