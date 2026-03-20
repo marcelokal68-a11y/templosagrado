@@ -650,7 +650,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               </div>
             </div>
 
-            {/* Input row */}
+            {/* Input row — ChatGPT style */}
             <div className="flex items-end gap-2 px-3 pb-3 pt-1"
                  style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
               <Textarea
@@ -658,7 +658,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('chat.placeholder', language)}
-                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-card border-border/50 focus-visible:ring-primary/30"
+                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
+                rows={1}
+              />
                 rows={1}
               />
               <Button
