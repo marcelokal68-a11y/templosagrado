@@ -371,6 +371,7 @@ ${needInstruction}
 ${topicInstruction}
 
 ${historySection}
+${memorySection}
 ${temporalContext}
 ${religionDetection}
 ${traditionTone}
