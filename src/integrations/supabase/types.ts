@@ -378,9 +378,11 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_pro: boolean
           is_subscriber: boolean
           latitude: number | null
           longitude: number | null
+          mp_subscription_id: string | null
           preferred_language: string
           preferred_religion: string | null
           questions_limit: number
@@ -394,9 +396,11 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_pro?: boolean
           is_subscriber?: boolean
           latitude?: number | null
           longitude?: number | null
+          mp_subscription_id?: string | null
           preferred_language?: string
           preferred_religion?: string | null
           questions_limit?: number
@@ -410,9 +414,11 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_pro?: boolean
           is_subscriber?: boolean
           latitude?: number | null
           longitude?: number | null
+          mp_subscription_id?: string | null
           preferred_language?: string
           preferred_religion?: string | null
           questions_limit?: number
