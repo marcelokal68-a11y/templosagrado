@@ -102,14 +102,134 @@ Use this information to:
   }
 }
 
+async function getSupabaseClient() {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  return createClient(supabaseUrl, supabaseKey);
+}
+
+async function fetchUserMemories(userId: string): Promise<string> {
+  try {
+    const sb = await getSupabaseClient();
+    const { data } = await sb
+      .from('user_memory')
+      .select('fact, category, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(4);
+
+    if (!data || data.length === 0) return '';
+
+    const facts = data.map(m => `- [${m.category}] ${m.fact}`).join('\n');
+    return `MEMÓRIA DE LONGO PRAZO DO FIEL:
+Você conhece os seguintes fatos sobre esta pessoa (use de forma NATURAL, sem parecer um robô lendo um banco de dados):
+${facts}
+Use essas informações para tornar a conversa mais íntima e personalizada. Se o fiel mencionou uma dor, pergunte se melhorou. Se mencionou uma conquista, celebre em momentos oportunos. Faça isso de forma sutil e calorosa.`;
+  } catch (e) {
+    console.error("Error fetching memories:", e);
+    return '';
+  }
+}
+
+async function extractAndSaveMemories(userId: string, userMessage: string, apiKey: string): Promise<void> {
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          {
+            role: "system",
+            content: `You are a memory extraction system. Analyze the user message and extract PERSONAL FACTS about the user's life. Only extract concrete, memorable facts — NOT opinions about religion or spiritual questions.
+
+Extract facts like:
+- Health issues (e.g., "back pain after jiu-jitsu")
+- Profession or work (e.g., "works as a teacher")
+- Family events (e.g., "daughter is getting married")
+- Achievements (e.g., "got promoted at work")
+- Hobbies (e.g., "practices jiu-jitsu")
+- Emotional states tied to events (e.g., "grieving loss of father")
+- Location or travel (e.g., "lives in São Paulo")
+- Name of pets, family members, etc.
+
+DO NOT extract:
+- Generic spiritual questions
+- Simple greetings ("oi", "tudo bem")
+- Requests for prayers or verses (unless they mention a specific person/situation)
+
+Respond ONLY with a JSON array of objects. Each object has "fact" (string, the fact in Portuguese) and "category" (string, one of: saude, trabalho, familia, conquista, hobby, emocional, localizacao, geral).
+If there are NO personal facts, respond with an empty array: []`
+          },
+          { role: "user", content: userMessage }
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "save_memories",
+            description: "Save extracted personal facts about the user",
+            parameters: {
+              type: "object",
+              properties: {
+                memories: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      fact: { type: "string" },
+                      category: { type: "string", enum: ["saude", "trabalho", "familia", "conquista", "hobby", "emocional", "localizacao", "geral"] }
+                    },
+                    required: ["fact", "category"],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ["memories"],
+              additionalProperties: false
+            }
+          }
+        }],
+        tool_choice: { type: "function", function: { name: "save_memories" } }
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Memory extraction failed:", response.status);
+      return;
+    }
+
+    const result = await response.json();
+    const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall) return;
+
+    const parsed = JSON.parse(toolCall.function.arguments);
+    const memories = parsed.memories;
+    if (!memories || memories.length === 0) return;
+
+    const sb = await getSupabaseClient();
+    const rows = memories.map((m: { fact: string; category: string }) => ({
+      user_id: userId,
+      fact: m.fact,
+      category: m.category,
+      source_message: userMessage.slice(0, 500),
+    }));
+
+    const { error } = await sb.from('user_memory').insert(rows);
+    if (error) console.error("Error saving memories:", error);
+    else console.log(`Saved ${rows.length} memories for user ${userId}`);
+  } catch (e) {
+    console.error("Memory extraction error:", e);
+  }
+}
+
 async function fetchUserHistory(userId: string, currentReligion: string, currentPhilosophy: string): Promise<string> {
   try {
-    // If no affiliation is selected, skip history to avoid cross-context leaks
     if (!currentReligion && !currentPhilosophy) return '';
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const sb = createClient(supabaseUrl, supabaseKey);
+    const sb = await getSupabaseClient();
 
     let query = sb
       .from('chat_messages')
@@ -118,7 +238,6 @@ async function fetchUserHistory(userId: string, currentReligion: string, current
       .order('created_at', { ascending: false })
       .limit(10);
 
-    // Only fetch history from the SAME affiliation — never cross-context
     if (currentPhilosophy) {
       query = query.eq('philosophy', currentPhilosophy);
     } else if (currentReligion) {
@@ -163,8 +282,20 @@ serve(async (req) => {
     const responseLang = langMap[language] || 'Brazilian Portuguese';
 
     let historySection = '';
+    let memorySection = '';
     if (userId) {
-      historySection = await fetchUserHistory(userId, religion, philosophy);
+      [historySection, memorySection] = await Promise.all([
+        fetchUserHistory(userId, religion, philosophy),
+        fetchUserMemories(userId),
+      ]);
+
+      // Fire-and-forget: extract memories from the latest user message
+      const lastUserMsg = messages?.filter((m: { role: string }) => m.role === 'user').pop();
+      if (lastUserMsg?.content && lastUserMsg.content.length > 10) {
+        extractAndSaveMemories(userId, lastUserMsg.content, LOVABLE_API_KEY).catch(e =>
+          console.error("Background memory extraction failed:", e)
+        );
+      }
     }
 
     const temporalContext = buildTemporalContext(datetime, timezone);
@@ -240,6 +371,7 @@ ${needInstruction}
 ${topicInstruction}
 
 ${historySection}
+${memorySection}
 ${temporalContext}
 ${religionDetection}
 ${traditionTone}
