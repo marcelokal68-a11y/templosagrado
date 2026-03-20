@@ -205,6 +205,41 @@ export type Database = {
           },
         ]
       }
+      prayer_comments: {
+        Row: {
+          content: string
+          created_at: string
+          display_name: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prayer_reactions: {
         Row: {
           created_at: string
