@@ -232,7 +232,7 @@ export default function Practice() {
         ))}
       </div>
 
-      <p className="text-xs text-muted-foreground text-center italic">
+      <p className="text-xs text-muted-foreground text-center">
         {t('panel.choose_one', language)}
       </p>
 
