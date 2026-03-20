@@ -2,18 +2,34 @@ import { useApp } from '@/contexts/AppContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { t } from '@/lib/i18n';
-import { User, Mail, BookOpen, Crown, Sparkles } from 'lucide-react';
+import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+
+const traditions = [
+  { value: 'catholic', labelKey: 'religion.catholic' },
+  { value: 'protestant', labelKey: 'religion.protestant' },
+  { value: 'spiritist', labelKey: 'religion.spiritist' },
+  { value: 'umbanda', labelKey: 'religion.umbanda' },
+  { value: 'candomble', labelKey: 'religion.candomble' },
+] as const;
 
 export default function Profile() {
   const { user, language, isSubscriber } = useApp();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<{
     display_name: string | null;
     preferred_religion: string | null;
     questions_used: number;
     questions_limit: number;
   } | null>(null);
+
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const [editingReligion, setEditingReligion] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -23,9 +39,44 @@ export default function Profile() {
       .eq('user_id', user.id)
       .single()
       .then(({ data }) => {
-        if (data) setProfile(data);
+        if (data) {
+          setProfile(data);
+          setNameValue(data.display_name || '');
+        }
       });
   }, [user]);
+
+  const saveName = async () => {
+    if (!user || !profile) return;
+    const trimmed = nameValue.trim().slice(0, 100);
+    if (!trimmed) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: trimmed })
+      .eq('user_id', user.id);
+    setSaving(false);
+    if (!error) {
+      setProfile({ ...profile, display_name: trimmed });
+      setEditingName(false);
+      toast({ title: 'Nome atualizado!' });
+    }
+  };
+
+  const saveReligion = async (value: string | null) => {
+    if (!user || !profile) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ preferred_religion: value })
+      .eq('user_id', user.id);
+    setSaving(false);
+    if (!error) {
+      setProfile({ ...profile, preferred_religion: value });
+      setEditingReligion(false);
+      toast({ title: 'Tradição atualizada!' });
+    }
+  };
 
   if (!user || !profile) return null;
 
@@ -50,16 +101,81 @@ export default function Profile() {
 
         {/* Info cards */}
         <div className="space-y-3">
+          {/* Name — editable */}
+          {editingName ? (
+            <div className="p-4 rounded-xl bg-card border border-primary/30 space-y-3">
+              <p className="text-xs text-muted-foreground">Nome</p>
+              <Input
+                value={nameValue}
+                onChange={e => setNameValue(e.target.value)}
+                maxLength={100}
+                className="text-sm"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveName} disabled={saving || !nameValue.trim()} className="gap-1.5 bg-primary text-primary-foreground">
+                  <Check className="h-4 w-4" /> Salvar
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setNameValue(profile.display_name || ''); }}>
+                  <X className="h-4 w-4" /> Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <EditableRow
+              icon={<User className="h-5 w-5 text-primary/70" />}
+              label="Nome"
+              value={profile.display_name || 'Usuário'}
+              onEdit={() => setEditingName(true)}
+            />
+          )}
+
           <InfoRow
             icon={<Mail className="h-5 w-5 text-primary/70" />}
             label="Email"
             value={user.email || '—'}
           />
-          <InfoRow
-            icon={<BookOpen className="h-5 w-5 text-primary/70" />}
-            label="Tradição"
-            value={religionLabel}
-          />
+
+          {/* Religion — editable */}
+          {editingReligion ? (
+            <div className="p-4 rounded-xl bg-card border border-primary/30 space-y-3">
+              <p className="text-xs text-muted-foreground">Tradição</p>
+              <div className="space-y-2">
+                {traditions.map(tr => (
+                  <button
+                    key={tr.value}
+                    onClick={() => saveReligion(tr.value)}
+                    disabled={saving}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg border text-sm transition-colors ${
+                      profile.preferred_religion === tr.value
+                        ? 'border-primary bg-primary/10 text-primary font-medium'
+                        : 'border-border/50 hover:border-primary/30 hover:bg-primary/5 text-foreground/80'
+                    }`}
+                  >
+                    {t(tr.labelKey, language)}
+                  </button>
+                ))}
+                <button
+                  onClick={() => saveReligion(null)}
+                  disabled={saving}
+                  className="w-full text-left px-3 py-2.5 rounded-lg border border-border/50 text-sm text-muted-foreground hover:border-primary/30 hover:bg-primary/5 transition-colors"
+                >
+                  Prefiro não especificar
+                </button>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setEditingReligion(false)}>
+                <X className="h-4 w-4 mr-1" /> Cancelar
+              </Button>
+            </div>
+          ) : (
+            <EditableRow
+              icon={<BookOpen className="h-5 w-5 text-primary/70" />}
+              label="Tradição"
+              value={religionLabel}
+              onEdit={() => setEditingReligion(true)}
+            />
+          )}
+
           <InfoRow
             icon={<Crown className="h-5 w-5 text-primary/70" />}
             label="Plano"
@@ -94,6 +210,21 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-sm font-medium text-foreground truncate">{value}</p>
       </div>
+    </div>
+  );
+}
+
+function EditableRow({ icon, label, value, onEdit }: { icon: React.ReactNode; label: string; value: string; onEdit: () => void }) {
+  return (
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50">
+      {icon}
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-foreground truncate">{value}</p>
+      </div>
+      <button onClick={onEdit} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+        <Pencil className="h-4 w-4" />
+      </button>
     </div>
   );
 }
