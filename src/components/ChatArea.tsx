@@ -676,7 +676,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 onClick={sendMessage}
                 disabled={isLoading || !chatInput.trim()}
                 size="icon"
-                className="shrink-0 h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
               </Button>
