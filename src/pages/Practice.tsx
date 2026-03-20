@@ -216,7 +216,7 @@ export default function Practice() {
 
       {/* Religion selector */}
       <div className="flex flex-wrap gap-2 justify-center">
-        {religions.map(r => (
+        {MVP_RELIGIONS.map(r => (
           <button
             key={r}
             onClick={() => { setReligion(religion === r ? '' : r); setPhilosophy(''); setChecked({}); }}
