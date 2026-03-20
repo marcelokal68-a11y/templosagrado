@@ -1,41 +1,43 @@
 
-## Plano de correção: scroll independente no chat web + input sempre visível
 
-### Diagnóstico rápido
-Hoje o scroll da página está “acoplado” ao painel da direita. Quando o painel cresce, a página inteira cresce junto e o campo de envio do chat vai para baixo.  
-Objetivo: no desktop, **cada coluna ter seu próprio scroll** e o input ficar fixo no rodapé do chat (sem precisar rolar a página).
+# Ajustes Mobile: Input, Login, Filtros e Compactação
 
-### O que vou implementar
+## Problemas identificados
 
-1. **Travar a altura da área principal no viewport (desktop)**
-   - Ajustar os containers pai para usar `min-h-0` + `overflow-hidden` (cadeia completa de flex).
-   - Arquivo: `src/App.tsx`
-   - Resultado esperado: o `body` não vira a área de scroll do chat.
+1. **Input muito perto da barra inferior do iOS** — a barra de input fica colada na BottomNav, e no iOS o toque pode acionar a barra de endereços
+2. **Botão de login muito pequeno** — texto de 11px difícil de clicar
+3. **Filtros (Católico, Evangélico etc.) não aparecem no mobile** — o ContextPanel só é renderizado no desktop (painel lateral direito). No mobile, não há como acessá-lo
+4. **Placeholder "Digite sua pergunta..." muito longo** — corta no mobile
+5. **Chat precisa ser mais compacto no mobile** — welcome state ocupa muito espaço vertical
 
-2. **Refatorar o layout da Home para colunas realmente independentes**
-   - Trocar a lógica de altura baseada em `calc(100vh - header)` por altura herdada do pai (`h-full`/`min-h-0`) para evitar “estouro”.
-   - Garantir `min-h-0` nos wrappers do chat e do painel direito.
-   - Arquivo: `src/pages/Index.tsx`
+## Mudanças
 
-3. **Fixar o compositor de mensagem no rodapé do chat**
-   - Garantir que o `ChatArea` possa encolher corretamente com `min-h-0`.
-   - Deixar só a área de mensagens com `overflow-y-auto` e manter a barra de input como `shrink-0`.
-   - Arquivo: `src/components/ChatArea.tsx`
+### 1. Afastar input da BottomNav (`ChatArea.tsx`)
+- Adicionar `mb-16` (64px) ou `pb-16` ao container do input no mobile para compensar a altura da BottomNav (56px + safe area)
+- Alternativa: usar `calc` com a altura da bottom nav
 
-4. **Mostrar barra de rolagem clara no painel direito (desktop)**
-   - Configurar o `ScrollArea` do painel de opções com rolagem explícita (ex.: `type="always"` no desktop) para deixar claro que ali é uma coluna rolável separada.
-   - Arquivo: `src/pages/Index.tsx` (uso do `ScrollArea`)
+### 2. Aumentar botão de login (`ChatArea.tsx`)
+- Banner de "Fazer login" e "Limite atingido": aumentar de `text-[11px]` para `text-sm`, e o `Button size="sm"` para `size="default"` com padding maior
+- Tornar o link de login mais clicável (min-height 44px)
 
-### Detalhes técnicos
-- Classes-chave que vou padronizar na cadeia: `flex`, `flex-1`, `h-full`, `min-h-0`, `overflow-hidden`.
-- O princípio será:
-  - **Página**: sem scroll global para o chat.
-  - **Chat**: scroll interno na lista de mensagens.
-  - **Painel direito**: scroll interno próprio.
-- Isso elimina o efeito de “o input foi parar lá embaixo”.
+### 3. Mostrar filtros no mobile (`Index.tsx`)
+- Adicionar o `ContextPanel` abaixo do `ChatArea` no layout mobile, dentro de um container com scroll
+- Ficará acessível ao rolar para baixo, abaixo do chat
+- Estrutura: `ChatArea (flex-1 com scroll)` + `ContextPanel (auto height, scrollável)`
+- O ContextPanel no mobile será mais compacto (menos padding)
 
-### Critérios de aceite (web)
-- Ao abrir `/`, o campo “Pergunte…” já aparece no rodapé do chat sem rolar a página.
-- Rolar o chat **não** move o painel da direita.
-- Rolar o painel da direita **não** move o chat.
-- A página não ganha scroll vertical por causa do conteúdo da direita.
+### 4. Encurtar placeholder (`ChatArea.tsx`)
+- Trocar o placeholder longo por algo curto: "Envie sua mensagem..." ou "Sua mensagem..."
+- Adicionar chave i18n `chat.placeholder_short` ou alterar a existente
+
+### 5. Compactar welcome state no mobile (`ChatArea.tsx`)
+- Reduzir padding do empty state: `py-8` → `py-4`
+- Reduzir tamanho do ícone e margens
+- Reduzir espaçamento entre perguntas sugeridas
+
+## Arquivos a editar
+
+- `src/components/ChatArea.tsx` — input spacing, login size, placeholder, welcome compactação
+- `src/pages/Index.tsx` — adicionar ContextPanel no mobile abaixo do chat
+- `src/lib/i18n.ts` — atualizar placeholder se necessário
+
