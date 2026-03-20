@@ -7,7 +7,6 @@ import { AppProvider } from "@/contexts/AppContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/components/Header";
 import AppSidebar from "@/components/AppSidebar";
-import TwinklingStars from "@/components/TwinklingStars";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
@@ -17,14 +16,10 @@ import Practice from "./pages/Practice";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
 import Invite from "./pages/Invite";
-import Posts from "./pages/Posts";
 import Mural from "./pages/Mural";
-import Learn from "./pages/Learn";
-import LearnTopic from "./pages/LearnTopic";
 import Landing from "./pages/Landing";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
-import BottomNav from "./components/BottomNav";
 import QuickTutorial from "./components/QuickTutorial";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -39,7 +34,6 @@ const App = () => (
         <AppProvider>
           <SidebarProvider>
             <div className="flex flex-col h-screen w-full overflow-hidden relative">
-              <TwinklingStars />
               <Header />
               <div className="flex flex-1 min-h-0 w-full pt-14">
                 <AppSidebar />
@@ -52,10 +46,7 @@ const App = () => (
                     <Route path="/prayers" element={<ProtectedRoute><Prayers /></ProtectedRoute>} />
                     <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
                     <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
-                    <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
                     <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
-                    <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
-                    <Route path="/learn/:topic" element={<ProtectedRoute><LearnTopic /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
@@ -64,7 +55,6 @@ const App = () => (
                   </Routes>
                 </main>
               </div>
-              {/* BottomNav removed — items moved to sidebar drawer */}
               <QuickTutorial />
             </div>
           </SidebarProvider>
