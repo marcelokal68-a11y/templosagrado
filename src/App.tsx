@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/components/Header";
 import AppSidebar from "@/components/AppSidebar";
 import Index from "./pages/Index";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
 import Prayers from "./pages/Prayers";
