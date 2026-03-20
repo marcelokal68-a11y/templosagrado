@@ -40,7 +40,8 @@ export default function Index() {
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
-      <div className="flex-1 flex flex-col min-w-0 pb-[56px] md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 md:pb-0"
+           style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' }}>
         <ChatArea ref={chatRef} />
       </div>
 
