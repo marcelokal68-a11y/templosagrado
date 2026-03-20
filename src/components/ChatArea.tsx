@@ -559,8 +559,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         )}
       </div>
 
-      {/* Fixed bottom input area — mb-14 on mobile to clear BottomNav */}
-      <div className="border-t border-border/40 bg-background flex-shrink-0 mb-14 md:mb-0">
+      {/* Fixed bottom input area */}
+      <div className="border-t border-border/40 bg-background flex-shrink-0">
         {/* Blocked state — upgrade banner */}
         {isBlocked ? (
           <div className="px-4 py-3 md:py-4 text-center space-y-2 md:space-y-3"
