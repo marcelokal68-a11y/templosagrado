@@ -154,18 +154,18 @@ export default function Verse() {
 
         {/* Religion selector */}
         <div className="flex flex-wrap gap-1.5 justify-center">
-          {religions.map(r => (
+          {FAITH_OPTIONS.map(opt => (
             <button
-              key={r}
-              onClick={() => handleReligionChange(r)}
+              key={opt.key}
+              onClick={() => handleReligionChange(opt.key)}
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                selectedReligion === r
+                selectedReligion === opt.key
                   ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
                   : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
               )}
             >
-              {t(`religion.${r}`, language)}
+              {opt.label}
             </button>
           ))}
         </div>

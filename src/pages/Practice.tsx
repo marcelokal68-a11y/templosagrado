@@ -240,7 +240,7 @@ export default function Practice() {
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground text-center">{t('panel.philosophy', language)}</h3>
         <div className="flex flex-wrap gap-2 justify-center">
-          {philosophies.map(p => (
+          {MVP_PHILOSOPHIES.map(p => (
             <button
               key={p}
               onClick={() => { setPhilosophy(philosophy === p ? '' : p); setReligion(''); setChecked({}); }}

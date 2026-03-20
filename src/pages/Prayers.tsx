@@ -186,49 +186,26 @@ export default function Prayers() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Religion selector */}
+            {/* Faith selector */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">{t('panel.religion', language)}</label>
               <div className="flex flex-wrap gap-2">
-                {religions.map(r => (
+                {FAITH_OPTIONS.map(opt => (
                   <button
-                    key={r}
+                    key={opt.key}
                     type="button"
-                    onClick={() => { setReligion(r); setPhilosophy(''); }}
+                    onClick={() => {
+                      if (opt.mode === 'religion') { setReligion(opt.key); setPhilosophy(''); }
+                      else { setPhilosophy(opt.key); setReligion(''); }
+                    }}
                     className={cn(
                       "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                      religion === r
+                      (religion === opt.key || philosophy === opt.key)
                         ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
                         : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
                     )}
                   >
-                    {t(`religion.${r}`, language)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center italic">
-              {t('panel.choose_one', language)}
-            </p>
-
-            {/* Philosophy selector */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">{t('panel.philosophy', language)}</label>
-              <div className="flex flex-wrap gap-2">
-                {philosophies.map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => { setPhilosophy(p); setReligion(''); }}
-                    className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                      philosophy === p
-                        ? "sacred-gradient text-primary-foreground border-primary/50 shadow-sm sacred-glow"
-                        : "bg-secondary text-secondary-foreground border-primary/10 hover:bg-primary/10 hover:border-primary/30"
-                    )}
-                  >
-                    {t(`philosophy.${p}`, language)}
+                    {opt.label}
                   </button>
                 ))}
               </div>
