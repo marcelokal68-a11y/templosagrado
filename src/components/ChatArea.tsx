@@ -501,6 +501,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   ];
 
   const remainingCount = user ? questionsRemaining : Math.max(0, 10 - getAnonCount());
+  const isBlocked = remainingCount <= 0;
 
   return (
     <div className="flex flex-col h-full bg-background">
