@@ -1662,7 +1662,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.mural_subtitle': 'Un espacio ecuménico donde personas de todas las creencias se encuentran en oración, respeto y esperanza por un mundo más pacífico.',
     'landing.mural_cta': 'Entrar al Mural Sagrado',
     'landing.mural_feat1': 'Templos Temáticos',
-    'landing.mural_feat1_desc': 'Cada tradición tiene su espacio sagrado — del Muro de los Lamentos a la Kaaba.',
+    'landing.mural_feat1_desc': 'Cada tradición tiene su espacio sagrado para orar y reflexionar.',
     'landing.mural_feat2': 'Encuentro Ecuménico',
     'landing.mural_feat2_desc': 'Un feed global donde todas las oraciones se unen en un solo clamor por la paz.',
     'landing.mural_feat3': 'Moderación por IA',
