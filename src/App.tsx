@@ -48,6 +48,7 @@ const App = () => (
                     <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
                     <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
                     <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
