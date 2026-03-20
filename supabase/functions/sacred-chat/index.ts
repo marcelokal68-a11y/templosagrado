@@ -282,8 +282,20 @@ serve(async (req) => {
     const responseLang = langMap[language] || 'Brazilian Portuguese';
 
     let historySection = '';
+    let memorySection = '';
     if (userId) {
-      historySection = await fetchUserHistory(userId, religion, philosophy);
+      [historySection, memorySection] = await Promise.all([
+        fetchUserHistory(userId, religion, philosophy),
+        fetchUserMemories(userId),
+      ]);
+
+      // Fire-and-forget: extract memories from the latest user message
+      const lastUserMsg = messages?.filter((m: { role: string }) => m.role === 'user').pop();
+      if (lastUserMsg?.content && lastUserMsg.content.length > 10) {
+        extractAndSaveMemories(userId, lastUserMsg.content, LOVABLE_API_KEY).catch(e =>
+          console.error("Background memory extraction failed:", e)
+        );
+      }
     }
 
     const temporalContext = buildTemporalContext(datetime, timezone);
