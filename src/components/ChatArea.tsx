@@ -510,14 +510,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         {/* Empty state — welcome + suggested questions */}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full py-4 md:py-8 animate-fade-in">
-            <div className="w-11 h-11 md:w-14 md:h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 md:mb-4 ring-1 ring-primary/20">
+            <div className="w-11 h-11 md:w-14 md:h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2 md:mb-3 ring-1 ring-primary/20">
               <DivineIcon />
             </div>
-            <h3 className="text-sm md:text-base font-medium text-foreground mb-1">
-              {t('chat.title', language)}
+            <h3 className="text-base md:text-lg font-semibold text-foreground mb-1">
+              Olá! Como posso te ajudar?
             </h3>
-            <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 text-center max-w-[280px]">
-              {t('chat.recommended', language)}
+            <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-5 text-center max-w-[280px]">
+              Escolha uma pergunta ou escreva a sua
             </p>
             <div className="w-full max-w-md space-y-1.5 md:space-y-2 px-2">
               {questions.map((q, i) => (
