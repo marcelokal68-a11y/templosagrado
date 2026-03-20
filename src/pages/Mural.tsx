@@ -8,6 +8,13 @@ import { cn } from '@/lib/utils';
 import { SendHorizonal, Loader2, MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { containsProfanity } from '@/lib/profanityFilter';
 
+// If display_name looks like an email, show only the part before @
+function friendlyName(name: string | null): string {
+  if (!name) return 'Alguém';
+  if (name.includes('@')) return name.split('@')[0];
+  return name;
+}
+
 interface Post {
   id: string;
   content: string;
