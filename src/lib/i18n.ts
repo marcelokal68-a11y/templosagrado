@@ -1098,7 +1098,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.mural_subtitle': 'An ecumenical space where people of all faiths meet in prayer, respect and hope for a more peaceful world.',
     'landing.mural_cta': 'Enter the Sacred Wall',
     'landing.mural_feat1': 'Themed Temples',
-    'landing.mural_feat1_desc': 'Each tradition has its sacred space — from the Western Wall to the Kaaba.',
+    'landing.mural_feat1_desc': 'Each tradition has its own sacred space for prayer and reflection.',
     'landing.mural_feat2': 'Ecumenical Meeting',
     'landing.mural_feat2_desc': 'A global feed where all prayers unite in one cry for peace.',
     'landing.mural_feat3': 'AI Moderation',
