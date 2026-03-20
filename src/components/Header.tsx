@@ -64,9 +64,9 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 text-foreground/70 hover:text-primary hover:bg-primary/10"
+                    className="h-10 w-10 text-foreground/70 hover:text-primary hover:bg-primary/10"
                   >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border/40">
