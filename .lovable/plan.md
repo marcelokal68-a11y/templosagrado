@@ -1,30 +1,30 @@
 
 
-## Plan: Botão de Reset Total + Separação de Contexto Religião/Filosofia
+# Refatoração: Layout Vertical + Sidebar Mobile + Limpeza do Header
 
-### Problema Atual
-1. O botão "Limpar conversa" apaga **todos** os `chat_messages` do usuário, mas não apaga `activity_history` nem reseta memórias
-2. A função `sacred-chat` (backend) busca histórico de **outras** afiliações para dar contexto cruzado — ao mudar de religião para filosofia, dados da religião vazam para a filosofia e vice-versa
+## Resumo
 
-### Mudanças
+O usuário quer 4 mudanças:
+1. **Remover slider horizontal** do ContextPanel — as seções (religião, filosofia, necessidade, humor, tópicos, música) devem aparecer em scroll vertical, sem precisar clicar para expandir
+2. **Aumentar a barra lateral esquerda (hamburger drawer) no mobile** — torná-la maior/mais larga
+3. **Remover o seletor de idiomas** (PT/EN/ES) do Header
+4. **Mover o ícone de Gem (upgrade/plano)** do Header para dentro da barra lateral (drawer), como item "Plano"
 
-**1. Botão "Limpar Tudo" no ChatArea.tsx**
-- Adicionar botão que apaga: `chat_messages` + `activity_history` + limpa mensagens locais
-- Confirmar com AlertDialog antes de executar
-- Posicionar junto ao botão existente de "Limpar conversa"
+## Mudanças por Arquivo
 
-**2. Separar histórico no backend (sacred-chat/index.ts)**
-- Alterar `fetchUserHistory` para **não** buscar histórico de outras afiliações
-- Quando contexto é filosofia: buscar apenas mensagens de filosofia (ignorar religião)
-- Quando contexto é religião: buscar apenas mensagens de religião (ignorar filosofia)
-- Remover o cruzamento de dados entre modos
+### 1. `src/components/ContextPanel.tsx`
+- Remover os `Collapsible` wrappers de todas as seções — cada grupo de chips fica sempre visível
+- Manter as seções empilhadas verticalmente (scroll natural)
+- O componente `CollapsibleChipGroup` vira um simples grupo com label + chips sempre abertos
+- Manter o mode selector (Religião/Filosofia) no topo
 
-**3. Adicionar i18n**
-- Chaves para "Limpar tudo", "Confirmar exclusão de todo histórico"
+### 2. `src/components/Header.tsx`
+- **Remover** o `Select` de idiomas (linhas 129-138)
+- **Remover** o botão `Gem` pulsante (linhas 140-146)
+- **Aumentar largura do drawer** de `w-72` para `w-80` (320px)
+- **Adicionar item "Plano"** no `drawerItems` com ícone `Gem`, navegando para `/pricing` — visível apenas se `!isSubscriber`
 
-### Detalhes Técnicos
-
-`fetchUserHistory` atualmente usa `.or(philosophy.neq.X)` para buscar de OUTRAS afiliações. Será alterado para buscar apenas da mesma afiliação atual, ou retornar vazio se não houver afiliação selecionada.
-
-O botão de reset executa duas queries DELETE em paralelo (`chat_messages` e `activity_history`) filtradas por `user_id`.
+### 3. `src/pages/Index.tsx`
+- No mobile, remover o botão flutuante de `SlidersHorizontal` e o `Drawer` — as seções do ContextPanel ficam abaixo do chat como scroll vertical
+- No desktop, manter o painel lateral direito como está
 
