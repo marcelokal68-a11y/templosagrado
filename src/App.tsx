@@ -38,12 +38,12 @@ const App = () => (
       <BrowserRouter>
         <AppProvider>
           <SidebarProvider>
-            <div className="flex flex-col min-h-screen w-full overflow-x-hidden relative">
+            <div className="flex flex-col h-screen w-full overflow-hidden relative">
               <TwinklingStars />
               <Header />
-              <div className="flex flex-1 w-full">
+              <div className="flex flex-1 min-h-0 w-full">
                 <AppSidebar />
-                <main className="flex-1 min-w-0 flex flex-col">
+                <main className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
                   <Routes>
                     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                     <Route path="/landing" element={<Landing />} />
