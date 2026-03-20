@@ -63,7 +63,7 @@ export default function PrayerNote({ post, reactions, onReact, onDelete, showRel
         )}
 
         {/* Content */}
-        <p className="text-sm leading-relaxed text-foreground/90 font-serif italic whitespace-pre-wrap break-words">
+        <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
           "{post.content}"
         </p>
 
