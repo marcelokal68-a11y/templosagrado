@@ -12,8 +12,13 @@ import PublishToMural from '@/components/mural/PublishToMural';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
-const philosophies = ['stoicism', 'logosophy', 'humanism', 'epicureanism', 'transhumanism', 'pantheism', 'existentialism', 'objectivism', 'transcendentalism', 'altruism', 'rationalism', 'optimistic_nihilism', 'absurdism', 'utilitarianism', 'pragmatism'];
+const FAITH_OPTIONS = [
+  { key: 'catholic', label: 'Católico', mode: 'religion' as const },
+  { key: 'protestant', label: 'Evangélico', mode: 'religion' as const },
+  { key: 'spiritist', label: 'Espírita', mode: 'religion' as const },
+  { key: 'candomble', label: 'Matriz Africana', mode: 'religion' as const },
+  { key: 'philosophy', label: 'Filosofia & Sabedoria', mode: 'philosophy' as const },
+];
 
 type Mode = 'send' | 'practice' | null;
 

@@ -9,7 +9,13 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
-const religions = ['christian', 'hindu', 'buddhist', 'islam', 'mormon', 'protestant', 'catholic', 'jewish', 'agnostic', 'spiritist', 'umbanda', 'candomble'];
+const FAITH_OPTIONS = [
+  { key: 'catholic', label: 'Católico', mode: 'religion' as const },
+  { key: 'protestant', label: 'Evangélico', mode: 'religion' as const },
+  { key: 'spiritist', label: 'Espírita', mode: 'religion' as const },
+  { key: 'candomble', label: 'Matriz Africana', mode: 'religion' as const },
+  { key: 'philosophy', label: 'Filosofia & Sabedoria', mode: 'philosophy' as const },
+];
 
 // Safety: some fields may come as objects like {hebrew, transliteration} instead of strings
 const toStr = (val: unknown): string => {
