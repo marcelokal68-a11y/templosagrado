@@ -120,7 +120,7 @@ export default function Header() {
 
           {/* Logo */}
           <Link to={user ? "/" : "/landing"} className="flex items-center gap-1.5">
-            <img src={temploLogo} alt="Templo Sagrado" className="h-7 md:h-8" />
+            <img src={temploLogo} alt="Templo Sagrado" className="h-9 md:h-10" />
           </Link>
         </div>
 

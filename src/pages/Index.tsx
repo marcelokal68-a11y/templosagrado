@@ -29,27 +29,17 @@ export default function Index() {
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
-      {/* Mobile: vertical scroll with chat + context below */}
-      <div className="flex-1 flex flex-col min-w-0 md:hidden">
-        <ScrollArea className="flex-1">
-          <ChatArea ref={chatRef} />
-          <div className="border-t border-border bg-card/50">
-            <div className="px-1 pb-4">
-              <div className="p-4 border-b border-border">
-                <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
-              </div>
-              <ContextPanel onGenerate={handleGenerate} />
-            </div>
-          </div>
-        </ScrollArea>
+      {/* Mobile: chat takes full height, input always visible */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 md:hidden">
+        <ChatArea ref={chatRef} />
       </div>
 
       {/* Desktop: chat + side panel */}
-      <div className="hidden md:flex flex-1 min-w-0">
-        <div className="flex-1 flex flex-col min-w-0">
+      <div className="hidden md:flex flex-1 min-w-0 h-full">
+        <div className="flex-1 flex flex-col min-w-0 h-full">
           <ChatArea ref={chatRef} />
         </div>
-        <div className="w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50">
+        <div className="w-[280px] lg:w-[320px] flex-shrink-0 border-l border-border bg-card/50 h-full">
           <ScrollArea className="h-full">
             <div className="p-4 border-b border-border">
               <h2 className="font-display text-lg font-semibold text-foreground">{t('chat.subtitle', language)}</h2>
