@@ -263,8 +263,8 @@ export default function Pricing() {
             </div>
             <div className="flex items-center justify-between mb-3 mt-1">
               <div>
-                <h3 className="font-display text-lg font-semibold text-foreground">Ilimitado</h3>
-                <p className="text-xs text-muted-foreground">Para devotos dedicados</p>
+                <h3 className="font-display text-lg font-semibold text-foreground">Iluminado</h3>
+                <p className="text-xs text-muted-foreground">Para quem busca o máximo</p>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold font-display text-foreground">
