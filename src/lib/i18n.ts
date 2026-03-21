@@ -542,7 +542,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.peace_title': 'Um Templo pela Paz Mundial',
     'landing.peace_desc': 'Acreditamos que a paz começa quando nos escutamos com respeito, independente da fé. Aqui, católicos, evangélicos, espíritas, praticantes de matriz africana, judeus, hindus, mórmons e buscadores de sabedoria compartilham o mesmo teto sagrado.',
     'landing.peace_quote': 'Quando oramos juntos, o mundo se cura.',
-    'landing.peace_stat1': '5',
+    'landing.peace_stat1': '8',
     'landing.peace_stat1_label': 'Tradições de Fé',
     'landing.peace_stat2': '∞',
     'landing.peace_stat2_label': 'Orações Geradas',
