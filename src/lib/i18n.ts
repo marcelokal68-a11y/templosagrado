@@ -540,7 +540,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.mural_feat3': 'Moderação por IA',
     'landing.mural_feat3_desc': 'Ambiente seguro e respeitoso, protegido contra discurso de ódio.',
     'landing.peace_title': 'Um Templo pela Paz Mundial',
-    'landing.peace_desc': 'Acreditamos que a paz começa quando nos escutamos com respeito, independente da fé. Aqui, católicos, evangélicos, espíritas, praticantes de matriz africana e buscadores de sabedoria compartilham o mesmo teto sagrado.',
+    'landing.peace_desc': 'Acreditamos que a paz começa quando nos escutamos com respeito, independente da fé. Aqui, católicos, evangélicos, espíritas, praticantes de matriz africana, judeus, hindus, mórmons e buscadores de sabedoria compartilham o mesmo teto sagrado.',
     'landing.peace_quote': 'Quando oramos juntos, o mundo se cura.',
     'landing.peace_stat1': '5',
     'landing.peace_stat1_label': 'Tradições de Fé',
