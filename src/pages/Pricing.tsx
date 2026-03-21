@@ -32,24 +32,23 @@ const PREMIUM_PRODUCT_IDS = [PLANS.monthly.productId, PLANS.annual.productId];
 
 const FREE_FEATURES = [
   '10 mensagens por dia',
-  'Chat com o Divino',
-  'Histórico básico',
+  'Chat com mentor espiritual',
+  'Versículo do dia básico',
 ];
 
 const FREE_LIMITATIONS = [
-  'Sem versículo exclusivo',
   'Sem publicar no mural',
   'Sem áudio das respostas',
+  'Sem memória personalizada',
 ];
 
 const PRO_FEATURES = [
   '60 mensagens por dia',
-  'Chat ilimitado com o Divino',
-  'Versículo do Dia exclusivo',
+  'Versículo do Dia exclusivo com áudio',
   'Publicar no Mural Sagrado',
-  'Áudio das respostas',
+  'Áudio em todas as respostas',
+  'Memória personalizada (o mentor lembra de você)',
   'Histórico completo',
-  'Prática diária guiada',
 ];
 
 const TOP_EXTRAS = [
