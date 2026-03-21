@@ -1071,7 +1071,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.subscribe': 'Subscribe',
     'landing.features_title': 'What the Temple offers',
     'landing.feat_chat_title': 'Chat with the Priest',
-    'landing.feat_chat_desc': 'Talk with AI guided by sacred texts from the main faith traditions.',
+    'landing.feat_chat_desc': 'Talk with AI guided by sacred texts from 8 faith traditions.',
     'landing.feat_prayer_title': 'Personalized Prayers',
     'landing.feat_prayer_desc': 'Generate touching prayers based on your intention, faith and life moment.',
     'landing.feat_verse_title': 'Verse of the Day',
