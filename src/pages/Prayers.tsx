@@ -17,7 +17,10 @@ const FAITH_OPTIONS = [
   { key: 'protestant', label: 'Evangélico', mode: 'religion' as const },
   { key: 'spiritist', label: 'Espírita', mode: 'religion' as const },
   { key: 'candomble', label: 'Matriz Africana', mode: 'religion' as const },
-  { key: 'philosophy', label: 'Filosofia & Sabedoria', mode: 'philosophy' as const },
+  { key: 'jewish', label: 'Judaísmo', mode: 'religion' as const },
+  { key: 'hindu', label: 'Hinduísmo', mode: 'religion' as const },
+  { key: 'mormon', label: 'Mórmon', mode: 'religion' as const },
+  { key: 'agnostic', label: 'Agnóstico / Filosofia', mode: 'philosophy' as const },
 ];
 
 type Mode = 'send' | 'practice' | null;

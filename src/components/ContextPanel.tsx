@@ -22,6 +22,9 @@ const SPOTIFY_PLAYLISTS: Record<string, string> = {
   spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',
   umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',
   candomble: '3kg2IhbcbiRE4ZmvYWlUdw',
+  jewish: '1RJKluktWr9Dh7fXhhRkHV',
+  hindu: '1RJKluktWr9Dh7fXhhRkHV',
+  mormon: '0Z5jq2YzMqMrqEQWMEVj9T',
   agnostic: '1RJKluktWr9Dh7fXhhRkHV',
   stoicism: '0As0R4eZyxaMKAqZfW9zUL',
   philosophy: '37i9dQZF1DWVFeEut75IAL',
@@ -35,6 +38,9 @@ const TOPICS_BY_RELIGION: Record<string, string[]> = {
   protestant: ['jesus', 'heaven', 'hell', 'salvation', 'grace', 'scripture', 'prayer_topic', ...UNIVERSAL_TOPICS],
   spiritist: ['spirits', 'reincarnation', 'charity_spiritist', 'mediumship', 'gospel_kardec', ...UNIVERSAL_TOPICS],
   candomble: ['orishas_candomble', 'rituals_candomble', 'ancestors_candomble', 'ifa', 'offerings_candomble', ...UNIVERSAL_TOPICS],
+  jewish: ['torah', 'shabbat', 'tikkun_olam', 'prophets', 'covenant', 'prayer_topic', ...UNIVERSAL_TOPICS],
+  hindu: ['dharma_hindu', 'karma_hindu', 'moksha', 'vedas', 'yoga', 'meditation', ...UNIVERSAL_TOPICS],
+  mormon: ['book_of_mormon', 'revelation', 'salvation', 'prayer_topic', 'jesus', ...UNIVERSAL_TOPICS],
   agnostic: ['ethics', 'philosophy', 'meaning', 'nature', 'science', ...UNIVERSAL_TOPICS],
 };
 
@@ -46,13 +52,16 @@ function getTopicsForSelection(religion: string): string[] {
 const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
 const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
 
-// The 5 MVP options
+// The 8 traditions (V1)
 const FAITH_OPTIONS = [
   { key: 'catholic', label: 'Católico', sublabel: 'Tradição Católica', icon: Church, mode: 'religion' as const },
   { key: 'protestant', label: 'Evangélico', sublabel: 'Tradição Protestante', icon: Flame, mode: 'religion' as const },
   { key: 'spiritist', label: 'Espírita', sublabel: 'Doutrina Espírita', icon: Sun, mode: 'religion' as const },
   { key: 'candomble', label: 'Matriz Africana', sublabel: 'Umbanda & Candomblé', icon: Leaf, mode: 'religion' as const },
-  { key: 'philosophy', label: 'Filosofia & Sabedoria', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
+  { key: 'jewish', label: 'Judaísmo', sublabel: 'Tradição Judaica', icon: Heart, mode: 'religion' as const },
+  { key: 'hindu', label: 'Hinduísmo', sublabel: 'Tradição Hindu', icon: Sun, mode: 'religion' as const },
+  { key: 'mormon', label: 'Mórmon', sublabel: 'Santos dos Últimos Dias', icon: Church, mode: 'religion' as const },
+  { key: 'agnostic', label: 'Agnóstico / Filosofia', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
 ];
 
 function ChipGroup({ label, items, prefix, selected, onSelect }: {

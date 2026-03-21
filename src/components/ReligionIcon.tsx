@@ -12,6 +12,7 @@ const RELIGION_ICONS: Record<string, typeof Cross> = {
   spiritist: Star,
   umbanda: Star,
   candomble: Star,
+  agnostic: Sparkles,
 };
 
 const RELIGION_EMOJI: Record<string, string> = {
