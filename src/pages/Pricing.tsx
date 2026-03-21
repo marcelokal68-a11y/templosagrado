@@ -248,7 +248,7 @@ export default function Pricing() {
               >
                 {(loadingPlan === 'monthly' || loadingPlan === 'annual') && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Sparkles className="h-4 w-4" />
-                Assinar Pro
+                Assinar Devoto
               </Button>
             )}
           </div>
