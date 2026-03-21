@@ -56,7 +56,7 @@ export default function Landing() {
         <div className="container py-8 px-4">
           <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto text-center">
             <div className="flex flex-col items-center gap-1">
-              <span className="text-2xl md:text-4xl font-bold text-primary">5</span>
+              <span className="text-2xl md:text-4xl font-bold text-primary">8</span>
               <span className="text-[10px] md:text-sm text-muted-foreground font-medium">Tradições</span>
             </div>
             <div className="flex flex-col items-center gap-1">
