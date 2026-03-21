@@ -11,9 +11,7 @@ import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
-import Prayers from "./pages/Prayers";
 import Verse from "./pages/Verse";
-import Practice from "./pages/Practice";
 import Admin from "./pages/Admin";
 import InviteRedeem from "./pages/InviteRedeem";
 import Invite from "./pages/Invite";
@@ -44,9 +42,7 @@ const App = () => (
                     <Route path="/landing" element={<Landing />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/prayers" element={<ProtectedRoute><Prayers /></ProtectedRoute>} />
                     <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
-                    <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
                     <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
