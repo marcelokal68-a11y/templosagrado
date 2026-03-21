@@ -12,8 +12,11 @@ const traditions = [
   { value: 'catholic', labelKey: 'religion.catholic' },
   { value: 'protestant', labelKey: 'religion.protestant' },
   { value: 'spiritist', labelKey: 'religion.spiritist' },
-  { value: 'umbanda', labelKey: 'religion.umbanda' },
   { value: 'candomble', labelKey: 'religion.candomble' },
+  { value: 'jewish', labelKey: 'religion.jewish' },
+  { value: 'hindu', labelKey: 'religion.hindu' },
+  { value: 'mormon', labelKey: 'religion.mormon' },
+  { value: 'agnostic', labelKey: 'religion.agnostic' },
 ] as const;
 
 export default function Profile() {
