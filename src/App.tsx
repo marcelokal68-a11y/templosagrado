@@ -42,9 +42,7 @@ const App = () => (
                     <Route path="/landing" element={<Landing />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/prayers" element={<ProtectedRoute><Prayers /></ProtectedRoute>} />
                     <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
-                    <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
                     <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

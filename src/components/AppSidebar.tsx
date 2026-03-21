@@ -19,9 +19,7 @@ import {
 
 const navItems = [
   { to: '/', labelKey: 'nav.chat', icon: MessageCircle },
-  { to: '/prayers', labelKey: 'nav.prayers', icon: Heart },
   { to: '/verse', labelKey: 'nav.verse', icon: BookOpen },
-  { to: '/practice', labelKey: 'nav.practice', icon: CheckSquare },
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
 ];
 
