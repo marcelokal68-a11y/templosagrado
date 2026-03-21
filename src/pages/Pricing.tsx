@@ -210,7 +210,7 @@ export default function Pricing() {
           )}>
             {!isSubscribed && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
-                ⭐ Mais popular
+                ⭐ Mais escolhido
               </div>
             )}
             <div className="flex items-center justify-between mb-3 mt-1">
