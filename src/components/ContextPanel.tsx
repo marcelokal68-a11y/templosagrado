@@ -46,13 +46,16 @@ function getTopicsForSelection(religion: string): string[] {
 const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
 const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
 
-// The 5 MVP options
+// The 8 traditions (V1)
 const FAITH_OPTIONS = [
   { key: 'catholic', label: 'Católico', sublabel: 'Tradição Católica', icon: Church, mode: 'religion' as const },
   { key: 'protestant', label: 'Evangélico', sublabel: 'Tradição Protestante', icon: Flame, mode: 'religion' as const },
   { key: 'spiritist', label: 'Espírita', sublabel: 'Doutrina Espírita', icon: Sun, mode: 'religion' as const },
   { key: 'candomble', label: 'Matriz Africana', sublabel: 'Umbanda & Candomblé', icon: Leaf, mode: 'religion' as const },
-  { key: 'philosophy', label: 'Filosofia & Sabedoria', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
+  { key: 'jewish', label: 'Judaísmo', sublabel: 'Tradição Judaica', icon: Heart, mode: 'religion' as const },
+  { key: 'hindu', label: 'Hinduísmo', sublabel: 'Tradição Hindu', icon: Sun, mode: 'religion' as const },
+  { key: 'mormon', label: 'Mórmon', sublabel: 'Santos dos Últimos Dias', icon: Church, mode: 'religion' as const },
+  { key: 'agnostic', label: 'Agnóstico / Filosofia', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
 ];
 
 function ChipGroup({ label, items, prefix, selected, onSelect }: {
