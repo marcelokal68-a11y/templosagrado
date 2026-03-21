@@ -35,6 +35,9 @@ const TOPICS_BY_RELIGION: Record<string, string[]> = {
   protestant: ['jesus', 'heaven', 'hell', 'salvation', 'grace', 'scripture', 'prayer_topic', ...UNIVERSAL_TOPICS],
   spiritist: ['spirits', 'reincarnation', 'charity_spiritist', 'mediumship', 'gospel_kardec', ...UNIVERSAL_TOPICS],
   candomble: ['orishas_candomble', 'rituals_candomble', 'ancestors_candomble', 'ifa', 'offerings_candomble', ...UNIVERSAL_TOPICS],
+  jewish: ['torah', 'shabbat', 'tikkun_olam', 'prophets', 'covenant', 'prayer_topic', ...UNIVERSAL_TOPICS],
+  hindu: ['dharma_hindu', 'karma_hindu', 'moksha', 'vedas', 'yoga', 'meditation', ...UNIVERSAL_TOPICS],
+  mormon: ['book_of_mormon', 'revelation', 'salvation', 'prayer_topic', 'jesus', ...UNIVERSAL_TOPICS],
   agnostic: ['ethics', 'philosophy', 'meaning', 'nature', 'science', ...UNIVERSAL_TOPICS],
 };
 
