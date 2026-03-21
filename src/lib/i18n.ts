@@ -507,7 +507,7 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.subscribe': 'Assinar',
     'landing.features_title': 'O que o Templo oferece',
     'landing.feat_chat_title': 'Chat com o Sacerdote',
-    'landing.feat_chat_desc': 'Converse com IA guiada por textos sagrados das principais tradições de fé brasileiras.',
+    'landing.feat_chat_desc': 'Converse com IA guiada por textos sagrados de 8 tradições de fé.',
     'landing.feat_prayer_title': 'Orações Personalizadas',
     'landing.feat_prayer_desc': 'Gere orações tocantes baseadas na sua intenção, fé e momento de vida.',
     'landing.feat_verse_title': 'Versículo do Dia',
