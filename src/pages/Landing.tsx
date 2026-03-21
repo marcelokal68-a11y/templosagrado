@@ -78,7 +78,7 @@ export default function Landing() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
           {[
-            { step: 1, icon: MessageCircle, title: 'Escolha sua tradição', desc: 'Católico, Evangélico, Espírita, Matriz Africana ou Filosofia.' },
+            { step: 1, icon: MessageCircle, title: 'Escolha sua tradição', desc: 'Católico, Evangélico, Espírita, Matriz Africana, Judaísmo, Hinduísmo, Mórmon ou Filosofia.' },
             { step: 2, icon: MessageCircle, title: 'Converse com o Sacerdote', desc: 'Faça perguntas e receba orientação por texto ou voz.' },
             { step: 3, icon: Heart, title: 'Gere orações', desc: 'Crie orações personalizadas com referências sagradas.' },
             { step: 4, icon: CheckSquare, title: 'Pratique diariamente', desc: 'Checklist espiritual para nutrir sua jornada.' },
