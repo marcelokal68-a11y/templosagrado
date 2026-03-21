@@ -32,24 +32,23 @@ const PREMIUM_PRODUCT_IDS = [PLANS.monthly.productId, PLANS.annual.productId];
 
 const FREE_FEATURES = [
   '10 mensagens por dia',
-  'Chat com o Divino',
-  'Histórico básico',
+  'Chat com mentor espiritual',
+  'Versículo do dia básico',
 ];
 
 const FREE_LIMITATIONS = [
-  'Sem versículo exclusivo',
   'Sem publicar no mural',
   'Sem áudio das respostas',
+  'Sem memória personalizada',
 ];
 
 const PRO_FEATURES = [
   '60 mensagens por dia',
-  'Chat ilimitado com o Divino',
-  'Versículo do Dia exclusivo',
+  'Versículo do Dia exclusivo com áudio',
   'Publicar no Mural Sagrado',
-  'Áudio das respostas',
+  'Áudio em todas as respostas',
+  'Memória personalizada (o mentor lembra de você)',
   'Histórico completo',
-  'Prática diária guiada',
 ];
 
 const TOP_EXTRAS = [
@@ -179,7 +178,7 @@ export default function Pricing() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-display text-lg font-semibold text-foreground">Gratuito</h3>
-                <p className="text-xs text-muted-foreground">Para conhecer o Templo</p>
+                <p className="text-xs text-muted-foreground">Para experimentar o Templo</p>
               </div>
               <span className="text-2xl font-bold font-display text-foreground">R$0</span>
             </div>
@@ -211,13 +210,13 @@ export default function Pricing() {
           )}>
             {!isSubscribed && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
-                ⭐ Mais popular
+                ⭐ Mais escolhido
               </div>
             )}
             <div className="flex items-center justify-between mb-3 mt-1">
               <div>
-                <h3 className="font-display text-lg font-semibold text-foreground">Pro</h3>
-                <p className="text-xs text-muted-foreground">Para sua jornada diária</p>
+                <h3 className="font-display text-lg font-semibold text-foreground">Devoto</h3>
+                <p className="text-xs text-muted-foreground">Sua jornada espiritual diária</p>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold font-display text-foreground">
@@ -249,7 +248,7 @@ export default function Pricing() {
               >
                 {(loadingPlan === 'monthly' || loadingPlan === 'annual') && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Sparkles className="h-4 w-4" />
-                Assinar Pro
+                Assinar Devoto
               </Button>
             )}
           </div>
@@ -264,8 +263,8 @@ export default function Pricing() {
             </div>
             <div className="flex items-center justify-between mb-3 mt-1">
               <div>
-                <h3 className="font-display text-lg font-semibold text-foreground">Ilimitado</h3>
-                <p className="text-xs text-muted-foreground">Para devotos dedicados</p>
+                <h3 className="font-display text-lg font-semibold text-foreground">Iluminado</h3>
+                <p className="text-xs text-muted-foreground">Para quem busca o máximo</p>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold font-display text-foreground">
@@ -302,7 +301,7 @@ export default function Pricing() {
                 disabled={!!loadingPlan || !!isSubscribed}
               >
                 {(loadingPlan === 'topMonthly' || loadingPlan === 'topAnnual') && <Loader2 className="h-4 w-4 animate-spin" />}
-                Assinar Ilimitado
+                Assinar Iluminado
               </Button>
             )}
           </div>
