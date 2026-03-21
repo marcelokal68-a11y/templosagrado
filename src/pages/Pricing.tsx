@@ -178,7 +178,7 @@ export default function Pricing() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-display text-lg font-semibold text-foreground">Gratuito</h3>
-                <p className="text-xs text-muted-foreground">Para conhecer o Templo</p>
+                <p className="text-xs text-muted-foreground">Para experimentar o Templo</p>
               </div>
               <span className="text-2xl font-bold font-display text-foreground">R$0</span>
             </div>
