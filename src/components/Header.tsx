@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, Heart, BookOpen, X, ScrollText, Gift } from 'lucide-react';
+import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, BookOpen, X, ScrollText, Gift } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
