@@ -215,8 +215,8 @@ export default function Pricing() {
             )}
             <div className="flex items-center justify-between mb-3 mt-1">
               <div>
-                <h3 className="font-display text-lg font-semibold text-foreground">Pro</h3>
-                <p className="text-xs text-muted-foreground">Para sua jornada diária</p>
+                <h3 className="font-display text-lg font-semibold text-foreground">Devoto</h3>
+                <p className="text-xs text-muted-foreground">Sua jornada espiritual diária</p>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-bold font-display text-foreground">
