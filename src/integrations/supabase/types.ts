@@ -382,6 +382,7 @@ export type Database = {
           is_subscriber: boolean
           latitude: number | null
           longitude: number | null
+          memory_enabled: boolean
           mp_subscription_id: string | null
           preferred_language: string
           preferred_religion: string | null
@@ -400,6 +401,7 @@ export type Database = {
           is_subscriber?: boolean
           latitude?: number | null
           longitude?: number | null
+          memory_enabled?: boolean
           mp_subscription_id?: string | null
           preferred_language?: string
           preferred_religion?: string | null
@@ -418,6 +420,7 @@ export type Database = {
           is_subscriber?: boolean
           latitude?: number | null
           longitude?: number | null
+          memory_enabled?: boolean
           mp_subscription_id?: string | null
           preferred_language?: string
           preferred_religion?: string | null
