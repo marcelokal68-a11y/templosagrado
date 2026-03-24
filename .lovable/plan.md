@@ -1,54 +1,61 @@
 
 
-# Renomear Planos e Descrições — Stripe + Frontend
+# Privacidade First: Controle de Memória e Limpeza Completa
 
-## Situação Atual
+## Problema
 
-Os 4 produtos no Stripe estão com nomes genéricos ("Divine Connection"), e a página de preços tem descrições básicas. Preciso alinhar tudo à marca Templo Sagrado.
+O app atualmente:
+1. **Sempre salva memórias** (user_memory) automaticamente — o usuário não tem controle
+2. O "Limpar Tudo" apaga chat_messages e activity_history, mas **não apaga user_memory** — o mentor continua "lembrando"
+3. Não há comunicação clara ao usuário sobre privacidade
 
-## Proposta de Nomes e Descrições
+## Proposta
 
-| Plano | Nome Stripe | Descrição Stripe | Subtítulo na Pricing |
-|-------|-------------|------------------|---------------------|
-| Pro Mensal | Templo Sagrado — Devoto | Plano mensal com 60 mensagens/dia, versículo exclusivo, mural sagrado e áudio | "Sua jornada espiritual diária" |
-| Pro Anual | Templo Sagrado — Devoto Anual | Plano anual com 60 mensagens/dia, versículo exclusivo, mural sagrado e áudio | "Sua jornada espiritual diária" |
-| TOP Mensal | Templo Sagrado — Iluminado | Plano mensal ilimitado com acesso antecipado e suporte prioritário | "Para quem busca o máximo" |
-| TOP Anual | Templo Sagrado — Iluminado Anual | Plano anual ilimitado com acesso antecipado e suporte prioritário | "Para quem busca o máximo" |
+### A. Toggle "Memória do Mentor" (opt-in, desligado por padrão)
 
-### Features atualizadas na Pricing Page
+- Novo campo `memory_enabled` (boolean, default `false`) na tabela `profiles`
+- Toggle visível no chat (ícone de cérebro/memória) e na página de Perfil
+- Quando **desligado** (padrão): sacred-chat NÃO extrai memórias, NÃO carrega memórias anteriores
+- Quando **ligado**: funciona como hoje, com aviso de que o mentor vai lembrar de você
+- Tooltip/texto explicativo: "Quando ativado, o mentor espiritual lembra de detalhes que você compartilhou para personalizar a conversa"
 
-**Gratuito** — "Para experimentar o Templo"
-- ✅ 10 mensagens por dia
-- ✅ Chat com mentor espiritual
-- ✅ Versículo do dia básico
-- ❌ Sem publicar no mural
-- ❌ Sem áudio das respostas
-- ❌ Sem memória personalizada
+### B. "Limpar Tudo" agora apaga TUDO
 
-**Devoto (Pro)** — "Sua jornada espiritual diária"
-- ✅ 60 mensagens por dia
-- ✅ Versículo do Dia exclusivo com áudio
-- ✅ Publicar no Mural Sagrado
-- ✅ Áudio em todas as respostas
-- ✅ Memória personalizada (o mentor lembra de você)
-- ✅ Histórico completo
+- Além de chat_messages e activity_history, também apaga **user_memory**
+- Reset completo = como se fosse um novo usuário
 
-**Iluminado (TOP)** — "Para quem busca o máximo"
-- ✅ Tudo do Devoto +
-- ✅ Mensagens ilimitadas
-- ✅ Acesso antecipado a novidades
-- ✅ Suporte prioritário
+### C. Banner de Privacidade no Chat
 
-## Mudanças
+- Pequeno texto discreto no estado vazio do chat: "🔒 Suas conversas são privadas e não são compartilhadas com ninguém"
+- Se memória estiver desligada, adicionar: "O mentor não guarda memórias entre conversas"
 
-### 1. Stripe — Atualizar 4 produtos (via Stripe tools)
-Renomear nomes e descrições dos 4 produtos existentes.
+### D. Botão "Apagar Memórias" separado no Perfil
 
-### 2. `src/pages/Pricing.tsx`
-- Renomear "Pro" → "Devoto", "Ilimitado" → "Iluminado"
-- Atualizar subtítulos e listas de features conforme tabela acima
-- Atualizar textos dos botões: "Assinar Devoto", "Assinar Iluminado"
-- Atualizar badge de "⭐ Mais popular" para "⭐ Mais escolhido"
+- Na página de Perfil, seção de privacidade com:
+  - Toggle de memória (on/off)
+  - Botão "Apagar todas as memórias" (apaga só user_memory, mantém histórico)
 
-Total: 4 atualizações Stripe + 1 arquivo editado.
+## Mudanças Técnicas
+
+### 1. Migration — adicionar `memory_enabled` à tabela profiles
+```sql
+ALTER TABLE public.profiles ADD COLUMN memory_enabled boolean NOT NULL DEFAULT false;
+```
+
+### 2. `supabase/functions/sacred-chat/index.ts`
+- Consultar `profiles.memory_enabled` antes de chamar `fetchUserMemories` e `extractAndSaveMemories`
+- Se `false`, pular ambas as funções
+
+### 3. `src/components/ChatArea.tsx`
+- No "Limpar Tudo", adicionar delete de `user_memory`
+- Adicionar texto de privacidade no empty state
+- Adicionar toggle de memória no menu (⋮) do chat
+
+### 4. `src/pages/Profile.tsx`
+- Seção "Privacidade" com toggle de memória e botão de apagar memórias
+
+### 5. `src/contexts/AppContext.tsx`
+- Carregar `memory_enabled` do perfil e expor no contexto
+
+Total: 1 migration + 4 arquivos editados + 1 edge function atualizada.
 
