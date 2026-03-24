@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -119,7 +119,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo } = useApp();
+  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled } = useApp();
   const religion = chatContext.religion || '';
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -519,6 +519,16 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-5 text-center max-w-[280px]">
               Escolha uma pergunta ou escreva a sua
             </p>
+
+            {/* Privacy banner */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border/30 mb-3 md:mb-5 max-w-[320px]">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <p className="text-[11px] text-muted-foreground leading-snug">
+                🔒 Suas conversas são privadas e não são compartilhadas com ninguém.
+                {!memoryEnabled && ' O mentor não guarda memórias entre conversas.'}
+              </p>
+            </div>
+
             <div className="w-full max-w-md space-y-1.5 md:space-y-2 px-2">
               {questions.map((q, i) => (
                 <button
@@ -621,6 +631,16 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {/* Memory toggle */}
+                      {user && (
+                        <DropdownMenuItem
+                          onClick={() => setMemoryEnabled(!memoryEnabled)}
+                          className="text-muted-foreground"
+                        >
+                          <Brain className="h-4 w-4 mr-2" />
+                          {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={async () => {
                           if (user) {
@@ -733,6 +753,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 await Promise.all([
                   supabase.from('chat_messages').delete().eq('user_id', user!.id),
                   supabase.from('activity_history').delete().eq('user_id', user!.id),
+                  supabase.from('user_memory').delete().eq('user_id', user!.id),
                 ]);
                 stopAudio();
                 audioCacheRef.current.clear();
