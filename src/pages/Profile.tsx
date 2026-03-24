@@ -2,9 +2,10 @@ import { useApp } from '@/contexts/AppContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { t } from '@/lib/i18n';
-import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X } from 'lucide-react';
+import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X, Brain, Shield, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,8 +21,9 @@ const traditions = [
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled } = useApp();
   const { toast } = useToast();
+  const [deletingMemories, setDeletingMemories] = useState(false);
   const [profile, setProfile] = useState<{
     display_name: string | null;
     preferred_religion: string | null;
@@ -189,6 +191,54 @@ export default function Profile() {
             label="Perguntas usadas"
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
+
+          {/* Privacy section */}
+          <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4 text-primary/70" />
+              <span className="text-sm font-semibold text-foreground">Privacidade</span>
+            </div>
+
+            {/* Memory toggle */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/50">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Brain className="h-5 w-5 text-primary/70 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Memória do Mentor</p>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    {memoryEnabled
+                      ? 'O mentor lembra detalhes que você compartilhou'
+                      : 'Conversas não são memorizadas entre sessões'}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={memoryEnabled}
+                onCheckedChange={v => {
+                  setMemoryEnabled(v);
+                  toast({ title: v ? 'Memória ativada' : 'Memória desativada' });
+                }}
+              />
+            </div>
+
+            {/* Delete memories button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+              disabled={deletingMemories}
+              onClick={async () => {
+                if (!user) return;
+                setDeletingMemories(true);
+                await supabase.from('user_memory').delete().eq('user_id', user.id);
+                setDeletingMemories(false);
+                toast({ title: 'Todas as memórias foram apagadas' });
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              {deletingMemories ? 'Apagando...' : 'Apagar todas as memórias'}
+            </Button>
+          </div>
         </div>
 
         {/* Upgrade CTA */}
