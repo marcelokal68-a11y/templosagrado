@@ -284,17 +284,29 @@ serve(async (req) => {
     let historySection = '';
     let memorySection = '';
     if (userId) {
+      // Check if user has memory enabled
+      const sb = await getSupabaseClient();
+      const { data: profileData } = await sb
+        .from('profiles')
+        .select('memory_enabled')
+        .eq('user_id', userId)
+        .maybeSingle();
+      const memoryEnabled = profileData?.memory_enabled === true;
+
+      const memoryPromise = memoryEnabled ? fetchUserMemories(userId) : Promise.resolve('');
       [historySection, memorySection] = await Promise.all([
         fetchUserHistory(userId, religion, philosophy),
-        fetchUserMemories(userId),
+        memoryPromise,
       ]);
 
-      // Fire-and-forget: extract memories from the latest user message
-      const lastUserMsg = messages?.filter((m: { role: string }) => m.role === 'user').pop();
-      if (lastUserMsg?.content && lastUserMsg.content.length > 10) {
-        extractAndSaveMemories(userId, lastUserMsg.content, LOVABLE_API_KEY).catch(e =>
-          console.error("Background memory extraction failed:", e)
-        );
+      // Fire-and-forget: extract memories ONLY if memory is enabled
+      if (memoryEnabled) {
+        const lastUserMsg = messages?.filter((m: { role: string }) => m.role === 'user').pop();
+        if (lastUserMsg?.content && lastUserMsg.content.length > 10) {
+          extractAndSaveMemories(userId, lastUserMsg.content, LOVABLE_API_KEY).catch(e =>
+            console.error("Background memory extraction failed:", e)
+          );
+        }
       }
     }
 

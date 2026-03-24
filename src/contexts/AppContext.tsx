@@ -41,6 +41,8 @@ interface AppContextType {
   undoClearChat: () => void;
   hasPendingUndo: boolean;
   geo: { latitude: number; longitude: number } | null;
+  memoryEnabled: boolean;
+  setMemoryEnabled: (v: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -61,6 +63,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
   const [geo, setGeo] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
+  const [memoryEnabled, setMemoryEnabledState] = useState(false);
+
+  const setMemoryEnabled = useCallback(async (v: boolean) => {
+    setMemoryEnabledState(v);
+    if (user) {
+      await supabase.from('profiles').update({ memory_enabled: v } as any).eq('user_id', user.id);
+    }
+  }, [user]);
 
   // Undo buffer
   const [previousMessages, setPreviousMessages] = useState<Msg[]>([]);
@@ -144,13 +154,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       supabase
         .from('profiles')
-        .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude')
+        .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude, memory_enabled')
         .eq('user_id', user.id)
         .maybeSingle()
         .then(({ data }) => {
         if (data) {
             setQuestionsRemaining(data.questions_limit - data.questions_used);
             setIsSubscriber(!!(data as any).is_subscriber);
+            setMemoryEnabledState(!!(data as any).memory_enabled);
             if (data.preferred_language) setLanguage(data.preferred_language as Language);
             if (data.preferred_religion) {
               setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
@@ -179,7 +190,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const faithReligionLabel = faithPromptReligion ? t(`religion.${faithPromptReligion}`, language) : '';
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled }}>
       {children}
       <AlertDialog open={!!faithPromptReligion}>
         <AlertDialogContent>
