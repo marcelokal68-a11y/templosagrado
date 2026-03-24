@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN memory_enabled boolean NOT NULL DEFAULT false;
