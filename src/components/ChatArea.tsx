@@ -624,23 +624,39 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                   </button>
                 )}
                 {messages.length > 0 && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
-                        <MoreVertical className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {/* Memory toggle */}
-                      {user && (
-                        <DropdownMenuItem
-                          onClick={() => setMemoryEnabled(!memoryEnabled)}
-                          className="text-muted-foreground"
-                        >
-                          <Brain className="h-4 w-4 mr-2" />
-                          {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
-                        </DropdownMenuItem>
-                      )}
+                  <button
+                    onClick={async () => {
+                      if (user) {
+                        await supabase.from('chat_messages').delete().eq('user_id', user.id);
+                      }
+                      stopAudio();
+                      audioCacheRef.current.clear();
+                      setMessages([]);
+                    }}
+                    className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors min-h-[44px] flex items-center"
+                    title={t('chat.clear', language)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">
+                      <MoreVertical className="h-4 w-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {/* Memory toggle */}
+                    {user && (
+                      <DropdownMenuItem
+                        onClick={() => setMemoryEnabled(!memoryEnabled)}
+                        className="text-muted-foreground"
+                      >
+                        <Brain className="h-4 w-4 mr-2" />
+                        {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
+                      </DropdownMenuItem>
+                    )}
+                    {messages.length > 0 && (
                       <DropdownMenuItem
                         onClick={async () => {
                           if (user) {
@@ -655,18 +671,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         <Trash2 className="h-4 w-4 mr-2" />
                         {t('chat.clear', language)}
                       </DropdownMenuItem>
-                      {user && (
-                        <DropdownMenuItem
-                          onClick={() => setShowClearAllDialog(true)}
-                          className="text-destructive"
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          {t('chat.clear_all', language)}
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                    )}
+                    {user && (
+                      <DropdownMenuItem
+                        onClick={() => setShowClearAllDialog(true)}
+                        className="text-destructive"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        {t('chat.clear_all', language)}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
