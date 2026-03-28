@@ -785,7 +785,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                       className={confessionalMode ? "text-primary font-medium" : "text-muted-foreground"}
                     >
                       <ShieldCheck className="h-4 w-4 mr-2" />
-                      {confessionalMode ? '🛡️ Sair do confessionário' : '🛡️ Modo confessionário'}
+                      {confessionalMode ? t('chat.confessional_on', language) : t('chat.confessional_off', language)}
                     </DropdownMenuItem>
                     {/* Memory toggle */}
                     {user && !confessionalMode && (
@@ -794,7 +794,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         className="text-muted-foreground"
                       >
                         <Brain className="h-4 w-4 mr-2" />
-                        {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
+                        {memoryEnabled ? t('chat.memory_on', language) : t('chat.memory_off', language)}
                       </DropdownMenuItem>
                     )}
                     {/* Summary generation */}
