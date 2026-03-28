@@ -18,6 +18,7 @@ import Invite from "./pages/Invite";
 import Mural from "./pages/Mural";
 import Landing from "./pages/Landing";
 import Install from "./pages/Install";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import QuickTutorial from "./components/QuickTutorial";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -49,6 +50,7 @@ const App = () => (
                     <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
                     <Route path="/install" element={<Install />} />
+                    <Route path="/privacy" element={<Privacy />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
