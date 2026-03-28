@@ -805,7 +805,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         className="text-muted-foreground"
                       >
                         <FileText className="h-4 w-4 mr-2" />
-                        {isGeneratingSummary ? 'Gerando resumo...' : 'Gerar resumo'}
+                        {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.summary', language)}
                       </DropdownMenuItem>
                     )}
                     {messages.length > 0 && (
