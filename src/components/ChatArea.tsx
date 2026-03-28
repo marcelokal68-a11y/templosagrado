@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,16 @@ import { ToastAction } from '@/components/ui/toast';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
+const MAX_USER_MESSAGES = 6;
+
+function parseSuggestions(content: string): { text: string; suggestions: string[] } {
+  const match = content.match(/\[SUGGESTIONS\](.*?)\[\/SUGGESTIONS\]/s);
+  if (!match) return { text: content, suggestions: [] };
+  const text = content.replace(/\[SUGGESTIONS\].*?\[\/SUGGESTIONS\]/s, '').trim();
+  const suggestions = match[1].split('|').map(s => s.trim()).filter(Boolean);
+  return { text, suggestions };
+}
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
 const STT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-stt`;
@@ -60,11 +70,13 @@ function DivineIcon() {
   );
 }
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy }: {
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick }: {
   msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
+  isLast?: boolean; onSuggestionClick?: (text: string) => void;
 }) {
   const isUser = msg.role === 'user';
+  const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
   return (
     <div className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
@@ -82,15 +94,15 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
             ? "bg-foreground text-background rounded-br-sm"
             : "bg-card border border-border text-foreground rounded-bl-sm"
         )}>
-          <p className="whitespace-pre-wrap">{msg.content}</p>
+          <p className="whitespace-pre-wrap">{displayText}</p>
         </div>
         
         {/* Action row for assistant messages — compact, below bubble */}
-        {!isUser && msg.content.length > 0 && (
+        {!isUser && displayText.length > 0 && (
           <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                style={{ opacity: 1 }}>
             <button
-              onClick={() => onNarrate(msg.content, index)}
+              onClick={() => onNarrate(displayText, index)}
               disabled={loadingAudio === index}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               title="Ouvir"
@@ -104,13 +116,28 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
               )}
             </button>
             <button
-              onClick={() => onCopy(msg.content)}
+              onClick={() => onCopy(displayText)}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               title="Copiar"
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
-            <PublishToMural originalContent={msg.content} />
+            <PublishToMural originalContent={displayText} />
+          </div>
+        )}
+
+        {/* Suggestion buttons — only on last assistant message */}
+        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && (
+          <div className="flex flex-col gap-1.5 mt-2 w-full">
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onSuggestionClick(s)}
+                className="text-left px-3 py-2 rounded-xl bg-primary/5 border border-primary/20 hover:border-primary/40 hover:bg-primary/10 transition-all text-xs text-foreground/80"
+              >
+                {s}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -130,6 +157,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [confessionalMode, setConfessionalMode] = useState(false);
+  const [sessionClosed, setSessionClosed] = useState(false);
+  const [showSummaryDialog, setShowSummaryDialog] = useState(false);
+  const [summaryText, setSummaryText] = useState('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -287,8 +318,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     toast({ title: 'Copiado!' });
   }, [toast]);
 
+  const userMessageCount = useMemo(() => messages.filter(m => m.role === 'user').length, [messages]);
+
   const doSendMessage = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+    if (!text.trim() || isLoading || sessionClosed) return;
 
     if (!user) {
       const anonUsed = getAnonCount();
@@ -305,6 +338,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
 
     const userMsg: Msg = { role: 'user', content: text.trim() };
+    const newUserCount = userMessageCount + 1;
+    const isClosing = newUserCount >= MAX_USER_MESSAGES;
+
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setIsLoading(true);
@@ -327,6 +363,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           timezone,
           geo,
           skipMemory: confessionalMode || undefined,
+          isClosing: isClosing || undefined,
         }),
       });
 
@@ -416,12 +453,84 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         const assistantIndex = messages.length + 1;
         preloadAudio(assistantSoFar, assistantIndex);
       }
+
+      // Close session after 6th user message
+      if (isClosing) {
+        setSessionClosed(true);
+      }
     } catch (e) {
       console.error(e);
       toast({ title: t('chat.error', language), description: t('chat.error_desc', language), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const generateSummary = async () => {
+    setIsGeneratingSummary(true);
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: messages.map(m => ({ role: m.role, content: parseSuggestions(m.content).text })),
+          context: chatContext,
+          language,
+          userId: user?.id,
+          generateSummary: true,
+        }),
+      });
+
+      if (!resp.ok || !resp.body) throw new Error('Summary failed');
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let summaryContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) summaryContent += content;
+          } catch { break; }
+        }
+      }
+
+      setSummaryText(summaryContent);
+      setShowSummaryDialog(true);
+    } catch (e) {
+      console.error(e);
+      toast({ title: 'Erro ao gerar resumo', variant: 'destructive' });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
+  const downloadSummaryPdf = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Resumo da Conversa — Templo Sagrado', 20, 20);
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(summaryText, 170);
+    doc.text(lines, 20, 35);
+    doc.save('resumo-templo-sagrado.pdf');
   };
 
   const sendMessage = () => doSendMessage(chatInput);
@@ -559,6 +668,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             loadingAudio={loadingAudio}
             onNarrate={playNarration}
             onCopy={handleCopy}
+            isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
+            onSuggestionClick={(text) => doSendMessage(text)}
           />
         ))}
         
@@ -645,6 +756,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                       stopAudio();
                       audioCacheRef.current.clear();
                       setMessages([]);
+                      setSessionClosed(false);
                     }}
                     className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors min-h-[44px] flex items-center"
                     title={t('chat.clear', language)}
@@ -685,6 +797,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
                       </DropdownMenuItem>
                     )}
+                    {/* Summary generation */}
+                    {messages.length > 0 && (
+                      <DropdownMenuItem
+                        onClick={generateSummary}
+                        disabled={isGeneratingSummary}
+                        className="text-muted-foreground"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        {isGeneratingSummary ? 'Gerando resumo...' : 'Gerar resumo'}
+                      </DropdownMenuItem>
+                    )}
                     {messages.length > 0 && (
                       <DropdownMenuItem
                         onClick={async () => {
@@ -694,6 +817,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                           stopAudio();
                           audioCacheRef.current.clear();
                           setMessages([]);
+                          setSessionClosed(false);
                         }}
                         className="text-muted-foreground"
                       >
@@ -715,35 +839,71 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               </div>
             </div>
 
-            {/* Input row */}
-            <div className="flex items-end gap-2 px-3 pb-2 md:pb-3 pt-1"
-                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}>
-              <Textarea
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Sua mensagem..."
-                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
-                rows={1}
-              />
-              <Button
-                onClick={toggleRecording}
-                disabled={isTranscribing}
-                size="icon"
-                variant={isRecording ? "destructive" : "ghost"}
-                className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
-              >
-                {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
-              </Button>
-              <Button
-                onClick={sendMessage}
-                disabled={isLoading || !chatInput.trim()}
-                size="icon"
-                className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
-              >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
-              </Button>
-            </div>
+            {/* Session closed state */}
+            {sessionClosed ? (
+              <div className="px-4 py-3 text-center space-y-2"
+                   style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
+                <p className="text-sm text-muted-foreground">
+                  🕊️ Sessão encerrada — gere seu resumo ou inicie uma nova conversa.
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={generateSummary}
+                    disabled={isGeneratingSummary}
+                    variant="outline"
+                    className="gap-1.5"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {isGeneratingSummary ? 'Gerando...' : 'Gerar resumo'}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMessages([]);
+                      setSessionClosed(false);
+                      stopAudio();
+                      audioCacheRef.current.clear();
+                    }}
+                    variant="ghost"
+                    className="gap-1.5"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Nova conversa
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Input row */}
+                <div className="flex items-end gap-2 px-3 pb-2 md:pb-3 pt-1"
+                     style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}>
+                  <Textarea
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Sua mensagem..."
+                    className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
+                    rows={1}
+                  />
+                  <Button
+                    onClick={toggleRecording}
+                    disabled={isTranscribing}
+                    size="icon"
+                    variant={isRecording ? "destructive" : "ghost"}
+                    className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
+                  >
+                    {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
+                  </Button>
+                  <Button
+                    onClick={sendMessage}
+                    disabled={isLoading || !chatInput.trim()}
+                    size="icon"
+                    className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
+                  >
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
+                  </Button>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
@@ -812,6 +972,41 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Summary dialog */}
+      <Dialog open={showSummaryDialog} onOpenChange={setShowSummaryDialog}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Resumo da Conversa
+            </DialogTitle>
+            <DialogDescription>Sua conversa resumida pelo mentor espiritual</DialogDescription>
+          </DialogHeader>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+            {summaryText}
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1 gap-1.5"
+              onClick={() => {
+                navigator.clipboard.writeText(summaryText);
+                toast({ title: 'Resumo copiado!' });
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              Copiar
+            </Button>
+            <Button
+              className="flex-1 gap-1.5"
+              onClick={downloadSummaryPdf}
+            >
+              <Download className="h-4 w-4" />
+              Baixar PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });
