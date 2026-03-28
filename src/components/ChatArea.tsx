@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download, LogIn } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -325,7 +325,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
     if (!user) {
       const anonUsed = getAnonCount();
-      if (anonUsed >= 10) {
+      if (anonUsed >= 12) {
         toast({ title: 'Limite atingido', description: 'Faça login para continuar conversando.', variant: 'destructive' });
         navigate('/auth');
         return;
@@ -613,11 +613,42 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  const remainingCount = user ? questionsRemaining : Math.max(0, 10 - getAnonCount());
-  const isBlocked = remainingCount <= 0;
+  const remainingCount = user ? questionsRemaining : Math.max(0, 12 - getAnonCount());
+  const isBlocked = remainingCount <= 0 && !sessionClosed;
+
+  // LGPD gate
+  const [lgpdAccepted, setLgpdAccepted] = useState(() => localStorage.getItem('lgpd_accepted') === 'true');
+  const handleLgpdAccept = () => {
+    localStorage.setItem('lgpd_accepted', 'true');
+    setLgpdAccepted(true);
+  };
 
   return (
     <div className="flex flex-col h-full bg-background">
+      {/* LGPD consent gate */}
+      {!lgpdAccepted && (
+        <Dialog open={!lgpdAccepted} onOpenChange={() => {}}>
+          <DialogContent className="max-w-sm [&>button]:hidden">
+            <DialogHeader>
+              <DialogTitle>{t('lgpd.title', language)}</DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed pt-2">
+                {t('lgpd.desc', language)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-start gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="lgpd-chat"
+                className="mt-1 h-4 w-4 rounded border-primary text-primary focus:ring-primary"
+                onChange={(e) => { if (e.target.checked) handleLgpdAccept(); }}
+              />
+              <label htmlFor="lgpd-chat" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                {t('lgpd.checkbox', language)}
+              </label>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 md:py-4 space-y-3 md:space-y-4 mobile-scroll">
         {/* Empty state — welcome + suggested questions */}
@@ -805,7 +836,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         className="text-muted-foreground"
                       >
                         <FileText className="h-4 w-4 mr-2" />
-                        {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.summary', language)}
+                    {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.high_priest_word', language)}
                       </DropdownMenuItem>
                     )}
                     {messages.length > 0 && (
@@ -841,12 +872,12 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
             {/* Session closed state */}
             {sessionClosed ? (
-              <div className="px-4 py-3 text-center space-y-2"
+              <div className="px-4 py-3 text-center space-y-3"
                    style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
                 <p className="text-sm text-muted-foreground">
                   {t('chat.session_closed', language)}
                 </p>
-                <div className="flex gap-2 justify-center">
+                <div className="flex flex-col gap-2 items-center">
                   <Button
                     onClick={generateSummary}
                     disabled={isGeneratingSummary}
@@ -854,21 +885,30 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     className="gap-1.5"
                   >
                     <FileText className="h-4 w-4" />
-                    {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.summary', language)}
+                    {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.high_priest_word', language)}
                   </Button>
-                  <Button
-                    onClick={() => {
-                      setMessages([]);
-                      setSessionClosed(false);
-                      stopAudio();
-                      audioCacheRef.current.clear();
-                    }}
-                    variant="ghost"
-                    className="gap-1.5"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    {t('chat.new_conversation', language)}
-                  </Button>
+                  {!user ? (
+                    <Link to="/auth">
+                      <Button className="gap-1.5 bg-primary text-primary-foreground">
+                        <LogIn className="h-4 w-4" />
+                        {t('chat.login_to_continue', language)}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        setMessages([]);
+                        setSessionClosed(false);
+                        stopAudio();
+                        audioCacheRef.current.clear();
+                      }}
+                      variant="ghost"
+                      className="gap-1.5"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      {t('chat.new_conversation', language)}
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -978,7 +1018,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              {t('chat.summary_title', language)}
+              {t('chat.high_priest_word', language)}
             </DialogTitle>
             <DialogDescription>{t('chat.summary_desc', language)}</DialogDescription>
           </DialogHeader>
