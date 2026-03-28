@@ -318,8 +318,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     toast({ title: 'Copiado!' });
   }, [toast]);
 
+  const userMessageCount = useMemo(() => messages.filter(m => m.role === 'user').length, [messages]);
+
   const doSendMessage = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+    if (!text.trim() || isLoading || sessionClosed) return;
 
     if (!user) {
       const anonUsed = getAnonCount();
@@ -336,6 +338,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
 
     const userMsg: Msg = { role: 'user', content: text.trim() };
+    const newUserCount = userMessageCount + 1;
+    const isClosing = newUserCount >= MAX_USER_MESSAGES;
+
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setIsLoading(true);
@@ -358,6 +363,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           timezone,
           geo,
           skipMemory: confessionalMode || undefined,
+          isClosing: isClosing || undefined,
         }),
       });
 
@@ -447,12 +453,84 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         const assistantIndex = messages.length + 1;
         preloadAudio(assistantSoFar, assistantIndex);
       }
+
+      // Close session after 6th user message
+      if (isClosing) {
+        setSessionClosed(true);
+      }
     } catch (e) {
       console.error(e);
       toast({ title: t('chat.error', language), description: t('chat.error_desc', language), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const generateSummary = async () => {
+    setIsGeneratingSummary(true);
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: messages.map(m => ({ role: m.role, content: parseSuggestions(m.content).text })),
+          context: chatContext,
+          language,
+          userId: user?.id,
+          generateSummary: true,
+        }),
+      });
+
+      if (!resp.ok || !resp.body) throw new Error('Summary failed');
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let summaryContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) summaryContent += content;
+          } catch { break; }
+        }
+      }
+
+      setSummaryText(summaryContent);
+      setShowSummaryDialog(true);
+    } catch (e) {
+      console.error(e);
+      toast({ title: 'Erro ao gerar resumo', variant: 'destructive' });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
+  const downloadSummaryPdf = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Resumo da Conversa — Templo Sagrado', 20, 20);
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(summaryText, 170);
+    doc.text(lines, 20, 35);
+    doc.save('resumo-templo-sagrado.pdf');
   };
 
   const sendMessage = () => doSendMessage(chatInput);
