@@ -972,6 +972,41 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Summary dialog */}
+      <Dialog open={showSummaryDialog} onOpenChange={setShowSummaryDialog}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Resumo da Conversa
+            </DialogTitle>
+            <DialogDescription>Sua conversa resumida pelo mentor espiritual</DialogDescription>
+          </DialogHeader>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+            {summaryText}
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1 gap-1.5"
+              onClick={() => {
+                navigator.clipboard.writeText(summaryText);
+                toast({ title: 'Resumo copiado!' });
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              Copiar
+            </Button>
+            <Button
+              className="flex-1 gap-1.5"
+              onClick={downloadSummaryPdf}
+            >
+              <Download className="h-4 w-4" />
+              Baixar PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });
