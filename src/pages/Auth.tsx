@@ -106,7 +106,10 @@ export default function Auth() {
                   onCheckedChange={(checked) => setLgpdAccepted(checked === true)}
                 />
                 <label htmlFor="lgpd-signup" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-                  {t('lgpd.signup_checkbox', language)}
+                  {t('lgpd.signup_checkbox', language)}{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                    {language === 'en' ? 'Privacy Policy' : language === 'es' ? 'Política de Privacidad' : 'Política de Privacidade'}
+                  </a>
                 </label>
               </div>
             )}

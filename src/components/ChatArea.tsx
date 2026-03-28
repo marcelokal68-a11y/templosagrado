@@ -640,7 +640,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               onCheckedChange={(checked) => { if (checked) handleLgpdAccept(); }}
             />
             <label htmlFor="lgpd-chat" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-              {t('lgpd.checkbox', language)}
+              {t('lgpd.checkbox', language)}{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                {language === 'en' ? 'Privacy Policy' : language === 'es' ? 'Política de Privacidad' : 'Política de Privacidade'}
+              </a>
             </label>
           </div>
         </DialogContent>
