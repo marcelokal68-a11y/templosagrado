@@ -326,6 +326,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           datetime: new Date().toISOString(),
           timezone,
           geo,
+          skipMemory: confessionalMode || undefined,
         }),
       });
 
