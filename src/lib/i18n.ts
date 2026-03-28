@@ -611,6 +611,14 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.ask_faith': 'Deseja configurar {religion} como sua religião de fé?',
     'learn.yes': 'Sim, é minha fé',
     'learn.not_now': 'Não agora',
+    // LGPD
+    'lgpd.title': 'Privacidade e Proteção de Dados',
+    'lgpd.desc': 'O Templo Sagrado respeita sua privacidade. Suas conversas são confidenciais e não são compartilhadas com terceiros. Ao continuar, você concorda com nossa política de privacidade conforme a LGPD.',
+    'lgpd.checkbox': 'Li e aceito a política de privacidade e os termos de uso conforme a LGPD (Lei Geral de Proteção de Dados).',
+    'lgpd.signup_checkbox': 'Aceito a política de privacidade e os termos de uso conforme a LGPD.',
+    // Summary renamed
+    'chat.high_priest_word': 'Palavra do Sumo Sacerdote',
+    'chat.login_to_continue': 'Faça login para continuar',
   },
   'en': {
     'nav.chat': 'Chat',
@@ -1192,6 +1200,12 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.ask_faith': 'Would you like to set {religion} as your faith religion?',
     'learn.yes': 'Yes, it\'s my faith',
     'learn.not_now': 'Not now',
+    'lgpd.title': 'Privacy & Data Protection',
+    'lgpd.desc': 'Sacred Temple respects your privacy. Your conversations are confidential and not shared with third parties. By continuing, you agree to our privacy policy.',
+    'lgpd.checkbox': 'I have read and accept the privacy policy and terms of use.',
+    'lgpd.signup_checkbox': 'I accept the privacy policy and terms of use.',
+    'chat.high_priest_word': 'Word of the High Priest',
+    'chat.login_to_continue': 'Log in to continue',
   },
   'es': {
     'nav.chat': 'Chat',
@@ -1774,6 +1788,12 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.ask_faith': '¿Deseas configurar {religion} como tu religión de fe?',
     'learn.yes': 'Sí, es mi fe',
     'learn.not_now': 'Ahora no',
+    'lgpd.title': 'Privacidad y Protección de Datos',
+    'lgpd.desc': 'El Templo Sagrado respeta tu privacidad. Tus conversaciones son confidenciales y no se comparten con terceros. Al continuar, aceptas nuestra política de privacidad.',
+    'lgpd.checkbox': 'He leído y acepto la política de privacidad y los términos de uso.',
+    'lgpd.signup_checkbox': 'Acepto la política de privacidad y los términos de uso.',
+    'chat.high_priest_word': 'Palabra del Sumo Sacerdote',
+    'chat.login_to_continue': 'Inicia sesión para continuar',
   },
 };
 
