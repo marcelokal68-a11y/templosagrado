@@ -1,88 +1,58 @@
 
 
-# Perguntas Sugeridas + Resumo + Encerramento Empático
+# Ajustes de Sessão, Limites e LGPD
 
-## 3 Features
+## Mudanças Solicitadas
 
-### 1. Sugestões Dinâmicas de Perguntas (após cada resposta da IA)
+### 1. Limite de sessão (6 perguntas) → pedir login ao anônimo
+Atualmente, ao atingir 6 mensagens, a sessão fecha para todos. O comportamento correto:
+- **Anônimo**: ao atingir 6 mensagens no chat, bloquear input e mostrar convite para login/cadastro, mas manter o chat visível na tela para o usuário ler e poder solicitar o resumo
+- **Logado gratuito**: mesma lógica de 6 perguntas por sessão, mas pode limpar e iniciar nova conversa (limite diário de 12 perguntas)
 
-**Onde**: System prompt do `sacred-chat` + parsing no `ChatArea.tsx`
+### 2. Limite diário: 10 → 12 para usuário gratuito
+- Alterar `questions_limit` default de 10 para 12 na tabela `profiles`
+- Atualizar a lógica de contagem no `ChatArea` e `check-subscription`
 
-**Como funciona**:
-- Adicionar instrução no system prompt para que a IA, além da resposta normal, inclua um bloco especial `[SUGGESTIONS]` ao final com 3 perguntas separadas por `|`
-- As perguntas devem ser progressivas: a 1a aprofunda o tema, a 2a toca na emoção, a 3a provoca reflexão profunda
-- No frontend, o `ChatArea.tsx` faz parse da resposta, separa o texto visível das sugestões, e renderiza 3 botões clicáveis abaixo da bolha do assistente
-- Ao clicar numa sugestão, ela é enviada como mensagem do usuário
+### 3. Resumo renomeado para "Palavra do Sumo Sacerdote"
+- Botão de resumo passa a se chamar "Palavra do Sumo Sacerdote"
+- Só inclui mensagens da sessão atual (já funciona assim — mensagens em memória)
 
-**Formato na resposta da IA**:
-```
-[texto normal da resposta]
-[SUGGESTIONS]Pergunta 1|Pergunta 2|Pergunta 3[/SUGGESTIONS]
-```
-
-O bloco `[SUGGESTIONS]...[/SUGGESTIONS]` é removido do texto visível e renderizado como botões.
-
-### 2. Resumo da Conversa (copiar ou baixar PDF)
-
-**Onde**: `ChatArea.tsx` — novo botão no menu ⋮
-
-**Como funciona**:
-- Opção "Gerar resumo" no dropdown menu, visível quando há mensagens
-- Ao clicar, chama a edge function `sacred-chat` com uma mensagem especial que pede um resumo empático da conversa
-- O resumo é exibido num Dialog com duas ações: "Copiar" e "Baixar PDF"
-- O PDF é gerado client-side usando uma lib leve (jspdf) ou simplesmente `window.print()` com CSS adequado
-- O resumo inclui: tema principal, sentimentos identificados, orientações dadas, e uma bênção final
-
-### 3. Encerramento Automático após 6 Interações do Usuário
-
-**Onde**: System prompt do `sacred-chat` + contador no `ChatArea.tsx`
-
-**Como funciona**:
-- O frontend conta quantas mensagens do usuário existem na sessão atual (mensagens com `role: 'user'`)
-- Quando enviar a 6a mensagem, adiciona flag `isClosing: true` no body do request
-- No system prompt, quando `isClosing` é true, instrui a IA a encerrar com uma mensagem empática de despedida como sumo sacerdote, sem fazer pergunta no final
-- Após a resposta de encerramento, exibe automaticamente o botão "Gerar resumo" e desabilita o input com mensagem "Sessão encerrada — gere seu resumo ou inicie uma nova conversa"
-- O usuário pode iniciar nova conversa limpando o chat
+### 4. LGPD — Checkbox de consentimento
+- Verificar `localStorage` para flag `lgpd_accepted`
+- Se não aceito: mostrar modal/banner antes de permitir uso do chat (primeira vez, cookies apagados)
+- Na tela de cadastro (Auth.tsx): checkbox obrigatório de aceite LGPD antes de criar conta
+- Texto curto com link para política de privacidade
 
 ## Arquivos a editar
 
 | Arquivo | Mudança |
 |---------|---------|
-| `supabase/functions/sacred-chat/index.ts` | Adicionar instrução de `[SUGGESTIONS]` no system prompt + lógica de encerramento quando `isClosing` |
-| `src/components/ChatArea.tsx` | Parse de sugestões, botões clicáveis, contador de mensagens do usuário (6 max), UI de resumo (Dialog com copiar/PDF), estado de sessão encerrada |
+| `src/components/ChatArea.tsx` | Lógica de sessão: anônimo → pedir login ao invés de fechar; manter chat visível; renomear resumo para "Palavra do Sumo Sacerdote"; LGPD gate no chat |
+| `src/pages/Auth.tsx` | Checkbox LGPD obrigatório no cadastro |
+| `src/lib/i18n.ts` | Textos LGPD + "Palavra do Sumo Sacerdote" em 3 idiomas |
+| `supabase/functions/check-subscription/index.ts` | Default de 10 → 12 no fallback |
 
-Total: **2 arquivos** editados.
+### Migration
+- Alterar default de `questions_limit` de 10 para 12 na tabela `profiles`
+- Atualizar perfis existentes gratuitos (que têm 10) para 12
 
 ## Detalhes Técnicos
 
-### System prompt — bloco adicional:
-```
-SUGESTÕES OBRIGATÓRIAS:
-Ao final de CADA resposta, adicione um bloco com exatamente 3 perguntas sugeridas no formato:
-[SUGGESTIONS]Pergunta curta 1|Pergunta mais emocional 2|Pergunta profunda 3[/SUGGESTIONS]
-As perguntas devem:
-- Ter relação direta com o tema da conversa
-- Progredir em profundidade emocional
-- A terceira deve tocar numa questão que ative emoção genuína
-NÃO inclua o bloco [SUGGESTIONS] quando estiver encerrando a sessão.
-
-ENCERRAMENTO (quando isClosing=true):
-Esta é a última mensagem da sessão. Encerre como o sumo sacerdote da tradição escolhida:
-- Faça um breve resumo do que foi conversado
-- Ofereça uma bênção final profunda e personalizada
-- NÃO faça perguntas
-- NÃO inclua [SUGGESTIONS]
+### Lógica de sessão no ChatArea:
+```text
+Ao atingir 6 mensagens do usuário na sessão:
+  - Se anônimo: sessionClosed=true + mostrar "Faça login para continuar" + botão resumo
+  - Se logado: sessionClosed=true + mostrar "Nova conversa" + botão resumo
+  - Em ambos: chat fica visível (scroll mantido), apenas input desabilitado
 ```
 
-### Frontend — parse:
-```typescript
-const parts = content.split('[SUGGESTIONS]');
-const visibleText = parts[0].trim();
-const suggestions = parts[1]?.replace('[/SUGGESTIONS]', '').split('|') || [];
+### LGPD gate:
+```text
+1. Verificar localStorage.getItem('lgpd_accepted')
+2. Se não existe → mostrar Dialog modal com texto LGPD + checkbox
+3. Ao aceitar → localStorage.setItem('lgpd_accepted', 'true')
+4. No Auth.tsx signup: checkbox obrigatório, botão disabled sem aceite
 ```
 
-### Resumo — geração:
-- Envia todas as mensagens da sessão para `sacred-chat` com flag `generateSummary: true`
-- System prompt especial para resumo: "Gere um resumo empático desta conversa espiritual em formato estruturado"
-- PDF gerado com `jspdf` (já está disponível ou será adicionado como dependência)
+Total: **1 migration** + **4 arquivos** editados.
 
