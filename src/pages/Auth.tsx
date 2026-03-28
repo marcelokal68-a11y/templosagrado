@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import temploLogo from '@/assets/templo-logo.png';
 
 export default function Auth() {
@@ -24,6 +25,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lgpdAccepted, setLgpdAccepted] = useState(false);
 
   const handleGoogleLogin = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
@@ -44,6 +46,11 @@ export default function Auth() {
         if (error) throw error;
         navigate('/');
       } else {
+        if (!lgpdAccepted) {
+          toast({ title: 'LGPD', description: t('lgpd.signup_checkbox', language), variant: 'destructive' });
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -91,7 +98,19 @@ export default function Auth() {
             )}
             <Input type="email" placeholder={t('auth.email', language)} value={email} onChange={e => setEmail(e.target.value)} required />
             <Input type="password" placeholder={t('auth.password', language)} value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
-            <Button type="submit" className="w-full" disabled={loading}>
+            {!isLogin && (
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="lgpd-signup"
+                  checked={lgpdAccepted}
+                  onCheckedChange={(checked) => setLgpdAccepted(checked === true)}
+                />
+                <label htmlFor="lgpd-signup" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+                  {t('lgpd.signup_checkbox', language)}
+                </label>
+              </div>
+            )}
+            <Button type="submit" className="w-full" disabled={loading || (!isLogin && !lgpdAccepted)}>
               {loading ? '...' : isLogin ? t('auth.login', language) : t('auth.signup', language)}
             </Button>
           </form>
