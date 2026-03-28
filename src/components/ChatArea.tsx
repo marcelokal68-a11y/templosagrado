@@ -617,8 +617,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const remainingCount = user ? questionsRemaining : Math.max(0, 12 - getAnonCount());
   const isBlocked = remainingCount <= 0 && !sessionClosed;
 
-  // LGPD gate
-  const [lgpdAccepted, setLgpdAccepted] = useState(() => localStorage.getItem('lgpd_accepted') === 'true');
   const handleLgpdAccept = () => {
     localStorage.setItem('lgpd_accepted', 'true');
     setLgpdAccepted(true);
