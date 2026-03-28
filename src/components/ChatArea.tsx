@@ -639,8 +639,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               <p className="text-[11px] text-muted-foreground leading-snug">
                 🔒 Suas conversas são privadas e não são compartilhadas com ninguém.
                 {confessionalMode
-                  ? ' 🛡️ Modo confessionário ativo — nada é salvo.'
-                  : !memoryEnabled ? ' O mentor não guarda memórias entre conversas.' : ''}
+                  ? ` ${t('chat.confessional_privacy', language)}`
+                  : !memoryEnabled ? ` ${t('chat.privacy_no_memory', language)}` : ''}
               </p>
             </div>
 
@@ -692,7 +692,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         {confessionalMode && (
           <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-primary/10 border-b border-primary/20">
             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[11px] font-medium text-primary">Modo Confessionário — nada é salvo ou gravado</span>
+            <span className="text-[11px] font-medium text-primary">{t('chat.confessional_banner', language)}</span>
           </div>
         )}
         {/* Blocked state — upgrade banner */}
