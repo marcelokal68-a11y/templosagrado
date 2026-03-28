@@ -70,11 +70,13 @@ function DivineIcon() {
   );
 }
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy }: {
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick }: {
   msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
+  isLast?: boolean; onSuggestionClick?: (text: string) => void;
 }) {
   const isUser = msg.role === 'user';
+  const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
   return (
     <div className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
@@ -92,15 +94,15 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
             ? "bg-foreground text-background rounded-br-sm"
             : "bg-card border border-border text-foreground rounded-bl-sm"
         )}>
-          <p className="whitespace-pre-wrap">{msg.content}</p>
+          <p className="whitespace-pre-wrap">{displayText}</p>
         </div>
         
         {/* Action row for assistant messages — compact, below bubble */}
-        {!isUser && msg.content.length > 0 && (
+        {!isUser && displayText.length > 0 && (
           <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                style={{ opacity: 1 }}>
             <button
-              onClick={() => onNarrate(msg.content, index)}
+              onClick={() => onNarrate(displayText, index)}
               disabled={loadingAudio === index}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               title="Ouvir"
@@ -114,13 +116,28 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
               )}
             </button>
             <button
-              onClick={() => onCopy(msg.content)}
+              onClick={() => onCopy(displayText)}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               title="Copiar"
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
-            <PublishToMural originalContent={msg.content} />
+            <PublishToMural originalContent={displayText} />
+          </div>
+        )}
+
+        {/* Suggestion buttons — only on last assistant message */}
+        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && (
+          <div className="flex flex-col gap-1.5 mt-2 w-full">
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onSuggestionClick(s)}
+                className="text-left px-3 py-2 rounded-xl bg-primary/5 border border-primary/20 hover:border-primary/40 hover:bg-primary/10 transition-all text-xs text-foreground/80"
+              >
+                {s}
+              </button>
+            ))}
           </div>
         )}
       </div>
