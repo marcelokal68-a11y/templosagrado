@@ -158,11 +158,13 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   // Load messages filtered by current affiliation
   useEffect(() => {
-    if (!user) {
-      setMessages([]);
-      stopAudio();
-      audioCacheRef.current.forEach(url => URL.revokeObjectURL(url));
-      audioCacheRef.current.clear();
+    if (!user || confessionalMode) {
+      if (!user) {
+        setMessages([]);
+        stopAudio();
+        audioCacheRef.current.forEach(url => URL.revokeObjectURL(url));
+        audioCacheRef.current.clear();
+      }
       return;
     }
 
@@ -386,7 +388,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         incrementAnonCount();
       }
 
-      if (user && assistantSoFar.length > 0) {
+      if (user && assistantSoFar.length > 0 && !confessionalMode) {
         const ctx = {
           user_id: user.id,
           religion: chatContext.religion || null,
@@ -526,7 +528,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <p className="text-[11px] text-muted-foreground leading-snug">
                 🔒 Suas conversas são privadas e não são compartilhadas com ninguém.
-                {!memoryEnabled && ' O mentor não guarda memórias entre conversas.'}
+                {confessionalMode
+                  ? ' 🛡️ Modo confessionário ativo — nada é salvo.'
+                  : !memoryEnabled ? ' O mentor não guarda memórias entre conversas.' : ''}
               </p>
             </div>
 
