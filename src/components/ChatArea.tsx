@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
