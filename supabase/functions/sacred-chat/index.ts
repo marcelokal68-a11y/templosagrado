@@ -266,7 +266,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, context, language, userId, datetime, timezone } = await req.json();
+    const { messages, context, language, userId, datetime, timezone, isClosing, generateSummary } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -407,7 +407,33 @@ TOM DE VOZ — REGRAS ABSOLUTAS:
 - NÃO use listas ou bullet points. Escreva em prosa fluida e acolhedora.
 - Use NO MÁXIMO 1 citação por resposta, integrada naturalmente. Menos é mais.
 - Responda em ${responseLang} a menos que o usuário esteja claramente escrevendo em outro idioma.
-- Quando a pessoa disser que está satisfeita ("obrigado, é isso", "estou satisfeito", "thank you"), encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use uma despedida sábia como "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}`;
+- Quando a pessoa disser que está satisfeita ("obrigado, é isso", "estou satisfeito", "thank you"), encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use uma despedida sábia como "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}
+
+SUGESTÕES OBRIGATÓRIAS:
+Ao final de CADA resposta, adicione um bloco com exatamente 3 perguntas sugeridas no formato:
+[SUGGESTIONS]Pergunta curta 1|Pergunta mais emocional 2|Pergunta profunda 3[/SUGGESTIONS]
+As perguntas devem:
+- Ter relação direta com o tema da conversa atual
+- Progredir em profundidade emocional: a 1ª aprofunda o tema, a 2ª toca na emoção, a 3ª provoca reflexão profunda
+- A terceira deve tocar numa questão que ative emoção genuína no usuário
+- Cada pergunta deve ter no máximo 15 palavras
+NÃO inclua o bloco [SUGGESTIONS] quando estiver encerrando a sessão.
+
+${isClosing ? `ENCERRAMENTO DE SESSÃO:
+Esta é a ÚLTIMA mensagem da sessão. Encerre como o sumo sacerdote da tradição escolhida:
+- Faça um breve resumo empático do que foi conversado
+- Ofereça uma bênção final profunda e personalizada
+- NÃO faça perguntas
+- NÃO inclua [SUGGESTIONS]
+- Seja caloroso e memorável na despedida` : ''}
+
+${generateSummary ? `MODO RESUMO:
+Gere um resumo empático e estruturado desta conversa espiritual. Inclua:
+1. **Tema principal** — sobre o que conversamos
+2. **Sentimentos identificados** — o que o fiel estava sentindo
+3. **Orientações oferecidas** — os conselhos e reflexões dados
+4. **Bênção final** — uma bênção personalizada de encerramento
+NÃO inclua [SUGGESTIONS]. Formate de forma bonita e organizada.` : ''}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
