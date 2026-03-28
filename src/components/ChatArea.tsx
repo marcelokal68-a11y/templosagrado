@@ -625,29 +625,25 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   return (
     <div className="flex flex-col h-full bg-background">
       {/* LGPD consent gate */}
-      {!lgpdAccepted && (
-        <Dialog open={!lgpdAccepted} onOpenChange={() => {}}>
-          <DialogContent className="max-w-sm [&>button]:hidden">
-            <DialogHeader>
-              <DialogTitle>{t('lgpd.title', language)}</DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed pt-2">
-                {t('lgpd.desc', language)}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex items-start gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="lgpd-chat"
-                className="mt-1 h-4 w-4 rounded border-primary text-primary focus:ring-primary"
-                onChange={(e) => { if (e.target.checked) handleLgpdAccept(); }}
-              />
-              <label htmlFor="lgpd-chat" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-                {t('lgpd.checkbox', language)}
-              </label>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={!lgpdAccepted} onOpenChange={() => {}}>
+        <DialogContent className="max-w-sm [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>{t('lgpd.title', language)}</DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed pt-2">
+              {t('lgpd.desc', language)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-start gap-2 pt-2">
+            <Checkbox
+              id="lgpd-chat"
+              onCheckedChange={(checked) => { if (checked) handleLgpdAccept(); }}
+            />
+            <label htmlFor="lgpd-chat" className="text-xs text-muted-foreground leading-snug cursor-pointer">
+              {t('lgpd.checkbox', language)}
+            </label>
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 md:py-4 space-y-3 md:space-y-4 mobile-scroll">
         {/* Empty state — welcome + suggested questions */}
