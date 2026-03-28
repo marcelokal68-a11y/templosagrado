@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +35,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
+
+const MAX_USER_MESSAGES = 6;
+
+function parseSuggestions(content: string): { text: string; suggestions: string[] } {
+  const match = content.match(/\[SUGGESTIONS\](.*?)\[\/SUGGESTIONS\]/s);
+  if (!match) return { text: content, suggestions: [] };
+  const text = content.replace(/\[SUGGESTIONS\].*?\[\/SUGGESTIONS\]/s, '').trim();
+  const suggestions = match[1].split('|').map(s => s.trim()).filter(Boolean);
+  return { text, suggestions };
+}
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
