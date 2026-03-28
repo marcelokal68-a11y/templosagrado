@@ -904,6 +904,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 </div>
               </>
             )}
+          </>
+        )}
       </div>
 
       {/* Upgrade modal */}
