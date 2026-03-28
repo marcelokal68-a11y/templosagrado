@@ -516,7 +516,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       setShowSummaryDialog(true);
     } catch (e) {
       console.error(e);
-      toast({ title: 'Erro ao gerar resumo', variant: 'destructive' });
+      toast({ title: t('chat.summary_error', language), variant: 'destructive' });
     } finally {
       setIsGeneratingSummary(false);
     }
@@ -526,7 +526,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text('Resumo da Conversa — Templo Sagrado', 20, 20);
+    doc.text(`${t('chat.summary_title', language)} — Templo Sagrado`, 20, 20);
     doc.setFontSize(11);
     const lines = doc.splitTextToSize(summaryText, 170);
     doc.text(lines, 20, 35);
@@ -639,8 +639,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               <p className="text-[11px] text-muted-foreground leading-snug">
                 🔒 Suas conversas são privadas e não são compartilhadas com ninguém.
                 {confessionalMode
-                  ? ' 🛡️ Modo confessionário ativo — nada é salvo.'
-                  : !memoryEnabled ? ' O mentor não guarda memórias entre conversas.' : ''}
+                  ? ` ${t('chat.confessional_privacy', language)}`
+                  : !memoryEnabled ? ` ${t('chat.privacy_no_memory', language)}` : ''}
               </p>
             </div>
 
@@ -692,7 +692,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         {confessionalMode && (
           <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-primary/10 border-b border-primary/20">
             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[11px] font-medium text-primary">Modo Confessionário — nada é salvo ou gravado</span>
+            <span className="text-[11px] font-medium text-primary">{t('chat.confessional_banner', language)}</span>
           </div>
         )}
         {/* Blocked state — upgrade banner */}
@@ -785,7 +785,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                       className={confessionalMode ? "text-primary font-medium" : "text-muted-foreground"}
                     >
                       <ShieldCheck className="h-4 w-4 mr-2" />
-                      {confessionalMode ? '🛡️ Sair do confessionário' : '🛡️ Modo confessionário'}
+                      {confessionalMode ? t('chat.confessional_on', language) : t('chat.confessional_off', language)}
                     </DropdownMenuItem>
                     {/* Memory toggle */}
                     {user && !confessionalMode && (
@@ -794,7 +794,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         className="text-muted-foreground"
                       >
                         <Brain className="h-4 w-4 mr-2" />
-                        {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
+                        {memoryEnabled ? t('chat.memory_on', language) : t('chat.memory_off', language)}
                       </DropdownMenuItem>
                     )}
                     {/* Summary generation */}
@@ -805,7 +805,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         className="text-muted-foreground"
                       >
                         <FileText className="h-4 w-4 mr-2" />
-                        {isGeneratingSummary ? 'Gerando resumo...' : 'Gerar resumo'}
+                        {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.summary', language)}
                       </DropdownMenuItem>
                     )}
                     {messages.length > 0 && (
@@ -844,7 +844,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               <div className="px-4 py-3 text-center space-y-2"
                    style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
                 <p className="text-sm text-muted-foreground">
-                  🕊️ Sessão encerrada — gere seu resumo ou inicie uma nova conversa.
+                  {t('chat.session_closed', language)}
                 </p>
                 <div className="flex gap-2 justify-center">
                   <Button
@@ -854,7 +854,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     className="gap-1.5"
                   >
                     <FileText className="h-4 w-4" />
-                    {isGeneratingSummary ? 'Gerando...' : 'Gerar resumo'}
+                    {isGeneratingSummary ? t('chat.summary_loading', language) : t('chat.summary', language)}
                   </Button>
                   <Button
                     onClick={() => {
@@ -867,7 +867,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     className="gap-1.5"
                   >
                     <Sparkles className="h-4 w-4" />
-                    Nova conversa
+                    {t('chat.new_conversation', language)}
                   </Button>
                 </div>
               </div>
@@ -978,9 +978,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Resumo da Conversa
+              {t('chat.summary_title', language)}
             </DialogTitle>
-            <DialogDescription>Sua conversa resumida pelo mentor espiritual</DialogDescription>
+            <DialogDescription>{t('chat.summary_desc', language)}</DialogDescription>
           </DialogHeader>
           <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
             {summaryText}
@@ -991,18 +991,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               className="flex-1 gap-1.5"
               onClick={() => {
                 navigator.clipboard.writeText(summaryText);
-                toast({ title: 'Resumo copiado!' });
+                toast({ title: t('chat.summary_copied', language) });
               }}
             >
               <Copy className="h-4 w-4" />
-              Copiar
+              {t('chat.summary_copy', language)}
             </Button>
             <Button
               className="flex-1 gap-1.5"
               onClick={downloadSummaryPdf}
             >
               <Download className="h-4 w-4" />
-              Baixar PDF
+              {t('chat.summary_pdf', language)}
             </Button>
           </div>
         </DialogContent>
