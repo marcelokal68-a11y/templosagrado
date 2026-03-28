@@ -668,6 +668,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             loadingAudio={loadingAudio}
             onNarrate={playNarration}
             onCopy={handleCopy}
+            isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
+            onSuggestionClick={(text) => doSendMessage(text)}
           />
         ))}
         
@@ -754,6 +756,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                       stopAudio();
                       audioCacheRef.current.clear();
                       setMessages([]);
+                      setSessionClosed(false);
                     }}
                     className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors min-h-[44px] flex items-center"
                     title={t('chat.clear', language)}
@@ -794,6 +797,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         {memoryEnabled ? 'Desativar memória' : 'Ativar memória'}
                       </DropdownMenuItem>
                     )}
+                    {/* Summary generation */}
+                    {messages.length > 0 && (
+                      <DropdownMenuItem
+                        onClick={generateSummary}
+                        disabled={isGeneratingSummary}
+                        className="text-muted-foreground"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        {isGeneratingSummary ? 'Gerando resumo...' : 'Gerar resumo'}
+                      </DropdownMenuItem>
+                    )}
                     {messages.length > 0 && (
                       <DropdownMenuItem
                         onClick={async () => {
@@ -803,6 +817,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                           stopAudio();
                           audioCacheRef.current.clear();
                           setMessages([]);
+                          setSessionClosed(false);
                         }}
                         className="text-muted-foreground"
                       >
@@ -824,37 +839,71 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               </div>
             </div>
 
-            {/* Input row */}
-            <div className="flex items-end gap-2 px-3 pb-2 md:pb-3 pt-1"
-                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}>
-              <Textarea
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Sua mensagem..."
-                className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
-                rows={1}
-              />
-              <Button
-                onClick={toggleRecording}
-                disabled={isTranscribing}
-                size="icon"
-                variant={isRecording ? "destructive" : "ghost"}
-                className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
-              >
-                {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
-              </Button>
-              <Button
-                onClick={sendMessage}
-                disabled={isLoading || !chatInput.trim()}
-                size="icon"
-                className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
-              >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
-              </Button>
-            </div>
-          </>
-        )}
+            {/* Session closed state */}
+            {sessionClosed ? (
+              <div className="px-4 py-3 text-center space-y-2"
+                   style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
+                <p className="text-sm text-muted-foreground">
+                  🕊️ Sessão encerrada — gere seu resumo ou inicie uma nova conversa.
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={generateSummary}
+                    disabled={isGeneratingSummary}
+                    variant="outline"
+                    className="gap-1.5"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {isGeneratingSummary ? 'Gerando...' : 'Gerar resumo'}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMessages([]);
+                      setSessionClosed(false);
+                      stopAudio();
+                      audioCacheRef.current.clear();
+                    }}
+                    variant="ghost"
+                    className="gap-1.5"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Nova conversa
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Input row */}
+                <div className="flex items-end gap-2 px-3 pb-2 md:pb-3 pt-1"
+                     style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}>
+                  <Textarea
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Sua mensagem..."
+                    className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
+                    rows={1}
+                  />
+                  <Button
+                    onClick={toggleRecording}
+                    disabled={isTranscribing}
+                    size="icon"
+                    variant={isRecording ? "destructive" : "ghost"}
+                    className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
+                  >
+                    {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
+                  </Button>
+                  <Button
+                    onClick={sendMessage}
+                    disabled={isLoading || !chatInput.trim()}
+                    size="icon"
+                    className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
+                  >
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
+                  </Button>
+                </div>
+              </>
+            )}
       </div>
 
       {/* Upgrade modal */}
