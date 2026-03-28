@@ -651,8 +651,24 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    {/* Confessional mode toggle */}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setConfessionalMode(!confessionalMode);
+                        if (!confessionalMode) {
+                          // Entering confessional: clear current messages from view
+                          setMessages([]);
+                          stopAudio();
+                          audioCacheRef.current.clear();
+                        }
+                      }}
+                      className={confessionalMode ? "text-primary font-medium" : "text-muted-foreground"}
+                    >
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                      {confessionalMode ? '🛡️ Sair do confessionário' : '🛡️ Modo confessionário'}
+                    </DropdownMenuItem>
                     {/* Memory toggle */}
-                    {user && (
+                    {user && !confessionalMode && (
                       <DropdownMenuItem
                         onClick={() => setMemoryEnabled(!memoryEnabled)}
                         className="text-muted-foreground"
@@ -664,7 +680,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     {messages.length > 0 && (
                       <DropdownMenuItem
                         onClick={async () => {
-                          if (user) {
+                          if (user && !confessionalMode) {
                             await supabase.from('chat_messages').delete().eq('user_id', user.id);
                           }
                           stopAudio();
@@ -677,7 +693,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         {t('chat.clear', language)}
                       </DropdownMenuItem>
                     )}
-                    {user && (
+                    {user && !confessionalMode && (
                       <DropdownMenuItem
                         onClick={() => setShowClearAllDialog(true)}
                         className="text-destructive"
