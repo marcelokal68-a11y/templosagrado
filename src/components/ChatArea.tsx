@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -129,6 +129,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [confessionalMode, setConfessionalMode] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -157,11 +158,13 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   // Load messages filtered by current affiliation
   useEffect(() => {
-    if (!user) {
-      setMessages([]);
-      stopAudio();
-      audioCacheRef.current.forEach(url => URL.revokeObjectURL(url));
-      audioCacheRef.current.clear();
+    if (!user || confessionalMode) {
+      if (!user) {
+        setMessages([]);
+        stopAudio();
+        audioCacheRef.current.forEach(url => URL.revokeObjectURL(url));
+        audioCacheRef.current.clear();
+      }
       return;
     }
 
@@ -323,6 +326,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           datetime: new Date().toISOString(),
           timezone,
           geo,
+          skipMemory: confessionalMode || undefined,
         }),
       });
 
@@ -385,7 +389,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         incrementAnonCount();
       }
 
-      if (user && assistantSoFar.length > 0) {
+      if (user && assistantSoFar.length > 0 && !confessionalMode) {
         const ctx = {
           user_id: user.id,
           religion: chatContext.religion || null,
@@ -525,7 +529,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <p className="text-[11px] text-muted-foreground leading-snug">
                 🔒 Suas conversas são privadas e não são compartilhadas com ninguém.
-                {!memoryEnabled && ' O mentor não guarda memórias entre conversas.'}
+                {confessionalMode
+                  ? ' 🛡️ Modo confessionário ativo — nada é salvo.'
+                  : !memoryEnabled ? ' O mentor não guarda memórias entre conversas.' : ''}
               </p>
             </div>
 
@@ -571,6 +577,13 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
       {/* Fixed bottom input area */}
       <div className="border-t border-border/40 bg-background flex-shrink-0">
+        {/* Confessional mode indicator */}
+        {confessionalMode && (
+          <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-primary/10 border-b border-primary/20">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-medium text-primary">Modo Confessionário — nada é salvo ou gravado</span>
+          </div>
+        )}
         {/* Blocked state — upgrade banner */}
         {isBlocked ? (
           <div className="px-4 py-3 md:py-4 text-center space-y-2 md:space-y-3"
@@ -646,8 +659,24 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    {/* Confessional mode toggle */}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setConfessionalMode(!confessionalMode);
+                        if (!confessionalMode) {
+                          // Entering confessional: clear current messages from view
+                          setMessages([]);
+                          stopAudio();
+                          audioCacheRef.current.clear();
+                        }
+                      }}
+                      className={confessionalMode ? "text-primary font-medium" : "text-muted-foreground"}
+                    >
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                      {confessionalMode ? '🛡️ Sair do confessionário' : '🛡️ Modo confessionário'}
+                    </DropdownMenuItem>
                     {/* Memory toggle */}
-                    {user && (
+                    {user && !confessionalMode && (
                       <DropdownMenuItem
                         onClick={() => setMemoryEnabled(!memoryEnabled)}
                         className="text-muted-foreground"
@@ -659,7 +688,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     {messages.length > 0 && (
                       <DropdownMenuItem
                         onClick={async () => {
-                          if (user) {
+                          if (user && !confessionalMode) {
                             await supabase.from('chat_messages').delete().eq('user_id', user.id);
                           }
                           stopAudio();
@@ -672,7 +701,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         {t('chat.clear', language)}
                       </DropdownMenuItem>
                     )}
-                    {user && (
+                    {user && !confessionalMode && (
                       <DropdownMenuItem
                         onClick={() => setShowClearAllDialog(true)}
                         className="text-destructive"
