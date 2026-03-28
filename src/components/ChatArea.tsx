@@ -576,6 +576,13 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
       {/* Fixed bottom input area */}
       <div className="border-t border-border/40 bg-background flex-shrink-0">
+        {/* Confessional mode indicator */}
+        {confessionalMode && (
+          <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-primary/10 border-b border-primary/20">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-medium text-primary">Modo Confessionário — nada é salvo ou gravado</span>
+          </div>
+        )}
         {/* Blocked state — upgrade banner */}
         {isBlocked ? (
           <div className="px-4 py-3 md:py-4 text-center space-y-2 md:space-y-3"
