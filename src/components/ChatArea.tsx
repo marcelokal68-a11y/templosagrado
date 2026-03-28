@@ -157,6 +157,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [confessionalMode, setConfessionalMode] = useState(false);
+  const [sessionClosed, setSessionClosed] = useState(false);
+  const [showSummaryDialog, setShowSummaryDialog] = useState(false);
+  const [summaryText, setSummaryText] = useState('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
