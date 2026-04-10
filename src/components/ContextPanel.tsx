@@ -65,6 +65,15 @@ const FAITH_OPTIONS = [
   { key: 'agnostic', label: 'Agnóstico / Filosofia', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
 ];
 
+const COMING_SOON_OPTIONS = [
+  { key: 'buddhist', label: 'Budismo', sublabel: 'Tradição Budista', icon: Sun },
+  { key: 'islam', label: 'Islamismo', sublabel: 'Tradição Islâmica', icon: Moon },
+  { key: 'jehovah', label: 'Testemunhas de Jeová', sublabel: 'Tradição Cristã', icon: Globe },
+  { key: 'adventist', label: 'Adventista', sublabel: 'Igreja Adventista', icon: Cross },
+  { key: 'stoicism', label: 'Filosofia Estoica', sublabel: 'Estoicismo clássico', icon: Compass },
+  { key: 'secular_buddhism', label: 'Filosofia Budista Secular', sublabel: 'Mindfulness e sabedoria', icon: Leaf },
+];
+
 function ChipGroup({ label, items, prefix, selected, onSelect }: {
   label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void;
 }) {
