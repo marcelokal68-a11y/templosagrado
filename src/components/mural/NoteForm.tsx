@@ -52,7 +52,7 @@ export default function NoteForm({ religion, philosophy, onCreated }: NoteFormPr
       philosophy: philosophy || null,
       is_anonymous: isAnonymous,
       is_public: isPublic,
-      display_name: isAnonymous ? null : (profile?.display_name || user.email?.split('@')[0] || null),
+      display_name: isAnonymous ? null : (sanitizeDisplayName(profile?.display_name) || user.email?.split('@')[0] || null),
     });
 
     setLoading(false);

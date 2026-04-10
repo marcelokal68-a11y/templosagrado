@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { SendHorizonal, Loader2, MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { containsProfanity } from '@/lib/profanityFilter';
+import { sanitizeDisplayName } from '@/lib/sanitizeDisplayName';
 
 // If display_name looks like an email, show only the part before @
 function friendlyName(name: string | null): string {
@@ -54,7 +55,7 @@ export default function Mural() {
   useEffect(() => {
     if (!user) return;
     supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => setDisplayName(data?.display_name || null));
+      .then(({ data }) => setDisplayName(sanitizeDisplayName(data?.display_name)));
   }, [user]);
 
   // Load posts, reactions, comments
