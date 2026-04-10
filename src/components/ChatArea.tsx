@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download, LogIn } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -634,18 +634,15 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               {t('lgpd.desc', language)}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-start gap-2 pt-2">
-            <Checkbox
-              id="lgpd-chat"
-              onCheckedChange={(checked) => { if (checked) handleLgpdAccept(); }}
-            />
-            <label htmlFor="lgpd-chat" className="text-xs text-muted-foreground leading-snug cursor-pointer">
-              {t('lgpd.checkbox', language)}{' '}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
-                {language === 'en' ? 'Privacy Policy' : language === 'es' ? 'Política de Privacidad' : 'Política de Privacidade'}
-              </a>
-            </label>
-          </div>
+          <p className="text-xs text-muted-foreground pt-2">
+            {t('lgpd.checkbox', language)}{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+              {language === 'en' ? 'Privacy Policy' : language === 'es' ? 'Política de Privacidad' : 'Política de Privacidade'}
+            </a>
+          </p>
+          <Button onClick={handleLgpdAccept} className="w-full mt-2">
+            {language === 'en' ? 'Accept and continue' : language === 'es' ? 'Aceptar y continuar' : 'Aceitar e continuar'}
+          </Button>
         </DialogContent>
       </Dialog>
       {/* Messages area */}
