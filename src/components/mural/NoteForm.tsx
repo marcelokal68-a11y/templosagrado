@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Send, Eye, EyeOff, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { containsProfanity } from '@/lib/profanityFilter';
+import { sanitizeDisplayName } from '@/lib/sanitizeDisplayName';
 
 interface NoteFormProps {
   religion?: string;

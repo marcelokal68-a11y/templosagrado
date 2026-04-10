@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { containsProfanity } from '@/lib/profanityFilter';
+import { sanitizeDisplayName } from '@/lib/sanitizeDisplayName';
 import { ScrollText, Loader2, Globe, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -114,7 +115,7 @@ export default function PublishToMural({ originalContent, variant = 'icon', clas
         philosophy: isEcumenical ? null : (chatContext.philosophy || null),
         is_public: isEcumenical,
         is_anonymous: false,
-        display_name: user!.email?.split('@')[0] || null,
+        display_name: sanitizeDisplayName(user!.email?.split('@')[0]) || null,
       });
       if (error) throw error;
       toast({ title: t('mural.published', language) || 'Publicado no Mural! 🕊️' });
