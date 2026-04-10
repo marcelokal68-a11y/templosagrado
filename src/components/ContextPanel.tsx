@@ -1,7 +1,8 @@
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Sparkles, Church, BookOpen, Music, Flame, Sun, Leaf, Heart, ChevronRight } from 'lucide-react';
+import { Sparkles, Church, BookOpen, Music, Flame, Sun, Leaf, Heart, ChevronRight, Moon, Globe, Cross, Compass } from 'lucide-react';
+import { toast } from 'sonner';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
