@@ -212,6 +212,38 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           })}
         </div>
 
+        {/* Coming soon divider */}
+        <div className="flex items-center gap-3 pt-2">
+          <div className="flex-1 h-px bg-border/60" />
+          <span className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">Em breve</span>
+          <div className="flex-1 h-px bg-border/60" />
+        </div>
+
+        {/* Coming soon options */}
+        <div className="space-y-2">
+          {COMING_SOON_OPTIONS.map((option) => {
+            const Icon = option.icon;
+            return (
+              <button
+                key={option.key}
+                onClick={() => toast('Disponível em breve!')}
+                className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border border-border/40 bg-card/50 text-left opacity-50 cursor-not-allowed"
+              >
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-muted text-muted-foreground">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold leading-tight text-foreground">{option.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{option.sublabel}</p>
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full shrink-0">
+                  Em breve
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Skip link */}
         <button
           onClick={handleSkip}
