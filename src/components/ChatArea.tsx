@@ -627,7 +627,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     <div className="flex flex-col h-full bg-background">
       {/* LGPD consent gate */}
       <Dialog open={!lgpdAccepted} onOpenChange={() => {}}>
-        <DialogContent className="max-w-sm [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent className="max-w-sm [&>button[class*='absolute']]:hidden overflow-y-auto max-h-[90vh]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>{t('lgpd.title', language)}</DialogTitle>
             <DialogDescription className="text-sm leading-relaxed pt-2">
