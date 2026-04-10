@@ -1,19 +1,31 @@
 
 
-## Problema
+## Security Fixes
 
-O popup LGPD usa um **Checkbox** para aceitar os termos. Checkboxes podem exigir cliques mais precisos e, dependendo da interação com o `onCheckedChange`, o usuário precisa clicar duas vezes para que o estado mude e o dialog feche.
+Two warnings to resolve:
 
-## Solução
+### 1. Enable Leaked Password Protection (HIBP)
+Use the `configure_auth` tool to enable `password_hibp_enabled: true`. This checks new passwords against the Have I Been Pwned database during signup and password changes.
 
-Substituir o Checkbox por um **Button "Aceitar e continuar"** simples. Um clique no botão chama `handleLgpdAccept()` e fecha o dialog imediatamente.
+### 2. Fix Overly Permissive RLS Policy on `prayers` Table
+The policy **"Anyone can insert prayers"** uses `WITH CHECK (true)`, allowing even unauthenticated users to insert rows. Since `prayers.user_id` is nullable, this is a real risk.
 
-## Alterações
+**Fix:** Replace with a scoped policy that requires authentication:
 
-**`src/components/ChatArea.tsx`** (linhas ~637-648):
-- Remover o `Checkbox` + label clicável
-- Adicionar um texto informativo sobre a política de privacidade (com link)
-- Adicionar um `Button` com texto "Aceitar e continuar" que chama `handleLgpdAccept()` diretamente
+```sql
+DROP POLICY "Anyone can insert prayers" ON public.prayers;
+CREATE POLICY "Authenticated users can insert prayers"
+  ON public.prayers
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+```
 
-O resultado: um único clique no botão fecha o popup.
+This allows authenticated users to insert prayers (either tied to their account or anonymous with null user_id), while blocking unauthenticated access entirely.
+
+**Note:** The `service_role` policy on `user_memory` with `USING (true)` is intentional — it only applies to the `service_role` role used by edge functions, not public users.
+
+### Files/Tools
+- `configure_auth` tool — enable HIBP
+- Database migration — fix prayers RLS policy
 
