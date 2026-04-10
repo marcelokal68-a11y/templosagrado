@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download, LogIn } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+
 import {
   AlertDialog,
   AlertDialogAction,
