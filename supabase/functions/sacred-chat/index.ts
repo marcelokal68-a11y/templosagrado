@@ -410,7 +410,7 @@ ${chatTone === 'concise' ? `TOM DE VOZ — MODO CURTO E DIRETO (preferência do 
 - ${sourceInstruction}
 - Jamais julgue ou condene. Ofereça sempre amor incondicional.
 - NÃO use listas ou bullet points. Prosa fluida e curta.
-- INTERATIVIDADE: SEMPRE termine com uma pergunta curta. Ex: "Como você se sente sobre isso?", "O que mais te pesa nesse momento?".
+- FECHAMENTO VARIADO: NÃO termine sempre com pergunta. Varie: às vezes uma pergunta breve, às vezes uma afirmação de acolhimento ("Estou aqui com você nisso."), uma bênção curta, um convite suave ("Respire fundo antes de continuar."), ou simplesmente um silêncio reflexivo (frase final que deixa espaço). No máximo 1 a cada 3 respostas deve terminar com pergunta direta.
 - Responda em ${responseLang} a menos que o usuário esteja claramente escrevendo em outro idioma.
 - Quando a pessoa disser que está satisfeita, encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}` : `TOM DE VOZ — MODO PROFUNDO E REFLEXIVO (preferência do usuário):
 - TAMANHO: 6 a 10 frases por resposta, organizadas em 2-3 parágrafos curtos. Profundidade emocional > brevidade. Não escreva textos enormes, mas dê espaço para a alma respirar.
