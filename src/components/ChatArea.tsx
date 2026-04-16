@@ -366,6 +366,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           geo,
           skipMemory: confessionalMode || undefined,
           isClosing: isClosing || undefined,
+          chatTone,
         }),
       });
 

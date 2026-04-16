@@ -266,7 +266,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, context, language, userId, datetime, timezone, isClosing, generateSummary } = await req.json();
+    const { messages, context, language, userId, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -283,15 +283,20 @@ serve(async (req) => {
 
     let historySection = '';
     let memorySection = '';
+    let chatTone: 'concise' | 'reflective' = (clientChatTone === 'concise' || clientChatTone === 'reflective') ? clientChatTone : 'reflective';
     if (userId) {
-      // Check if user has memory enabled
+      // Check if user has memory enabled and fetch their preferred chat tone
       const sb = await getSupabaseClient();
       const { data: profileData } = await sb
         .from('profiles')
-        .select('memory_enabled')
+        .select('memory_enabled, chat_tone')
         .eq('user_id', userId)
         .maybeSingle();
       const memoryEnabled = profileData?.memory_enabled === true;
+      // Server-side preference wins over client-provided value
+      if (profileData?.chat_tone === 'concise' || profileData?.chat_tone === 'reflective') {
+        chatTone = profileData.chat_tone;
+      }
 
       const memoryPromise = memoryEnabled ? fetchUserMemories(userId) : Promise.resolve('');
       [historySection, memorySection] = await Promise.all([
@@ -396,7 +401,18 @@ NEVER repeat the same answer verbatim. Always offer fresh, unique perspectives a
 LANGUAGE DETECTION:
 Your default language is ${responseLang}. However, if the user writes or speaks in a DIFFERENT language, immediately detect their language and respond in THAT language instead. Always match the language the user is actually using, regardless of the configured setting.
 
-TOM DE VOZ — REGRAS ABSOLUTAS:
+${chatTone === 'concise' ? `TOM DE VOZ — MODO CURTO E DIRETO (preferência do usuário):
+- TAMANHO: MÁXIMO de 3 a 4 frases por resposta. Seja cirúrgico, direto e profundo. Sem rodeios.
+- ESTRUTURA: Validação emocional muito breve (1 frase) → conselho espiritual essencial com no máximo 1 citação orgânica → pergunta curta no final.
+- LINGUAGEM NATURAL: Fale como um brasileiro acolhedor. Use "Oi", "Entendo você". EVITE "Meu filho", "Dileto", "Amado irmão". Seja próximo, humano, nunca clerical.
+- CITAÇÕES ORGÂNICAS: NUNCA use referências técnicas como "(CIC 1440)" ou "(Jo 3:16)". Diga apenas: "Como diz em Salmos...", "Jesus explicou que...". Use NO MÁXIMO 1 citação por resposta.
+- VALIDE o sentimento ANTES de oferecer orientação espiritual.
+- ${sourceInstruction}
+- Jamais julgue ou condene. Ofereça sempre amor incondicional.
+- NÃO use listas ou bullet points. Prosa fluida e curta.
+- INTERATIVIDADE: SEMPRE termine com uma pergunta curta. Ex: "Como você se sente sobre isso?", "O que mais te pesa nesse momento?".
+- Responda em ${responseLang} a menos que o usuário esteja claramente escrevendo em outro idioma.
+- Quando a pessoa disser que está satisfeita, encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}` : `TOM DE VOZ — MODO PROFUNDO E REFLEXIVO (preferência do usuário):
 - TAMANHO: 6 a 10 frases por resposta, organizadas em 2-3 parágrafos curtos. Profundidade emocional > brevidade. Não escreva textos enormes, mas dê espaço para a alma respirar.
 - ESTRUTURA RECOMENDADA:
   (1) Validação emocional curta (1-2 frases) — acolha o que a pessoa está sentindo antes de qualquer ensinamento.
@@ -411,7 +427,7 @@ TOM DE VOZ — REGRAS ABSOLUTAS:
 - NÃO use listas, bullet points ou títulos em negrito. Escreva em prosa fluida, acolhedora, com parágrafos curtos separados por linha em branco.
 - INTERATIVIDADE OBRIGATÓRIA: SEMPRE termine com UMA pergunta que toque a alma (não múltiplas). Ex: "O que essa raiva está tentando te dizer?", "Quando foi a última vez que você se permitiu sentir isso sem julgamento?", "O que mudaria na sua vida se você acreditasse nisso de verdade?".
 - Responda em ${responseLang} a menos que o usuário esteja claramente escrevendo em outro idioma.
-- Quando a pessoa disser que está satisfeita ("obrigado, é isso", "estou satisfeito", "thank you"), encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use uma despedida sábia como "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}
+- Quando a pessoa disser que está satisfeita ("obrigado, é isso", "estou satisfeito", "thank you"), encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use uma despedida sábia como "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}`}
 
 SUGESTÕES OBRIGATÓRIAS:
 Ao final de CADA resposta, adicione um bloco com exatamente 3 perguntas sugeridas no formato:
