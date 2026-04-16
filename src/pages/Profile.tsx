@@ -2,7 +2,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { t } from '@/lib/i18n';
-import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X, Brain, Shield, Trash2 } from 'lucide-react';
+import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X, Brain, Shield, Trash2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -21,7 +21,7 @@ const traditions = [
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone } = useApp();
   const { toast } = useToast();
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [profile, setProfile] = useState<{
@@ -191,6 +191,57 @@ export default function Profile() {
             label="Perguntas usadas"
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
+
+          {/* Chat tone preference */}
+          <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <MessageCircle className="h-4 w-4 text-primary/70" />
+              <span className="text-sm font-semibold text-foreground">Tom do Chat</span>
+            </div>
+            <div className="p-4 rounded-xl bg-card border border-border/50 space-y-3">
+              <p className="text-xs text-muted-foreground leading-snug">
+                Escolha como o mentor responde às suas mensagens.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setChatTone('concise');
+                    toast({ title: 'Tom curto e direto ativado' });
+                  }}
+                  className={`p-3 rounded-lg border text-left transition-colors ${
+                    chatTone === 'concise'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border/50 hover:border-primary/30 hover:bg-primary/5'
+                  }`}
+                >
+                  <p className={`text-sm font-medium ${chatTone === 'concise' ? 'text-primary' : 'text-foreground'}`}>
+                    Curto e direto
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
+                    3-4 frases, ao ponto
+                  </p>
+                </button>
+                <button
+                  onClick={() => {
+                    setChatTone('reflective');
+                    toast({ title: 'Tom profundo e reflexivo ativado' });
+                  }}
+                  className={`p-3 rounded-lg border text-left transition-colors ${
+                    chatTone === 'reflective'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border/50 hover:border-primary/30 hover:bg-primary/5'
+                  }`}
+                >
+                  <p className={`text-sm font-medium ${chatTone === 'reflective' ? 'text-primary' : 'text-foreground'}`}>
+                    Profundo e reflexivo
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
+                    Exemplos do dia a dia
+                  </p>
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Privacy section */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
