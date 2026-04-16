@@ -436,6 +436,11 @@ serve(async (req) => {
     const lang = language || 'pt-BR';
     console.log(`Request: date=${date} tz=${timezone || 'UTC'} religion=${rel} lang=${lang}`);
 
+    // Supabase client (used by parasha cache below and verse cache further down)
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
     // For Jewish tradition, fetch the actual Parashá of the week from Hebcal (authoritative)
     // with weekly cache to avoid hitting Hebcal on every miss
     let parashaContext = '';
@@ -495,11 +500,7 @@ serve(async (req) => {
       }
     }
 
-    // Check cache first
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const sb = createClient(supabaseUrl, supabaseKey);
-
+    // Check verse cache
     const { data: cached } = await sb
       .from('daily_verse_cache')
       .select('verse_data')
