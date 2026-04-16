@@ -402,6 +402,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          chat_tone: string
           created_at: string
           display_name: string | null
           id: string
@@ -421,6 +422,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          chat_tone?: string
           created_at?: string
           display_name?: string | null
           id?: string
@@ -440,6 +442,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          chat_tone?: string
           created_at?: string
           display_name?: string | null
           id?: string

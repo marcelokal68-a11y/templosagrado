@@ -23,6 +23,8 @@ interface ChatContext {
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
+export type ChatTone = 'concise' | 'reflective';
+
 interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -43,6 +45,8 @@ interface AppContextType {
   geo: { latitude: number; longitude: number } | null;
   memoryEnabled: boolean;
   setMemoryEnabled: (v: boolean) => void;
+  chatTone: ChatTone;
+  setChatTone: (v: ChatTone) => void;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -64,11 +68,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [geo, setGeo] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [memoryEnabled, setMemoryEnabledState] = useState(false);
+  const [chatTone, setChatToneState] = useState<ChatTone>('reflective');
 
   const setMemoryEnabled = useCallback(async (v: boolean) => {
     setMemoryEnabledState(v);
     if (user) {
       await supabase.from('profiles').update({ memory_enabled: v } as any).eq('user_id', user.id);
+    }
+  }, [user]);
+
+  const setChatTone = useCallback(async (v: ChatTone) => {
+    setChatToneState(v);
+    if (user) {
+      await supabase.from('profiles').update({ chat_tone: v } as any).eq('user_id', user.id);
     }
   }, [user]);
 
@@ -154,7 +166,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       supabase
         .from('profiles')
-        .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude, memory_enabled')
+        .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude, memory_enabled, chat_tone')
         .eq('user_id', user.id)
         .maybeSingle()
         .then(({ data }) => {
@@ -162,6 +174,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setQuestionsRemaining(data.questions_limit - data.questions_used);
             setIsSubscriber(!!(data as any).is_subscriber);
             setMemoryEnabledState(!!(data as any).memory_enabled);
+            const tone = (data as any).chat_tone;
+            if (tone === 'concise' || tone === 'reflective') setChatToneState(tone);
             if (data.preferred_language) setLanguage(data.preferred_language as Language);
             if (data.preferred_religion) {
               setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
@@ -190,7 +204,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const faithReligionLabel = faithPromptReligion ? t(`religion.${faithPromptReligion}`, language) : '';
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled, chatTone, setChatTone }}>
       {children}
       <AlertDialog open={!!faithPromptReligion}>
         <AlertDialogContent>

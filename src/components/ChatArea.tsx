@@ -147,7 +147,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled } = useApp();
+  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone } = useApp();
   const religion = chatContext.religion || '';
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -366,6 +366,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           geo,
           skipMemory: confessionalMode || undefined,
           isClosing: isClosing || undefined,
+          chatTone,
         }),
       });
 
