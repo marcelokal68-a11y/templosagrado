@@ -510,10 +510,34 @@ serve(async (req) => {
       .maybeSingle();
 
     if (cached?.verse_data) {
-      console.log(`Cache hit: ${date}/${rel}/${lang}`);
-      return new Response(JSON.stringify(cached.verse_data), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // For Jewish: validate cached verse matches current Parashá (avoid serving stale week)
+      if (rel === 'jewish' && parashaContext) {
+        const parashaName = parashaContext.match(/é "([^"]+)"/)?.[1] || '';
+        const cachedTitle = String((cached.verse_data as any)?.title || '');
+        // Compare normalized (strip diacritics, lowercase) — accept partial match
+        const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const parashaTokens = norm(parashaName).split(/[\s-]+/).filter(t => t.length > 2);
+        const titleN = norm(cachedTitle);
+        const matches = parashaTokens.some(t => titleN.includes(t));
+        if (!matches) {
+          console.log(`Stale Jewish cache: title="${cachedTitle}" vs parasha="${parashaName}". Regenerating.`);
+          await sb.from('daily_verse_cache')
+            .delete()
+            .eq('cache_date', date)
+            .eq('religion', rel)
+            .eq('language', lang);
+        } else {
+          console.log(`Cache hit: ${date}/${rel}/${lang}`);
+          return new Response(JSON.stringify(cached.verse_data), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else {
+        console.log(`Cache hit: ${date}/${rel}/${lang}`);
+        return new Response(JSON.stringify(cached.verse_data), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Cache miss — call AI

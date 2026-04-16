@@ -1,0 +1,1 @@
+DELETE FROM public.daily_verse_cache WHERE religion = 'jewish' AND cache_date >= '2026-04-12';
