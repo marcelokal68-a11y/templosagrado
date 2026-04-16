@@ -137,6 +137,24 @@ export type Database = {
         }
         Relationships: []
       }
+      free_access_emails: {
+        Row: {
+          created_at: string
+          email: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
       invite_links: {
         Row: {
           code: string
@@ -521,6 +539,7 @@ export type Database = {
         Returns: boolean
       }
       is_subscriber: { Args: { _user_id: string }; Returns: boolean }
+      sync_free_access_profiles: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
