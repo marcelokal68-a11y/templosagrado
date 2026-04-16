@@ -55,8 +55,12 @@ export default function Verse() {
     setLoading(true);
     setContent(null);
     try {
+      // Compute user's local date (YYYY-MM-DD) and timezone so the verse syncs to their day
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
+      const userDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const { data, error } = await supabase.functions.invoke('verse-of-day', {
-        body: { religion: religion || selectedReligion || 'christian', language },
+        body: { religion: religion || selectedReligion || 'christian', language, userDate, timezone: tz },
       });
       if (error) throw error;
       if (data?.title || data?.explanation) {

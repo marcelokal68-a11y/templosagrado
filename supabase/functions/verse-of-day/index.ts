@@ -424,13 +424,47 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { religion, language } = await req.json();
+    const { religion, language, userDate, timezone } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const date = new Date().toISOString().slice(0, 10);
+    // Use user's local date when provided; fallback to UTC
+    let date = userDate && /^\d{4}-\d{2}-\d{2}$/.test(userDate)
+      ? userDate
+      : new Date().toISOString().slice(0, 10);
     const rel = religion || 'christian';
     const lang = language || 'pt-BR';
+    console.log(`Request: date=${date} tz=${timezone || 'UTC'} religion=${rel} lang=${lang}`);
+
+    // For Jewish tradition, fetch the actual Parashá of the week from Hebcal (authoritative)
+    let parashaContext = '';
+    if (rel === 'jewish') {
+      try {
+        // Hebcal /leyning returns weekly Torah readings; query a 7-day window starting from `date`
+        const end = new Date(date);
+        end.setDate(end.getDate() + 7);
+        const endStr = end.toISOString().slice(0, 10);
+        const hebcalUrl = `https://www.hebcal.com/leyning?cfg=json&start=${date}&end=${endStr}`;
+        const hebRes = await fetch(hebcalUrl);
+        if (hebRes.ok) {
+          const hebData = await hebRes.json();
+          const items = (hebData?.items || []) as any[];
+          // Prefer the next "shabbat"/parashah item
+          const parasha = items.find((it: any) => it?.parasha || it?.leyning?.torah || it?.name?.en);
+          if (parasha) {
+            const name = parasha?.name?.en || parasha?.parasha || '';
+            const hebrew = parasha?.name?.he || '';
+            const torahRef = parasha?.leyning?.torah || parasha?.leyning?.fullkriyah?.['1']?.[0] || '';
+            parashaContext = `\n\nIMPORTANTE: A Parashá desta semana (${date}) é "${name}"${hebrew ? ` (${hebrew})` : ''}${torahRef ? `, leitura da Torá: ${torahRef}` : ''}. Use EXATAMENTE este nome e referência. Não invente outra parashá.`;
+            console.log(`Hebcal parashá: ${name} — ${torahRef}`);
+          }
+        } else {
+          console.warn(`Hebcal failed: ${hebRes.status}`);
+        }
+      } catch (e) {
+        console.warn('Hebcal error (non-fatal):', e);
+      }
+    }
 
     // Check cache first
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -455,6 +489,7 @@ serve(async (req) => {
     // Cache miss — call AI
     console.log(`Cache miss: ${date}/${rel}/${lang}, calling AI`);
     const prompt = getVersePrompt(rel, lang, date);
+    const systemContent = prompt.system + (parashaContext || '');
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -465,7 +500,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: prompt.system },
+          { role: "system", content: systemContent },
           { role: "user", content: prompt.user },
         ],
       }),
