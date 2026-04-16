@@ -205,6 +205,33 @@ export type Database = {
           },
         ]
       }
+      parasha_cache: {
+        Row: {
+          created_at: string
+          id: string
+          name_en: string | null
+          name_he: string | null
+          torah_ref: string | null
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name_en?: string | null
+          name_he?: string | null
+          torah_ref?: string | null
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name_en?: string | null
+          name_he?: string | null
+          torah_ref?: string | null
+          week_start?: string
+        }
+        Relationships: []
+      }
       prayer_comments: {
         Row: {
           content: string
