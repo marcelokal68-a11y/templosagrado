@@ -437,32 +437,61 @@ serve(async (req) => {
     console.log(`Request: date=${date} tz=${timezone || 'UTC'} religion=${rel} lang=${lang}`);
 
     // For Jewish tradition, fetch the actual Parashá of the week from Hebcal (authoritative)
+    // with weekly cache to avoid hitting Hebcal on every miss
     let parashaContext = '';
     if (rel === 'jewish') {
       try {
-        // Hebcal /leyning returns weekly Torah readings; query a 7-day window starting from `date`
-        const end = new Date(date);
-        end.setDate(end.getDate() + 7);
-        const endStr = end.toISOString().slice(0, 10);
-        const hebcalUrl = `https://www.hebcal.com/leyning?cfg=json&start=${date}&end=${endStr}`;
-        const hebRes = await fetch(hebcalUrl);
-        if (hebRes.ok) {
-          const hebData = await hebRes.json();
-          const items = (hebData?.items || []) as any[];
-          // Prefer the next "shabbat"/parashah item
-          const parasha = items.find((it: any) => it?.parasha || it?.leyning?.torah || it?.name?.en);
-          if (parasha) {
-            const name = parasha?.name?.en || parasha?.parasha || '';
-            const hebrew = parasha?.name?.he || '';
-            const torahRef = parasha?.leyning?.torah || parasha?.leyning?.fullkriyah?.['1']?.[0] || '';
-            parashaContext = `\n\nIMPORTANTE: A Parashá desta semana (${date}) é "${name}"${hebrew ? ` (${hebrew})` : ''}${torahRef ? `, leitura da Torá: ${torahRef}` : ''}. Use EXATAMENTE este nome e referência. Não invente outra parashá.`;
-            console.log(`Hebcal parashá: ${name} — ${torahRef}`);
+        // Compute week_start as the most recent Sunday for the user's date
+        const d = new Date(date + 'T00:00:00Z');
+        d.setUTCDate(d.getUTCDate() - d.getUTCDay()); // back to Sunday
+        const weekStart = d.toISOString().slice(0, 10);
+
+        // Try cache first
+        const { data: cachedParasha } = await sb
+          .from('parasha_cache')
+          .select('name_en, name_he, torah_ref')
+          .eq('week_start', weekStart)
+          .maybeSingle();
+
+        let name = cachedParasha?.name_en || '';
+        let hebrew = cachedParasha?.name_he || '';
+        let torahRef = cachedParasha?.torah_ref || '';
+
+        if (!name) {
+          // Cache miss — fetch from Hebcal
+          const end = new Date(weekStart);
+          end.setDate(end.getDate() + 7);
+          const endStr = end.toISOString().slice(0, 10);
+          const hebcalUrl = `https://www.hebcal.com/leyning?cfg=json&start=${weekStart}&end=${endStr}`;
+          const hebRes = await fetch(hebcalUrl);
+          if (hebRes.ok) {
+            const hebData = await hebRes.json();
+            const items = (hebData?.items || []) as any[];
+            const parasha = items.find((it: any) => it?.parasha || it?.leyning?.torah || it?.name?.en);
+            if (parasha) {
+              name = parasha?.name?.en || parasha?.parasha || '';
+              hebrew = parasha?.name?.he || '';
+              torahRef = parasha?.leyning?.torah || parasha?.leyning?.fullkriyah?.['1']?.[0] || '';
+              // Persist (fire and forget)
+              sb.from('parasha_cache')
+                .upsert({ week_start: weekStart, name_en: name, name_he: hebrew, torah_ref: torahRef }, { onConflict: 'week_start' })
+                .then(({ error }) => {
+                  if (error) console.error('Parasha cache write error:', error);
+                  else console.log(`Parasha cached: ${weekStart} — ${name}`);
+                });
+            }
+          } else {
+            console.warn(`Hebcal failed: ${hebRes.status}`);
           }
         } else {
-          console.warn(`Hebcal failed: ${hebRes.status}`);
+          console.log(`Parasha cache hit: ${weekStart} — ${name}`);
+        }
+
+        if (name) {
+          parashaContext = `\n\nIMPORTANTE: A Parashá desta semana (${date}) é "${name}"${hebrew ? ` (${hebrew})` : ''}${torahRef ? `, leitura da Torá: ${torahRef}` : ''}. Use EXATAMENTE este nome e referência. Não invente outra parashá.`;
         }
       } catch (e) {
-        console.warn('Hebcal error (non-fatal):', e);
+        console.warn('Parasha lookup error (non-fatal):', e);
       }
     }
 
