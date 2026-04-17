@@ -69,7 +69,7 @@ export default function Profile() {
   }, [isSubscriber, user?.id]);
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o fim do período pago.')) return;
+    setConfirmCancelOpen(false);
     setCancelling(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
