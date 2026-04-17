@@ -2,11 +2,22 @@ import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
-import { Check, Loader2, Settings, Sparkles, X } from 'lucide-react';
+import { Check, Loader2, Settings, Sparkles, X, Ban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const PLANS = {
   monthly: {
@@ -65,6 +76,7 @@ export default function Pricing() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<{ subscribed: boolean; product_id?: string; subscription_end?: string } | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [loadingCancel, setLoadingCancel] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   useEffect(() => {
@@ -123,6 +135,61 @@ export default function Pricing() {
       if (resp.data?.url) window.open(resp.data.url, '_blank');
     } catch {} finally { setLoadingPortal(false); }
   };
+
+  const handleCancel = async () => {
+    setLoadingCancel(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('cancel-subscription', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.data?.success) {
+        const endDate = resp.data.cancel_at
+          ? new Date(resp.data.cancel_at).toLocaleDateString('pt-BR')
+          : 'o fim do período';
+        toast({
+          title: 'Assinatura cancelada',
+          description: `Você manterá acesso até ${endDate}.`,
+        });
+        await checkSub();
+        await refreshProfile();
+      } else {
+        throw new Error(resp.data?.error || 'Erro ao cancelar');
+      }
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setLoadingCancel(false);
+    }
+  };
+
+  const CancelButton = () => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 mt-2" disabled={loadingCancel}>
+          {loadingCancel ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ban className="h-4 w-4 mr-2" />}
+          Cancelar assinatura
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Você manterá acesso completo até o fim do período já pago. Após essa data, sua conta voltará ao plano Gratuito. Você pode reassinar quando quiser.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Manter assinatura</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleCancel}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Sim, cancelar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 
   const isTopUser = subscription?.subscribed && TOP_PRODUCT_IDS.includes(subscription.product_id || '');
   const isPremiumUser = subscription?.subscribed && PREMIUM_PRODUCT_IDS.includes(subscription.product_id || '');
