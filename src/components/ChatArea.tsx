@@ -599,9 +599,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  const remainingCount = user ? questionsRemaining : Math.max(0, 12 - getAnonCount());
+  const remainingCount = user ? questionsRemaining : Infinity;
   const trialExpired = accessStatus === 'expired';
-  const isBlocked = (remainingCount <= 0 || trialExpired) && !sessionClosed;
+  const isBlocked = user ? ((remainingCount <= 0 || trialExpired) && !sessionClosed) : false;
 
   const handleLgpdAccept = () => {
     localStorage.setItem('lgpd_accepted', 'true');
