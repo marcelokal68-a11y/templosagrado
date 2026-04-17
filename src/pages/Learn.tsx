@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, SendHorizonal, Loader2, GraduationCap } from 'lucide-react';
+import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -34,6 +34,45 @@ const PHILOSOPHIES = [
 ];
 
 const LEARN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learn-chat`;
+
+// ===== Trending traditions (deterministic weekly seed) =====
+type TrendingItem = { key: string; kind: 'religion' | 'philosophy' };
+
+function getISOWeekSeed(): number {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return d.getUTCFullYear() * 100 + weekNo;
+}
+
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function getWeeklyTrending(preferredReligion: string | null): TrendingItem[] {
+  const pool: TrendingItem[] = [
+    ...RELIGIONS.map(k => ({ key: k, kind: 'religion' as const })),
+    ...PHILOSOPHIES.map(k => ({ key: k, kind: 'philosophy' as const })),
+  ].filter(item => item.key !== preferredReligion); // never recommend the user's own faith
+
+  const rand = mulberry32(getISOWeekSeed());
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 3);
+}
 
 type Msg = { role: 'user' | 'assistant'; content: string; suggestions?: string[] };
 
