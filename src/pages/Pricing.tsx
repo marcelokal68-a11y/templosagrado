@@ -78,6 +78,37 @@ export default function Pricing() {
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [pendingChange, setPendingChange] = useState<{
+    planKey: keyof typeof PLANS;
+    type: 'upgrade' | 'downgrade';
+    label: string;
+    price: string;
+  } | null>(null);
+  const [loadingChange, setLoadingChange] = useState(false);
+
+  // Price amount map (in cents) for upgrade/downgrade detection
+  const PRICE_AMOUNTS: Record<string, number> = {
+    [PLANS.monthly.priceId]: 1990,
+    [PLANS.annual.priceId]: 19900,
+    [PLANS.topMonthly.priceId]: 3990,
+    [PLANS.topAnnual.priceId]: 39900,
+  };
+
+  const PLAN_LABELS: Record<keyof typeof PLANS, string> = {
+    monthly: 'Devoto Mensal (R$ 19,90/mês)',
+    annual: 'Devoto Anual (R$ 199/ano)',
+    topMonthly: 'Iluminado Mensal (R$ 39,90/mês)',
+    topAnnual: 'Iluminado Anual (R$ 399/ano)',
+  };
+
+  const getCurrentPriceId = (): string | null => {
+    if (!subscription?.product_id) return null;
+    if (subscription.product_id === PLANS.monthly.productId) return PLANS.monthly.priceId;
+    if (subscription.product_id === PLANS.annual.productId) return PLANS.annual.priceId;
+    if (subscription.product_id === PLANS.topMonthly.productId) return PLANS.topMonthly.priceId;
+    if (subscription.product_id === PLANS.topAnnual.productId) return PLANS.topAnnual.priceId;
+    return null;
+  };
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
