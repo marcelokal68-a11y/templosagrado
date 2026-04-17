@@ -1,48 +1,65 @@
 
 
-## Goal
-Add **Protestantismo** as a fully visible tradition in both Chat (ContextPanel) and Estudo de Religiões (Learn), with the AI Mentor and Professor having deep knowledge of its sacred books, pastors, and prophets.
+## Plano
 
-## Findings
-- `Learn.tsx` already lists `protestant` in `RELIGIONS` array — appears in Estudo. ✓
-- `ContextPanel.tsx` (after last sync) lists `protestant` as a faith option. ✓
-- Both render `t('religion.protestant', language)` — need to verify this i18n key exists and shows "Protestante / Protestant / Protestante".
-- `ReligionIcon.tsx` already maps `protestant: Cross`. ✓
-- **Real gap**: the AI prompts (`learn-chat`, `sacred-chat`) likely don't have specific guidance about Protestant content (Reformed canon, key reformers, modern pastors/prophets).
-- Need to check i18n translations and AI system prompts.
+### Parte 1 — Acesso total no preview (reforçar)
 
-## Changes
+**Problema:** A detecção atual exige `lovable.app` **E** `preview` no host. O preview oficial (`id-preview--...lovable.app`) passa, mas qualquer subdomínio de staging novo pode falhar. Além disso, o bloqueio só é client-side — endpoints como `check-subscription` ainda podem reportar `expired`.
 
-### 1. i18n labels (`src/lib/i18n.ts`)
-- Confirm/add `religion.protestant` and `philosophy.protestant` keys in PT/EN/ES.
-- Add specific topic labels for Protestant study: `reformation`, `reformers`, `sola_scriptura`, `pastors_prophets`, `protestant_bible`.
+**Alterações em `src/lib/access.ts`:**
+- Simplificar `isPreviewEnvironment()` para liberar **qualquer** host que contenha `lovable.app`, `lovableproject.com`, `localhost`, `127.0.0.1`, ou `lovable.dev`.
+- Garantir retorno `subscriber` com `questions_limit: 999999` implícito.
 
-### 2. ContextPanel topics (`src/components/ContextPanel.tsx`)
-- Add a `protestant`-specific topic list including: Reforma, Sola Scriptura, Pastores e Profetas modernos, Bíblia (66 livros), Avivamento, Pentecostes — alongside the universal topics.
+**Alterações em `src/contexts/AppContext.tsx`:**
+- Quando `isPreviewEnvironment()` for true, forçar `setQuestionsRemaining(999999)` e `setIsSubscriber(true)` no boot, ignorando o que a API retornar.
 
-### 3. AI Mentor prompt (`supabase/functions/sacred-chat/index.ts`)
-- Add a Protestant-specific section in the system prompt: when religion = `protestant`, the mentor speaks as an evangelical/reformed pastor, references the **66-book Protestant Bible** (39 OT + 27 NT, no apocrypha), cites figures like **Lutero, Calvino, Wesley, Spurgeon, Billy Graham, Martyn Lloyd-Jones, John Piper, R.C. Sproul, Tim Keller**, and prophets honored by Protestants (the biblical prophets: Isaías, Jeremias, Ezequiel, Daniel, etc.).
+**Alterações em `src/components/ChatArea.tsx` e `TrialBanner.tsx`:**
+- Esconder o `TrialBanner` e qualquer modal de upgrade quando `isPreviewEnvironment()` for true (mesmo que `accessStatus` venha como `expired` por algum motivo).
 
-### 4. AI Professor prompt (`supabase/functions/learn-chat/index.ts`)
-- When topic = `protestant`, provide rich, structured content covering:
-  - **Sacred books**: 66-book Protestant Bible; key denominational confessions (Confissão de Fé de Westminster, Confissão de Augsburgo, 39 Artigos Anglicanos, Confissão Batista de 1689).
-  - **Reformers (séc. XVI)**: Martinho Lutero, João Calvino, Ulrico Zuínglio, John Knox, William Tyndale.
-  - **Great pastors/preachers**: John Wesley, George Whitefield, Jonathan Edwards, Charles Spurgeon, D.L. Moody, Billy Graham, Martyn Lloyd-Jones, John Stott, John Piper, Tim Keller, R.C. Sproul.
-  - **Prophets** (recognized within Protestant tradition): the OT prophets canonized in the 66-book Bible.
-  - The 5 Solas (Sola Scriptura, Sola Fide, Sola Gratia, Solus Christus, Soli Deo Gloria).
+Resultado: no preview, **nunca** aparece tela de pagamento, banner de trial, ou bloqueio de mensagens.
 
-### 5. Estudo grid visibility (`src/pages/Learn.tsx`)
-- `protestant` is already in `RELIGIONS`. Confirm icon + label render correctly. No layout change needed unless i18n key is missing.
+---
 
-## Files touched
-- `src/lib/i18n.ts` (add/verify keys)
-- `src/components/ContextPanel.tsx` (Protestant topics)
-- `supabase/functions/sacred-chat/index.ts` (prompt enrichment)
-- `supabase/functions/learn-chat/index.ts` (prompt enrichment)
-- `src/pages/Learn.tsx` (only if label/icon adjustment needed)
+### Parte 2 — Spotify autoplay por tradição
 
-## Notes
-- No DB changes required.
-- No new dependencies.
-- Catholic tradition keeps the 73-book canon; Protestant explicitly uses 66 books — the prompts will make this distinction clear so the AI doesn't mix them up.
+**Limitação técnica importante:** O iframe `open.spotify.com/embed` **não suporta autoplay sem clique** — é uma restrição do próprio Spotify e dos navegadores (política de autoplay). O parâmetro `autoplay=1` foi descontinuado para iframes não-premium.
+
+**Solução prática (3 melhorias combinadas):**
+
+1. **Curadoria por tradição** — substituir os IDs genéricos por playlists realmente alinhadas:
+   ```
+   christian   → Hinos Cristãos / Worship
+   catholic    → Cantos Gregorianos / Missa
+   protestant  → Louvor Evangélico / Hillsong
+   jewish      → Salmos / Cantos Hebraicos / Niggunim
+   islam       → Recitação do Alcorão / Nasheeds
+   hindu       → Mantras / Bhajans / Kirtan
+   buddhist    → Cantos Tibetanos / Zen
+   spiritist   → Música Espírita / Vinha de Luz
+   umbanda/candomble → Pontos cantados (já está)
+   mormon      → Coro do Tabernáculo
+   agnostic    → Música clássica / instrumental contemplativa
+   ```
+   Vou pesquisar IDs reais de playlists públicas para cada uma.
+
+2. **Auto-troca instantânea** — quando o usuário muda de tradição, o iframe já recarrega (via `key={playlistId}`). Manter, mas adicionar uma transição suave.
+
+3. **Botão "▶ Tocar agora"** discreto sobre o iframe — um clique só, que envia mensagem `postMessage` ao iframe Spotify para iniciar reprodução. Como autoplay puro é bloqueado, esse é o caminho mais próximo de "automático".
+
+**Alterações em `src/components/ContextPanel.tsx`:**
+- Atualizar o mapa `SPOTIFY_PLAYLISTS` com IDs curados por tradição.
+- Adicionar botão "▶ Tocar música sacra" overlay no iframe que dispara o play via clique simulado.
+- Adicionar `allow="autoplay; ..."` (já existe) e parâmetro `?autoplay=1` na URL (mesmo que limitado, ajuda em alguns casos).
+
+---
+
+### Arquivos modificados
+- `src/lib/access.ts` — detecção de preview mais ampla
+- `src/contexts/AppContext.tsx` — forçar acesso total no preview
+- `src/components/TrialBanner.tsx` — esconder banner no preview
+- `src/components/ChatArea.tsx` — esconder modal de upgrade no preview
+- `src/components/ContextPanel.tsx` — playlists curadas + botão play
+
+### Nota sobre autoplay
+Vou ser transparente: **autoplay 100% automático em iframe Spotify não é tecnicamente possível** sem login Premium + SDK Web Playback (que exigiria autenticação OAuth do usuário com Spotify). A solução proposta é o **mais próximo possível**: playlists certas + um clique para tocar.
 
