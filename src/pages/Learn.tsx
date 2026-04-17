@@ -20,6 +20,7 @@ import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle } f
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import SanskritGlossary from '@/components/learn/SanskritGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -307,6 +308,11 @@ export default function Learn() {
             </div>
           </section>
 
+          {/* Sanskrit glossary — visual primer for beginners (relevant to Hindu, Buddhist, Yoga) */}
+          <section className="mb-10">
+            <SanskritGlossary />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
@@ -412,6 +418,11 @@ export default function Learn() {
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+          {/* Sanskrit glossary inside Hindu/Buddhist study sessions */}
+          {(topic === 'hindu' || topic === 'buddhist') && (
+            <SanskritGlossary compact />
+          )}
+
           {messages.length === 0 && loading && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
