@@ -324,8 +324,8 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Upgrade CTA */}
-        {!isSubscriber && (
+        {/* Upgrade CTA — hide during onboarding */}
+        {!isSubscriber && !isOnboarding && (
           <Link to="/pricing" className="block">
             <Button className="w-full h-12 text-base sacred-gradient text-primary-foreground border-0 gap-2">
               <Sparkles className="h-5 w-5" />
@@ -334,6 +334,21 @@ export default function Profile() {
           </Link>
         )}
       </div>
+
+      {/* Sticky onboarding CTA */}
+      {isOnboarding && (
+        <div className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border p-4">
+          <div className="max-w-md mx-auto">
+            <Button
+              onClick={handleSaveAndEnter}
+              className="w-full h-12 text-base sacred-gradient text-primary-foreground border-0 gap-2"
+            >
+              Salvar e Entrar no Templo
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
