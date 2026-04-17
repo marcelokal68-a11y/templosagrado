@@ -44,7 +44,7 @@ const TOPICS_BY_RELIGION: Record<string, string[]> = {
   umbanda: ['orishas_candomble', 'ancestors_candomble', 'mediumship', 'offerings_candomble', ...UNIVERSAL_TOPICS],
   candomble: ['orishas_candomble', 'rituals_candomble', 'ancestors_candomble', 'ifa', 'offerings_candomble', ...UNIVERSAL_TOPICS],
   jewish: ['torah', 'talmud', 'kabbalah', 'midrash', 'mitzvot', 'shabbat', 'pesach', 'yom_kippur', 'rosh_hashanah', 'sukkot', 'sages', 'tikkun_olam', 'prophets', 'covenant', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  islam: ['prayer_topic', 'scripture', 'salvation', ...UNIVERSAL_TOPICS],
+  islam: ['quran', 'five_pillars', 'tawhid', 'hadith', 'sunnah', 'prophets_islam', 'sufism', 'caliphs', 'islamic_theologians', 'ramadan', 'pilgrimage', 'jihad_greater', 'sharia', 'charity', 'prayer_topic', ...UNIVERSAL_TOPICS],
   hindu: ['dharma_hindu', 'karma_hindu', 'moksha', 'vedas', 'yoga', 'meditation', ...UNIVERSAL_TOPICS],
   buddhist: ['meditation', 'dharma_hindu', 'karma_hindu', ...UNIVERSAL_TOPICS],
   mormon: ['book_of_mormon', 'revelation', 'salvation', 'prayer_topic', 'jesus', ...UNIVERSAL_TOPICS],
