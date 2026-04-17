@@ -268,11 +268,15 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         <div className="space-y-2">
           {COMING_SOON_OPTIONS.map((option) => {
             const Icon = option.icon;
+            const extraDim = !!preferredReligion;
             return (
               <button
                 key={option.key}
                 onClick={() => toast('Disponível em breve!')}
-                className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border border-border/40 bg-card/50 text-left opacity-50 cursor-not-allowed"
+                className={cn(
+                  "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border border-border/40 bg-card/50 text-left cursor-not-allowed",
+                  extraDim ? "opacity-25" : "opacity-50"
+                )}
               >
                 <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-muted text-muted-foreground">
                   <Icon className="h-5 w-5" />
@@ -351,8 +355,8 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         </div>
       )}
 
-      {/* Confirmation Dialog */}
-      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+      {/* Switch confirmation (when no preferred religion is set yet) */}
+      <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Mudar de caminho?</AlertDialogTitle>
@@ -361,13 +365,46 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setShowConfirm(false); setPendingOption(null); }}>
+            <AlertDialogCancel onClick={() => { setShowSwitchConfirm(false); setPendingOption(null); }}>
               Manter
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmSwitch}>
               Trocar
             </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 3-option dialog: change faith vs. just explore */}
+      <AlertDialog open={!!exploreIntent} onOpenChange={(open) => { if (!open) setExploreIntent(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {language === 'en'
+                ? `Change to ${exploreLabel}?`
+                : language === 'es'
+                  ? `¿Cambiar a ${exploreLabel}?`
+                  : `Mudar para ${exploreLabel}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {language === 'en'
+                ? 'You can change your faith, or just explore this tradition in the Learn section without changing your profile.'
+                : language === 'es'
+                  ? 'Puedes cambiar tu fe, o solo explorar esta tradición en la sección Aprende sin cambiar tu perfil.'
+                  : 'Você pode mudar sua fé, ou apenas explorar esta tradição na aba Aprenda sem alterar seu perfil.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button onClick={handleChangeFaith} className="w-full">
+              {language === 'en' ? 'Yes, change my faith' : language === 'es' ? 'Sí, cambiar mi fe' : 'Sim, mudar minha fé'}
+            </Button>
+            <Button onClick={handleExploreOnly} variant="outline" className="w-full">
+              {language === 'en' ? 'Just explore (Learn)' : language === 'es' ? 'Solo explorar (Aprende)' : 'Só explorar (Aprenda)'}
+            </Button>
+            <Button onClick={() => setExploreIntent(null)} variant="ghost" className="w-full">
+              {language === 'en' ? 'Cancel' : language === 'es' ? 'Cancelar' : 'Cancelar'}
+            </Button>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>
