@@ -355,7 +355,7 @@ export default function Profile() {
               size="sm"
               className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
               disabled={cancelling}
-              onClick={handleCancelSubscription}
+              onClick={() => setConfirmCancelOpen(true)}
             >
               <X className="h-4 w-4" />
               {cancelling ? 'Cancelando...' : 'Cancelar assinatura'}
