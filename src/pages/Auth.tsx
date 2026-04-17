@@ -64,11 +64,16 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        // If session is created immediately (email auto-confirm ON), go to onboarding
+        setJustSignedUp(true);
+        // If session is created immediately, useEffect will redirect to /profile?onboarding=true
         if (data.session) {
           navigate('/profile?onboarding=true', { replace: true });
         } else {
-          toast({ title: 'Conta criada!', description: 'Verifique seu email para confirmar.' });
+          // Email confirmation required: try auto-login (some configs allow it)
+          const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInErr) {
+            toast({ title: 'Conta criada!', description: 'Verifique seu email para confirmar antes de entrar.' });
+          }
         }
       }
     } catch (err: any) {
