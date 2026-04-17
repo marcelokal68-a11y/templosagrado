@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, BookOpen, ScrollText, Shield } from 'lucide-react';
+import { MessageCircle, BookOpen, ScrollText, Shield, GraduationCap } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +19,7 @@ import {
 
 const navItems = [
   { to: '/', labelKey: 'nav.chat', icon: MessageCircle },
+  { to: '/learn', labelKey: 'nav.learn', icon: GraduationCap },
   { to: '/verse', labelKey: 'nav.verse', icon: BookOpen },
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
 ];
