@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles } from 'lucide-react';
+import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
