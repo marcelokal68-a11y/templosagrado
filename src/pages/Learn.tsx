@@ -203,6 +203,7 @@ export default function Learn() {
     if (!user || !topic) return;
     await supabase.from('profiles').update({ preferred_religion: topic } as any).eq('user_id', user.id);
     setChatContext(prev => ({ ...prev, religion: topic, philosophy: '' }));
+    try { sessionStorage.removeItem('exploring_faith'); } catch {}
     toast.success(language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada');
     setShowFaithPrompt(false);
   };
