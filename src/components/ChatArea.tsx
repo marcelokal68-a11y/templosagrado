@@ -314,16 +314,23 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     setPlayingIndex(null);
   }, []);
 
+  const buildTTSHeaders = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    return {
+      'Content-Type': 'application/json',
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${token}`,
+    };
+  }, []);
+
   const preloadAudio = useCallback(async (text: string, index: number) => {
     if (audioCacheRef.current.has(index)) return;
     try {
+      const headers = await buildTTSHeaders();
       const resp = await fetch(TTS_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers,
         body: JSON.stringify({ text, speed: ttsSpeed }),
       });
       if (!resp.ok) return;
@@ -331,7 +338,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       const url = URL.createObjectURL(blob);
       audioCacheRef.current.set(index, url);
     } catch { /* silent preload failure */ }
-  }, []);
+  }, [buildTTSHeaders, ttsSpeed]);
 
   const playNarration = useCallback(async (text: string, index: number) => {
     if (playingIndex === index) { stopAudio(); return; }
@@ -356,15 +363,22 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
     setLoadingAudio(index);
     try {
+      const headers = await buildTTSHeaders();
       const resp = await fetch(TTS_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers,
         body: JSON.stringify({ text, speed: ttsSpeed }),
       });
+      if (resp.status === 429) {
+        let payload: any = {};
+        try { payload = await resp.json(); } catch {}
+        toast({
+          title: 'Limite mensal de áudio atingido',
+          description: payload.message ?? 'Você usou todas as 300 narrações deste mês. O contador reinicia no próximo mês.',
+          variant: 'destructive',
+        });
+        return;
+      }
       if (!resp.ok) throw new Error('TTS failed');
       const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
@@ -381,7 +395,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     } finally {
       setLoadingAudio(null);
     }
-  }, [playingIndex, stopAudio, language, toast]);
+  }, [playingIndex, stopAudio, language, toast, buildTTSHeaders, ttsSpeed]);
 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
