@@ -335,10 +335,13 @@ export default function Pricing() {
               ))}
             </div>
             {isPremiumUser ? (
-              <Button variant="outline" className="w-full" onClick={handleManage} disabled={loadingPortal}>
-                {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
-                Gerenciar assinatura
-              </Button>
+              <>
+                <Button variant="outline" className="w-full" onClick={handleManage} disabled={loadingPortal}>
+                  {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
+                  Gerenciar assinatura
+                </Button>
+                <CancelButton />
+              </>
             ) : (
               <Button
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
@@ -389,10 +392,13 @@ export default function Pricing() {
               ))}
             </div>
             {isTopUser ? (
-              <Button variant="outline" className="w-full border-amber-500/30" onClick={handleManage} disabled={loadingPortal}>
-                {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
-                Gerenciar assinatura
-              </Button>
+              <>
+                <Button variant="outline" className="w-full border-amber-500/30" onClick={handleManage} disabled={loadingPortal}>
+                  {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
+                  Gerenciar assinatura
+                </Button>
+                <CancelButton />
+              </>
             ) : (
               <Button
                 className="w-full bg-amber-500 text-black hover:bg-amber-600 gap-1.5"
