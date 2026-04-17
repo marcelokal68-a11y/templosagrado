@@ -288,6 +288,19 @@ export default function Profile() {
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
 
+          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial */}
+          {isSubscriber && !isAdmin && accessStatus !== 'trial' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+              disabled={cancelling}
+              onClick={handleCancelSubscription}
+            >
+              <X className="h-4 w-4" />
+              {cancelling ? 'Cancelando...' : 'Cancelar assinatura'}
+            </Button>
+          )}
           {/* Chat tone preference */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             <div className="flex items-center gap-2 mb-2">
