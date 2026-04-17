@@ -65,7 +65,9 @@ serve(async (req) => {
       if (hasActive) {
         const sub = subscriptions.data[0];
         subId = sub.id;
-        subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+        const periodEnd = (sub as any).current_period_end
+          ?? sub.items?.data?.[0]?.current_period_end;
+        subscriptionEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
         productId = sub.items.data[0].price.product as string;
       }
     }

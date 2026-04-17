@@ -47,9 +47,12 @@ serve(async (req) => {
       cancel_at_period_end: true,
     });
 
+    const periodEnd = (updated as any).current_period_end
+      ?? updated.items?.data?.[0]?.current_period_end;
+
     return new Response(JSON.stringify({
       success: true,
-      cancel_at: new Date(updated.current_period_end * 1000).toISOString(),
+      cancel_at: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
