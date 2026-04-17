@@ -37,12 +37,16 @@ const SPOTIFY_PLAYLISTS: Record<string, string> = {
 const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', 'finances', 'relationship', 'family', 'politics', 'other'];
 
 const TOPICS_BY_RELIGION: Record<string, string[]> = {
+  christian: ['jesus', 'heaven', 'hell', 'salvation', 'scripture', 'prayer_topic', ...UNIVERSAL_TOPICS],
   catholic: ['jesus', 'heaven', 'hell', 'salvation', 'saints', 'mary', 'sacraments', 'prayer_topic', 'sacrifices', ...UNIVERSAL_TOPICS],
   protestant: ['jesus', 'heaven', 'hell', 'salvation', 'grace', 'scripture', 'prayer_topic', ...UNIVERSAL_TOPICS],
   spiritist: ['spirits', 'reincarnation', 'charity_spiritist', 'mediumship', 'gospel_kardec', ...UNIVERSAL_TOPICS],
+  umbanda: ['orishas_candomble', 'ancestors_candomble', 'mediumship', 'offerings_candomble', ...UNIVERSAL_TOPICS],
   candomble: ['orishas_candomble', 'rituals_candomble', 'ancestors_candomble', 'ifa', 'offerings_candomble', ...UNIVERSAL_TOPICS],
   jewish: ['torah', 'shabbat', 'tikkun_olam', 'prophets', 'covenant', 'prayer_topic', ...UNIVERSAL_TOPICS],
+  islam: ['prayer_topic', 'scripture', 'salvation', ...UNIVERSAL_TOPICS],
   hindu: ['dharma_hindu', 'karma_hindu', 'moksha', 'vedas', 'yoga', 'meditation', ...UNIVERSAL_TOPICS],
+  buddhist: ['meditation', 'dharma_hindu', 'karma_hindu', ...UNIVERSAL_TOPICS],
   mormon: ['book_of_mormon', 'revelation', 'salvation', 'prayer_topic', 'jesus', ...UNIVERSAL_TOPICS],
   agnostic: ['ethics', 'philosophy', 'meaning', 'nature', 'science', ...UNIVERSAL_TOPICS],
 };
@@ -55,26 +59,23 @@ function getTopicsForSelection(religion: string): string[] {
 const needs = ['inspiration', 'general', 'verse', 'confession', 'communion', 'comfort', 'prayer'];
 const moods = ['happy', 'optimistic', 'indifferent', 'sad', 'anxious', 'pessimistic', 'angry', 'confused', 'spiritual'];
 
-// The 8 traditions (V1)
+// 12 traditions — aligned with Learn (Estudo de Religiões)
 const FAITH_OPTIONS = [
+  { key: 'christian', label: 'Cristão', sublabel: 'Tradição Cristã', icon: Cross, mode: 'religion' as const },
   { key: 'catholic', label: 'Católico', sublabel: 'Tradição Católica', icon: Church, mode: 'religion' as const },
   { key: 'protestant', label: 'Evangélico', sublabel: 'Tradição Protestante', icon: Flame, mode: 'religion' as const },
-  { key: 'spiritist', label: 'Espírita', sublabel: 'Doutrina Espírita', icon: Sun, mode: 'religion' as const },
-  { key: 'candomble', label: 'Matriz Africana', sublabel: 'Umbanda & Candomblé', icon: Leaf, mode: 'religion' as const },
-  { key: 'jewish', label: 'Judaísmo', sublabel: 'Tradição Judaica', icon: Heart, mode: 'religion' as const },
-  { key: 'hindu', label: 'Hinduísmo', sublabel: 'Tradição Hindu', icon: Sun, mode: 'religion' as const },
   { key: 'mormon', label: 'Mórmon', sublabel: 'Santos dos Últimos Dias', icon: Church, mode: 'religion' as const },
+  { key: 'jewish', label: 'Judaísmo', sublabel: 'Tradição Judaica', icon: Heart, mode: 'religion' as const },
+  { key: 'islam', label: 'Islamismo', sublabel: 'Tradição Islâmica', icon: Moon, mode: 'religion' as const },
+  { key: 'hindu', label: 'Hinduísmo', sublabel: 'Tradição Hindu', icon: Sun, mode: 'religion' as const },
+  { key: 'buddhist', label: 'Budismo', sublabel: 'Tradição Budista', icon: Sun, mode: 'religion' as const },
+  { key: 'spiritist', label: 'Espírita', sublabel: 'Doutrina Espírita', icon: Sun, mode: 'religion' as const },
+  { key: 'umbanda', label: 'Umbanda', sublabel: 'Tradição de Matriz Africana', icon: Leaf, mode: 'religion' as const },
+  { key: 'candomble', label: 'Candomblé', sublabel: 'Tradição de Matriz Africana', icon: Leaf, mode: 'religion' as const },
   { key: 'agnostic', label: 'Agnóstico / Filosofia', sublabel: 'Reflexão e autoconhecimento', icon: BookOpen, mode: 'philosophy' as const },
 ];
 
-const COMING_SOON_OPTIONS = [
-  { key: 'buddhist', label: 'Budismo', sublabel: 'Tradição Budista', icon: Sun },
-  { key: 'islam', label: 'Islamismo', sublabel: 'Tradição Islâmica', icon: Moon },
-  { key: 'jehovah', label: 'Testemunhas de Jeová', sublabel: 'Tradição Cristã', icon: Globe },
-  { key: 'adventist', label: 'Adventista', sublabel: 'Igreja Adventista', icon: Cross },
-  { key: 'stoicism', label: 'Filosofia Estoica', sublabel: 'Estoicismo clássico', icon: Compass },
-  { key: 'secular_buddhism', label: 'Filosofia Budista Secular', sublabel: 'Mindfulness e sabedoria', icon: Leaf },
-];
+const COMING_SOON_OPTIONS: { key: string; label: string; sublabel: string; icon: typeof Sun }[] = [];
 
 function ChipGroup({ label, items, prefix, selected, onSelect }: {
   label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void;
@@ -257,41 +258,43 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           })}
         </div>
 
-        {/* Coming soon divider */}
-        <div className="flex items-center gap-3 pt-2">
-          <div className="flex-1 h-px bg-border/60" />
-          <span className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">Em breve</span>
-          <div className="flex-1 h-px bg-border/60" />
-        </div>
-
-        {/* Coming soon options */}
-        <div className="space-y-2">
-          {COMING_SOON_OPTIONS.map((option) => {
-            const Icon = option.icon;
-            const extraDim = !!preferredReligion;
-            return (
-              <button
-                key={option.key}
-                onClick={() => toast('Disponível em breve!')}
-                className={cn(
-                  "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border border-border/40 bg-card/50 text-left cursor-not-allowed",
-                  extraDim ? "opacity-25" : "opacity-50"
-                )}
-              >
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-muted text-muted-foreground">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold leading-tight text-foreground">{option.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{option.sublabel}</p>
-                </div>
-                <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full shrink-0">
-                  Em breve
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Coming soon (hidden when empty) */}
+        {COMING_SOON_OPTIONS.length > 0 && (
+          <>
+            <div className="flex items-center gap-3 pt-2">
+              <div className="flex-1 h-px bg-border/60" />
+              <span className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">Em breve</span>
+              <div className="flex-1 h-px bg-border/60" />
+            </div>
+            <div className="space-y-2">
+              {COMING_SOON_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                const extraDim = !!preferredReligion;
+                return (
+                  <button
+                    key={option.key}
+                    onClick={() => toast('Disponível em breve!')}
+                    className={cn(
+                      "w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border border-border/40 bg-card/50 text-left cursor-not-allowed",
+                      extraDim ? "opacity-25" : "opacity-50"
+                    )}
+                  >
+                    <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-muted text-muted-foreground">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold leading-tight text-foreground">{option.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{option.sublabel}</p>
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full shrink-0">
+                      Em breve
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Skip link */}
         <button
