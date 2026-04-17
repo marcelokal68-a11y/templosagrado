@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Copy, Plus, Loader2, ToggleLeft, ToggleRight, UserPlus, Link as LinkIcon,
-  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield
+  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield, Gift, Trash2, Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,8 +31,10 @@ interface CrmUser {
   email: string;
   display_name: string;
   is_subscriber: boolean;
+  is_pro: boolean;
   is_admin: boolean;
   is_online: boolean;
+  trial_days_left: number;
   created_at: string;
   last_sign_in_at: string | null;
 }
@@ -41,7 +43,13 @@ interface Stats {
   totalUsers: number;
   onlineUsers: number;
   subscribers: number;
-  
+  trialing?: number;
+}
+
+interface FreeAccessRow {
+  email: string;
+  note: string | null;
+  created_at: string;
 }
 
 type SortKey = 'display_name' | 'created_at' | 'last_sign_in_at';
@@ -72,6 +80,12 @@ export default function Admin() {
   const [sortAsc, setSortAsc] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
+  // Free access state
+  const [freeAccess, setFreeAccess] = useState<FreeAccessRow[]>([]);
+  const [freeEmail, setFreeEmail] = useState('');
+  const [freeNote, setFreeNote] = useState('');
+  const [addingFree, setAddingFree] = useState(false);
+
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
@@ -99,6 +113,7 @@ export default function Admin() {
     loadInvites(token);
     loadUsers(token);
     loadStats(token);
+    loadFreeAccess(token);
   };
 
   const loadInvites = async (token?: string) => {
