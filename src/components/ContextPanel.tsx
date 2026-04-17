@@ -19,23 +19,96 @@ import {
 } from '@/components/ui/alert-dialog';
 
 // Curated sacred-music playlists per tradition (public Spotify playlists)
-const SPOTIFY_PLAYLISTS: Record<string, string> = {
-  christian: '37i9dQZF1DX0HRj9P7NxeE',   // Christian Worship
-  catholic: '4OS5x6yAS6dQQO8u2bXrnL',     // Gregorian Chants / Sacred Mass
-  protestant: '37i9dQZF1DX0HRj9P7NxeE',   // Worship / Hillsong
-  spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',    // Música Espírita
-  umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',      // Pontos cantados
-  candomble: '3kg2IhbcbiRE4ZmvYWlUdw',    // Pontos cantados
-  jewish: '37i9dQZF1DWVcbzTgVpNRm',       // Jewish Sacred / Psalms
-  islam: '37i9dQZF1DX5q67ZpWyRrZ',        // Quran Recitation / Nasheeds
-  hindu: '37i9dQZF1DX0XEnJgRtMrK',        // Mantras / Bhajans
-  buddhist: '37i9dQZF1DWZqd5JICZI0u',     // Tibetan Chants / Zen
-  mormon: '4LXVuZxkzLBaeOKQwzVz5z',       // Mormon Tabernacle Choir
-  agnostic: '37i9dQZF1DWVFeEut75IAL',     // Classical contemplative
-  stoicism: '37i9dQZF1DWVFeEut75IAL',     // Classical contemplative
-  philosophy: '37i9dQZF1DWVFeEut75IAL',
-  default: '37i9dQZF1DWVFeEut75IAL',
+// Curated sacred-music playlists per tradition (2-3 options each)
+type PlaylistOption = { id: string; label: string };
+const SPOTIFY_PLAYLISTS: Record<string, PlaylistOption[]> = {
+  christian: [
+    { id: '37i9dQZF1DX0HRj9P7NxeE', label: 'Worship clássico' },
+    { id: '37i9dQZF1DWYBO1MoTDhZI', label: 'Worship moderno' },
+    { id: '37i9dQZF1DX559SQRTRVIZ', label: 'Hinos cristãos' },
+  ],
+  catholic: [
+    { id: '4OS5x6yAS6dQQO8u2bXrnL', label: 'Cantos gregorianos' },
+    { id: '37i9dQZF1DWUOhRO0bSCNz', label: 'Música católica' },
+    { id: '6lPb7Eyk0NwzJ5DM1mEYZ4', label: 'Adoração eucarística' },
+  ],
+  protestant: [
+    { id: '37i9dQZF1DX0HRj9P7NxeE', label: 'Hillsong & Worship' },
+    { id: '37i9dQZF1DWYBO1MoTDhZI', label: 'Louvor moderno' },
+    { id: '37i9dQZF1DX559SQRTRVIZ', label: 'Hinos clássicos' },
+  ],
+  spiritist: [
+    { id: '3kg2IhbcbiRE4ZmvYWlUdw', label: 'Música espírita' },
+    { id: '37i9dQZF1DWZqd5JICZI0u', label: 'Meditação' },
+  ],
+  umbanda: [
+    { id: '3kg2IhbcbiRE4ZmvYWlUdw', label: 'Pontos cantados' },
+    { id: '6XKZO8FJxMzZb5oFsyqMqQ', label: 'Tambores sagrados' },
+  ],
+  candomble: [
+    { id: '3kg2IhbcbiRE4ZmvYWlUdw', label: 'Pontos cantados' },
+    { id: '6XKZO8FJxMzZb5oFsyqMqQ', label: 'Tambores ancestrais' },
+  ],
+  jewish: [
+    { id: '37i9dQZF1DWVcbzTgVpNRm', label: 'Salmos' },
+    { id: '4Df7sCtQ3l4yYGRygi6sBp', label: 'Cantos hebraicos' },
+    { id: '0HmQg9p2zP5kqfH5cYqM7Q', label: 'Música sefardita' },
+  ],
+  islam: [
+    { id: '37i9dQZF1DX5q67ZpWyRrZ', label: 'Recitação do Alcorão' },
+    { id: '37i9dQZF1DWZbU3xqv6QfG', label: 'Nasheeds' },
+    { id: '6vVYwwIBDpwgCfbthIqp8M', label: 'Sufi & Qawwali' },
+  ],
+  hindu: [
+    { id: '37i9dQZF1DX0XEnJgRtMrK', label: 'Mantras' },
+    { id: '37i9dQZF1DWUS3jbm4YnVV', label: 'Bhajans devocionais' },
+    { id: '5g5T5qB0n8Whz9tH9OBM4w', label: 'Kirtan & Yoga' },
+  ],
+  buddhist: [
+    { id: '37i9dQZF1DWZqd5JICZI0u', label: 'Cantos tibetanos' },
+    { id: '37i9dQZF1DX9uKNf5jGX6m', label: 'Zen meditação' },
+    { id: '4o7gNCqVGyRxQHKvY7vrcY', label: 'Tigelas tibetanas' },
+  ],
+  mormon: [
+    { id: '4LXVuZxkzLBaeOKQwzVz5z', label: 'Coro do Tabernáculo' },
+    { id: '37i9dQZF1DWVFeEut75IAL', label: 'Hinos contemplativos' },
+  ],
+  agnostic: [
+    { id: '37i9dQZF1DWVFeEut75IAL', label: 'Clássica contemplativa' },
+    { id: '37i9dQZF1DX9uKNf5jGX6m', label: 'Ambiente meditativo' },
+    { id: '37i9dQZF1DX4sWSpwq3LiO', label: 'Piano relaxante' },
+  ],
+  stoicism: [
+    { id: '37i9dQZF1DWVFeEut75IAL', label: 'Clássica contemplativa' },
+    { id: '37i9dQZF1DX4sWSpwq3LiO', label: 'Piano para reflexão' },
+  ],
+  philosophy: [
+    { id: '37i9dQZF1DWVFeEut75IAL', label: 'Clássica contemplativa' },
+    { id: '37i9dQZF1DX4sWSpwq3LiO', label: 'Piano para reflexão' },
+  ],
+  default: [
+    { id: '37i9dQZF1DWVFeEut75IAL', label: 'Clássica contemplativa' },
+  ],
 };
+
+const PLAYLIST_PREF_KEY = 'ts:playlist-prefs:v1';
+
+function loadPlaylistPrefs(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(PLAYLIST_PREF_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePlaylistPref(traditionKey: string, playlistId: string) {
+  try {
+    const prefs = loadPlaylistPrefs();
+    prefs[traditionKey] = playlistId;
+    localStorage.setItem(PLAYLIST_PREF_KEY, JSON.stringify(prefs));
+  } catch {}
+}
 
 const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', 'finances', 'relationship', 'family', 'politics', 'other'];
 
