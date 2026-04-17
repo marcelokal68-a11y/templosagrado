@@ -446,6 +446,30 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           <Music className="h-4 w-4" />
           {t('panel.music', language)}
         </h3>
+
+        {/* Playlist selector chips (only when more than 1 option) */}
+        {playlistOptions.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
+            {playlistOptions.map((p) => {
+              const isActive = p.id === playlistId;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => handleSelectPlaylist(p.id)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+                  )}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="relative rounded-xl overflow-hidden border border-border group">
           <iframe
             key={playlistId}
