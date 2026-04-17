@@ -78,6 +78,37 @@ export default function Pricing() {
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [loadingCancel, setLoadingCancel] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [pendingChange, setPendingChange] = useState<{
+    planKey: keyof typeof PLANS;
+    type: 'upgrade' | 'downgrade';
+    label: string;
+    price: string;
+  } | null>(null);
+  const [loadingChange, setLoadingChange] = useState(false);
+
+  // Price amount map (in cents) for upgrade/downgrade detection
+  const PRICE_AMOUNTS: Record<string, number> = {
+    [PLANS.monthly.priceId]: 1990,
+    [PLANS.annual.priceId]: 19900,
+    [PLANS.topMonthly.priceId]: 3990,
+    [PLANS.topAnnual.priceId]: 39900,
+  };
+
+  const PLAN_LABELS: Record<keyof typeof PLANS, string> = {
+    monthly: 'Devoto Mensal (R$ 19,90/mês)',
+    annual: 'Devoto Anual (R$ 199/ano)',
+    topMonthly: 'Iluminado Mensal (R$ 39,90/mês)',
+    topAnnual: 'Iluminado Anual (R$ 399/ano)',
+  };
+
+  const getCurrentPriceId = (): string | null => {
+    if (!subscription?.product_id) return null;
+    if (subscription.product_id === PLANS.monthly.productId) return PLANS.monthly.priceId;
+    if (subscription.product_id === PLANS.annual.productId) return PLANS.annual.priceId;
+    if (subscription.product_id === PLANS.topMonthly.productId) return PLANS.topMonthly.priceId;
+    if (subscription.product_id === PLANS.topAnnual.productId) return PLANS.topAnnual.priceId;
+    return null;
+  };
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -122,6 +153,58 @@ export default function Pricing() {
       toast({ title: 'Erro', description: e.message, variant: 'destructive' });
     } finally {
       setLoadingPlan(null);
+    }
+  };
+
+  const handleClickPlan = (planKey: keyof typeof PLANS) => {
+    if (!user) { navigate('/auth'); return; }
+
+    // If not subscribed → new checkout
+    if (!subscription?.subscribed) {
+      handleSubscribe(planKey);
+      return;
+    }
+
+    // Already subscribed → detect upgrade/downgrade
+    const currentPriceId = getCurrentPriceId();
+    const newPriceId = PLANS[planKey].priceId;
+    if (currentPriceId === newPriceId) return; // same plan
+
+    const currentAmount = currentPriceId ? PRICE_AMOUNTS[currentPriceId] ?? 0 : 0;
+    const newAmount = PRICE_AMOUNTS[newPriceId] ?? 0;
+    const type: 'upgrade' | 'downgrade' = newAmount > currentAmount ? 'upgrade' : 'downgrade';
+
+    setPendingChange({
+      planKey,
+      type,
+      label: PLAN_LABELS[planKey],
+      price: PLAN_LABELS[planKey],
+    });
+  };
+
+  const confirmChangePlan = async () => {
+    if (!pendingChange) return;
+    setLoadingChange(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('change-subscription', {
+        body: { newPriceId: PLANS[pendingChange.planKey].priceId },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.error) throw new Error(resp.error.message || 'Erro ao trocar plano');
+      if (resp.data?.error) throw new Error(resp.data.error);
+
+      toast({
+        title: pendingChange.type === 'upgrade' ? 'Upgrade realizado! 🎉' : 'Downgrade agendado',
+        description: resp.data?.message || 'Plano alterado com sucesso.',
+      });
+      await checkSub();
+      await refreshProfile();
+      setPendingChange(null);
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setLoadingChange(false);
     }
   };
 
@@ -334,7 +417,7 @@ export default function Pricing() {
                 </div>
               ))}
             </div>
-            {isPremiumUser ? (
+            {isPremiumUser && getCurrentPriceId() === PLANS[billingCycle === 'monthly' ? 'monthly' : 'annual'].priceId ? (
               <>
                 <Button variant="outline" className="w-full" onClick={handleManage} disabled={loadingPortal}>
                   {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
@@ -345,12 +428,12 @@ export default function Pricing() {
             ) : (
               <Button
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
-                onClick={() => handleSubscribe(billingCycle === 'monthly' ? 'monthly' : 'annual')}
-                disabled={!!loadingPlan || isTopUser}
+                onClick={() => handleClickPlan(billingCycle === 'monthly' ? 'monthly' : 'annual')}
+                disabled={!!loadingPlan}
               >
                 {(loadingPlan === 'monthly' || loadingPlan === 'annual') && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Sparkles className="h-4 w-4" />
-                Assinar Devoto
+                {isSubscribed ? 'Mudar para Devoto' : 'Assinar Devoto'}
               </Button>
             )}
           </div>
@@ -391,7 +474,7 @@ export default function Pricing() {
                 </div>
               ))}
             </div>
-            {isTopUser ? (
+            {isTopUser && getCurrentPriceId() === PLANS[billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual'].priceId ? (
               <>
                 <Button variant="outline" className="w-full border-amber-500/30" onClick={handleManage} disabled={loadingPortal}>
                   {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
@@ -402,11 +485,11 @@ export default function Pricing() {
             ) : (
               <Button
                 className="w-full bg-amber-500 text-black hover:bg-amber-600 gap-1.5"
-                onClick={() => handleSubscribe(billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual')}
-                disabled={!!loadingPlan || !!isSubscribed}
+                onClick={() => handleClickPlan(billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual')}
+                disabled={!!loadingPlan}
               >
                 {(loadingPlan === 'topMonthly' || loadingPlan === 'topAnnual') && <Loader2 className="h-4 w-4 animate-spin" />}
-                Assinar Iluminado
+                {isSubscribed ? 'Mudar para Iluminado' : 'Assinar Iluminado'}
               </Button>
             )}
           </div>
@@ -416,6 +499,60 @@ export default function Pricing() {
           Pagamento seguro via Stripe. PIX disponível no checkout.
         </p>
       </div>
+
+      {/* Change plan confirmation dialog */}
+      <AlertDialog open={!!pendingChange} onOpenChange={(open) => !open && setPendingChange(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingChange?.type === 'upgrade' ? 'Confirmar upgrade de plano?' : 'Confirmar downgrade de plano?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2 pt-2">
+              {pendingChange?.type === 'upgrade' ? (
+                <>
+                  <span className="block">
+                    Você está fazendo upgrade para <strong>{pendingChange?.label}</strong>.
+                  </span>
+                  <span className="block">
+                    Cobraremos <strong>hoje</strong> apenas a <strong>diferença proporcional</strong> dos dias restantes do seu ciclo atual no seu cartão cadastrado.
+                  </span>
+                  <span className="block">
+                    A partir da próxima renovação, será cobrado o valor cheio do novo plano.
+                  </span>
+                  <span className="block text-foreground/80">
+                    Seu acesso ao plano superior é liberado <strong>imediatamente</strong>.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="block">
+                    Sua assinatura <strong>atual já paga</strong> continuará vigente até o <strong>fim do período contratado</strong>
+                    {subscription?.subscription_end && (
+                      <> (<strong>{new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}</strong>)</>
+                    )}.
+                  </span>
+                  <span className="block text-destructive font-medium">
+                    Não há reembolso ou cashback pelo período não utilizado.
+                  </span>
+                  <span className="block">
+                    Após essa data, sua conta passará automaticamente para <strong>{pendingChange?.label}</strong>.
+                  </span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loadingChange}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmChangePlan(); }}
+              disabled={loadingChange}
+            >
+              {loadingChange && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {pendingChange?.type === 'upgrade' ? 'Confirmar upgrade' : 'Confirmar downgrade'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
