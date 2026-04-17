@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { Language, t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { computeAccess, AccessStatus } from '@/lib/access';
+import { computeAccess, AccessStatus, isPreviewEnvironment } from '@/lib/access';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -191,10 +191,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    const inPreview = isPreviewEnvironment();
+
     if (data) {
       setProfileRaw(data);
-      setQuestionsRemaining(data.questions_limit - data.questions_used);
-      setIsSubscriber(!!(data as any).is_subscriber);
+      setQuestionsRemaining(inPreview ? 999999 : data.questions_limit - data.questions_used);
+      setIsSubscriber(inPreview ? true : !!(data as any).is_subscriber);
       setMemoryEnabledState(!!(data as any).memory_enabled);
       const tone = (data as any).chat_tone;
       if (tone === 'concise' || tone === 'reflective') setChatToneState(tone);
@@ -230,10 +232,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const admin = roles?.some((r: any) => r.role === 'admin') ?? false;
     setIsAdmin(admin);
 
-    // Compute access status
+    // Compute access status (preview always returns 'subscriber')
     const access = computeAccess(data as any, admin);
-    setAccessStatus(access.status);
-    setTrialDaysLeft(access.trialDaysLeft);
+    setAccessStatus(inPreview ? 'subscriber' : access.status);
+    setTrialDaysLeft(inPreview ? 0 : access.trialDaysLeft);
   }, [user]);
 
   useEffect(() => {
