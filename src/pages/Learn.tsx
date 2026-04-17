@@ -331,6 +331,38 @@ export default function Learn() {
               })}
             </div>
           </section>
+
+          {/* Trending traditions — 3 picks rotating weekly */}
+          <section className="mt-10">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              {language === 'en' ? 'Recommended traditions' : language === 'es' ? 'Tradiciones recomendadas' : 'Tradições recomendadas'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {getWeeklyTrending(preferredReligion).map(item => (
+                <button
+                  key={`${item.kind}-${item.key}`}
+                  onClick={() => startTopic(item.key, item.kind)}
+                  className="group relative flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 hover:border-primary/50 transition-all text-left"
+                >
+                  {item.kind === 'religion' ? (
+                    <ReligionIcon religion={item.key} className="shrink-0" />
+                  ) : (
+                    <span className="shrink-0 text-base">📖</span>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground group-hover:text-primary truncate">
+                      {labelFor(item.key, item.kind)}
+                    </p>
+                    <p className="text-[10px] font-medium text-primary/80 mt-0.5 flex items-center gap-1">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      {language === 'en' ? 'Trending this week' : language === 'es' ? 'En tendencia esta semana' : 'Em alta esta semana'}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     );
