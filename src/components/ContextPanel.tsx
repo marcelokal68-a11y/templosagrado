@@ -135,6 +135,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const currentSelection = chatContext.religion || chatContext.philosophy || '';
   const topics = getTopicsForSelection(chatContext.religion);
+  const specificTopics = new Set(topics.filter(t => !UNIVERSAL_TOPICS.includes(t)));
 
   const currentTopicValid = !chatContext.topic || topics.includes(chatContext.topic);
   if (!currentTopicValid) {
