@@ -219,12 +219,26 @@ export default function Profile() {
               </Button>
             </div>
           ) : (
-            <EditableRow
-              icon={<BookOpen className="h-5 w-5 text-primary/70" />}
-              label="Tradição"
-              value={profile.preferred_religion ? `★ ${religionLabel}` : religionLabel}
-              onEdit={() => setEditingReligion(true)}
-            />
+            <>
+              <EditableRow
+                icon={<BookOpen className="h-5 w-5 text-primary/70" />}
+                label="Tradição"
+                value={profile.preferred_religion ? `★ ${religionLabel}` : religionLabel}
+                onEdit={() => setEditingReligion(true)}
+              />
+              {profile.preferred_religion && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-muted-foreground hover:text-destructive gap-1.5 h-8"
+                  disabled={saving}
+                  onClick={() => saveReligion(null)}
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Limpar minha fé
+                </Button>
+              )}
+            </>
           )}
 
           <InfoRow
