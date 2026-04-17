@@ -280,9 +280,10 @@ export default function Admin() {
       <h1 className="font-display text-2xl font-bold">Painel Admin</h1>
 
       <Tabs defaultValue="users">
-        <TabsList className="w-full grid grid-cols-3">
+        <TabsList className="w-full grid grid-cols-4">
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="invites">Convites</TabsTrigger>
+          <TabsTrigger value="free">Acesso Livre</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
 
@@ -334,6 +335,7 @@ export default function Admin() {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Tipo</TableHead>
+                    <TableHead>Trial</TableHead>
                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('created_at')}>
                       <span className="flex items-center gap-1">Cadastro <ArrowUpDown className="h-3 w-3" /></span>
                     </TableHead>
