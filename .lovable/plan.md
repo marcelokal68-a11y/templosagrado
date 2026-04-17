@@ -1,56 +1,58 @@
 
 
-## Problemas
+## Plano: Acelerar geração de áudio (TTS)
 
-### 1. Versículo do dia desatualizado (Parashá errada no Judaísmo)
+### Diagnóstico
 
-**Causa raiz**: `verse-of-day/index.ts` linha 431 usa `new Date().toISOString().slice(0, 10)` — isso retorna a data em **UTC**. No Brasil (UTC-3), até às 21h da noite a data UTC ainda é "ontem". Por isso a parashá aparece atrasada em 1 dia.
+A função `elevenlabs-tts` usa o modelo `eleven_multilingual_v2`, que é o mais lento da ElevenLabs (latência típica 2-5s para textos médios). Para o caso do Versículo do Dia, onde o texto pode ter 200-400 palavras, isso vira facilmente 5-10s de espera antes do áudio começar a tocar.
 
-Além disso, mesmo com a data correta, depender da IA para "saber" qual é a Parashá da semana atual é frágil — modelos de IA não têm conhecimento confiável do calendário judaico. A fonte autoritativa é o calendário Hebcal.
+Além disso, hoje o frontend espera o áudio inteiro chegar (`response.blob()`) antes de tocar — não há streaming.
 
-**Solução**:
-- **(a)** Calcular a data no fuso do usuário. O frontend (`Verse.tsx`) já tem acesso ao timezone (`Intl.DateTimeFormat().resolvedOptions().timeZone`). Passar `userDate` (YYYY-MM-DD local) e `timezone` para a edge function.
-- **(b)** Para `jewish`, buscar a Parashá real da semana via API pública gratuita do Hebcal (`https://www.hebcal.com/shabbat?cfg=json&geonameid=3448439&...` ou `/leyning`) e injetar o nome correto + referência no prompt. Assim a IA explica a parashá real, sem inventar.
-- **(c)** Cache: incluir `cache_date` calculada no fuso do usuário (já é por dia; só precisa estar correto).
+### Sobre Gemini TTS
 
-### 2. Respostas do chat muito superficiais
+Pesquisei: **Gemini 3.1 Flash TTS não está disponível no Lovable AI Gateway**. Os modelos disponíveis no gateway são apenas chat e geração/edição de imagem (Gemini 2.5/3.x Flash, Pro, Image). Não há endpoint TTS exposto. Portanto, manter ElevenLabs e otimizar é o caminho viável agora.
 
-**Causa raiz**: `sacred-chat/index.ts` linhas 400-408 forçam:
-- "MÁXIMO de 3 a 4 frases"
-- "NUNCA escreva parágrafos longos"  
-- "Seja cirúrgico"
-- "NÃO use listas"
-- "1 citação por resposta"
+### Otimizações propostas (3 mudanças combinadas)
 
-Isso resulta em respostas curtas e superficiais.
+**1. Trocar modelo para `eleven_flash_v2_5`** (principal ganho)
+- Latência ~75% menor que o `multilingual_v2` (de ~3s para ~400ms até o primeiro byte)
+- Suporta 32 idiomas incluindo PT-BR
+- Qualidade ligeiramente inferior em entonação, mas excelente para narração devocional
 
-**Solução**: Reescrever as regras de tom para permitir respostas com **profundidade emocional e exemplos do dia a dia**, mantendo a estrutura conversacional (validação emocional + pergunta no final). Novo padrão:
+**2. Ativar streaming HTTP no endpoint da ElevenLabs**
+- Mudar de `/v1/text-to-speech/{id}` para `/v1/text-to-speech/{id}/stream`
+- Devolver o stream direto pro cliente (sem `arrayBuffer()`)
+- Cliente passa a tocar via `MediaSource` ou `audio.src = streamUrl` para começar a reprodução enquanto o áudio ainda chega
 
-- **6 a 10 frases** (≈ dobro do tamanho atual), organizadas em **2-3 parágrafos curtos**.
-- **Estrutura sugerida**:
-  1. Validação emocional curta (1-2 frases)
-  2. Reflexão central com **um exemplo concreto do dia a dia** (ex: "Imagine quando você está preso no trânsito e sente aquela raiva subir...", "Sabe quando seu filho te decepciona e você não sabe se abraça ou repreende?")
-  3. Sabedoria sagrada integrada (1 citação orgânica) + aplicação prática
-  4. Pergunta final que mexe com a alma
-- Manter: linguagem brasileira natural, validação emocional primeiro, citação orgânica (sem referências técnicas), sem listas/bullets, [SUGGESTIONS] no final.
-- Acrescentar: "Use um exemplo concreto e cotidiano que o leitor reconheça da própria vida (família, trabalho, trânsito, redes sociais, relacionamentos, saúde, finanças). O exemplo deve ser específico, não genérico."
+**3. Reduzir bitrate de saída**
+- De `mp3_44100_128` para `mp3_44100_64` — corta o tamanho do payload pela metade, sem perda audível para voz falada
 
-## Arquivos alterados
+### Mudanças nos arquivos
 
-1. **`supabase/functions/verse-of-day/index.ts`**:
-   - Aceitar `userDate` e `timezone` no body; usar `userDate` como `date` e como `cache_date`.
-   - Para `religion === 'jewish'`, buscar Parashá real via Hebcal API antes de chamar a IA, e injetar `parashaName` + `torahReference` no prompt do sistema (substituindo "Retorne a Parashá da semana CORRETA" por "A Parashá desta semana é X — explique-a").
-   - Fallback gracioso se Hebcal falhar.
+**`supabase/functions/elevenlabs-tts/index.ts`**
+- Trocar `model_id` para `eleven_flash_v2_5`
+- Trocar URL para o endpoint `/stream`
+- Trocar `output_format` para `mp3_44100_64`
+- Devolver `response.body` direto (stream), não `arrayBuffer()`
+- Adicionar header `Cache-Control: public, max-age=3600` para o navegador cachear áudios repetidos
 
-2. **`src/pages/Verse.tsx`**:
-   - Calcular `userDate` (YYYY-MM-DD no fuso local) e `timezone` e enviar no body do invoke.
+**`src/pages/Verse.tsx`** (e qualquer outro componente que consome TTS)
+- Trocar o padrão `blob() → URL.createObjectURL` por reprodução direta do stream:
+  - Criar `Audio()` apontando pra Response.url ou usar `MediaSource` com chunks
+  - Tocar assim que o primeiro chunk chega (`audio.play()` no `loadeddata`)
+- Manter fallback pra blob se o stream falhar
 
-3. **`supabase/functions/sacred-chat/index.ts`** (linhas 399-410):
-   - Substituir bloco "TOM DE VOZ — REGRAS ABSOLUTAS" pelo novo padrão de 6-10 frases com exemplo do dia a dia.
+### Resultado esperado
 
-## Detalhes técnicos
+- Tempo até começar a tocar: de **~5-8s** para **~600ms-1.2s**
+- Tamanho do download: ~50% menor
+- Sem mudança de UX visível além da velocidade
 
-- Hebcal endpoint: `https://www.hebcal.com/leyning?cfg=json&start=YYYY-MM-DD&end=YYYY-MM-DD` retorna `items[].name.en` (ex: "Shemini") e `items[].leyning.torah` (ex: "Leviticus 9:1-11:47"). Sem chave de API, gratuito.
-- Cache do versículo já é por (`cache_date`, `religion`, `language`) — vai funcionar normalmente com a data corrigida; entradas antigas em UTC permanecem (não causam problema, simplesmente não são mais lidas).
-- Streaming do chat continua igual; só o prompt muda.
+### Detalhes técnicos
+
+- ElevenLabs `flash_v2_5`: latência ~400ms, suporta `voice_settings` igual ao multilingual
+- Voice ID atual (`HOfBIVLhom4mc9WvXfyH`) é compatível com qualquer modelo da ElevenLabs
+- Streaming via `Response(response.body, {headers: ...})` funciona em Edge Functions Deno sem buffering
+- No frontend, `new Audio(url)` com `url` apontando pra response streaming já toca progressivamente — basta não esperar `blob()`
+- Não precisa migration nem mudança no DB
 
