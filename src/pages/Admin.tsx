@@ -553,6 +553,64 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
+        {/* ===== MODERATION TAB ===== */}
+        <TabsContent value="moderation" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-destructive" /> Conteúdo Bloqueado pela IA
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-4">
+                Tentativas de publicação no Mural Ecumênico bloqueadas pelo moderador automático. Use esta lista para identificar usuários reincidentes.
+              </p>
+              {loadingFlags ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+              ) : flags.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Nenhum bloqueio registrado. 🕊️</p>
+              ) : (
+                <div className="space-y-3">
+                  {flags.map(f => {
+                    const u = users.find(x => x.id === f.user_id);
+                    const categoryColor: Record<string, string> = {
+                      hate: 'bg-destructive/15 text-destructive border-destructive/30',
+                      racism: 'bg-destructive/15 text-destructive border-destructive/30',
+                      violence: 'bg-destructive/15 text-destructive border-destructive/30',
+                      prejudice: 'bg-amber-500/15 text-amber-700 border-amber-500/30',
+                      profanity: 'bg-amber-500/15 text-amber-700 border-amber-500/30',
+                      other: 'bg-muted text-muted-foreground border-border',
+                    };
+                    return (
+                      <div key={f.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge className={categoryColor[f.category] || categoryColor.other}>{f.category}</Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {u?.email || u?.display_name || f.user_id.slice(0, 8)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">·</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(f.created_at)}</span>
+                          </div>
+                          <Button size="icon" variant="ghost" onClick={() => deleteFlag(f.id)} title="Apagar">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words bg-background rounded-md p-2 border border-border/50">
+                          {f.content}
+                        </p>
+                        {f.reason && (
+                          <p className="text-xs text-muted-foreground italic">Motivo: {f.reason}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* ===== ADMIN TAB ===== */}
         <TabsContent value="admin" className="space-y-6">
           <Card>
