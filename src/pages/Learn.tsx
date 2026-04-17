@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { useSearchParams } from 'react-router-dom';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -49,7 +50,8 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
 }
 
 export default function Learn() {
-  const { language, user, setChatContext } = useApp();
+  const { language, user, setChatContext, preferredReligion } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [topic, setTopic] = useState<string | null>(null);
   const [topicKind, setTopicKind] = useState<'religion' | 'philosophy' | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -58,6 +60,16 @@ export default function Learn() {
   const [showFaithPrompt, setShowFaithPrompt] = useState(false);
   const [faithPromptShown, setFaithPromptShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
+  useEffect(() => {
+    const qTopic = searchParams.get('topic');
+    const qKind = searchParams.get('kind') as 'religion' | 'philosophy' | null;
+    if (qTopic && (qKind === 'religion' || qKind === 'philosophy')) {
+      setSearchParams({}, { replace: true });
+      startTopic(qTopic, qKind);
+    }
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -221,18 +233,32 @@ export default function Learn() {
               {language === 'en' ? 'Religions' : language === 'es' ? 'Religiones' : 'Religiões'}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {RELIGIONS.map(key => (
-                <button
-                  key={key}
-                  onClick={() => startTopic(key, 'religion')}
-                  className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
-                >
-                  <ReligionIcon religion={key} className="shrink-0" />
-                  <span className="text-sm font-medium text-foreground group-hover:text-primary">
-                    {labelFor(key, 'religion')}
-                  </span>
-                </button>
-              ))}
+              {RELIGIONS.map(key => {
+                const isPreferred = preferredReligion === key;
+                const isDimmed = !!preferredReligion && !isPreferred;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => startTopic(key, 'religion')}
+                    className={cn(
+                      "group flex items-center gap-3 p-4 rounded-xl border transition-all text-left",
+                      isPreferred
+                        ? "border-primary/60 bg-primary/10 ring-2 ring-primary/30 shadow-sm"
+                        : "border-border bg-card hover:border-primary/40 hover:bg-primary/5",
+                      isDimmed && "opacity-50 hover:opacity-100"
+                    )}
+                  >
+                    <ReligionIcon religion={key} className="shrink-0" />
+                    <span className={cn(
+                      "text-sm font-medium",
+                      isPreferred ? "text-primary" : "text-foreground group-hover:text-primary"
+                    )}>
+                      {labelFor(key, 'religion')}
+                      {isPreferred && <span className="block text-[10px] font-medium text-primary/80">★ sua tradição</span>}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
@@ -241,18 +267,24 @@ export default function Learn() {
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {PHILOSOPHIES.map(key => (
-                <button
-                  key={key}
-                  onClick={() => startTopic(key, 'philosophy')}
-                  className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
-                >
-                  <span className="shrink-0 text-base">📖</span>
-                  <span className="text-sm font-medium text-foreground group-hover:text-primary">
-                    {labelFor(key, 'philosophy')}
-                  </span>
-                </button>
-              ))}
+              {PHILOSOPHIES.map(key => {
+                const isDimmed = !!preferredReligion;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => startTopic(key, 'philosophy')}
+                    className={cn(
+                      "group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-left",
+                      isDimmed && "opacity-50 hover:opacity-100"
+                    )}
+                  >
+                    <span className="shrink-0 text-base">📖</span>
+                    <span className="text-sm font-medium text-foreground group-hover:text-primary">
+                      {labelFor(key, 'philosophy')}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </section>
         </div>

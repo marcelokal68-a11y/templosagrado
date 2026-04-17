@@ -51,6 +51,7 @@ interface AppContextType {
   accessStatus: AccessStatus;
   trialDaysLeft: number;
   isAdmin: boolean;
+  preferredReligion: string | null;
   refreshProfile: () => Promise<void>;
 }
 
@@ -78,6 +79,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [profileRaw, setProfileRaw] = useState<any>(null);
+  const [preferredReligion, setPreferredReligion] = useState<string | null>(null);
 
   const setMemoryEnabled = useCallback(async (v: boolean) => {
     setMemoryEnabledState(v);
@@ -143,6 +145,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!user || !faithPromptReligion) return;
     await supabase.from('profiles').update({ preferred_religion: faithPromptReligion } as any).eq('user_id', user.id);
     hasPreferredReligionRef.current = true;
+    setPreferredReligion(faithPromptReligion);
     setFaithPromptReligion(null);
   };
 
@@ -177,6 +180,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setAccessStatus('anon');
       setTrialDaysLeft(0);
       setIsAdmin(false);
+      setPreferredReligion(null);
       return;
     }
 
@@ -198,8 +202,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (data.preferred_religion) {
         setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
         hasPreferredReligionRef.current = true;
+        setPreferredReligion(data.preferred_religion);
       } else {
         hasPreferredReligionRef.current = false;
+        setPreferredReligion(null);
       }
       if (data.latitude != null && data.longitude != null) {
         setGeo({ latitude: data.latitude, longitude: data.longitude });
@@ -237,7 +243,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const faithReligionLabel = faithPromptReligion ? t(`religion.${faithPromptReligion}`, language) : '';
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile: loadProfile }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, preferredReligion, refreshProfile: loadProfile }}>
       {children}
       <AlertDialog open={!!faithPromptReligion}>
         <AlertDialogContent>
