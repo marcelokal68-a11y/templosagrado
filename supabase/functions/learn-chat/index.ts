@@ -322,7 +322,70 @@ MAJOR FESTIVALS: DIWALI (festival das luzes, vitória da luz sobre a escuridão)
 When the student asks about Hinduism, draw richly from this base. Make explicit when relevant the distinctives vs Christianity (não há um único livro sagrado nem fundador único; concepção de Deus simultaneamente impessoal/Brahman e pessoal/Ishvara em múltiplas formas; reencarnação em vez de salvação única; tempo cíclico em vez de linear; pluralismo intrínseco — "Ekam Sat Vipra Bahudha Vadanti" / "A Verdade é uma, os sábios a chamam por muitos nomes", Rigveda 1.164.46).
 ` : '';
 
-    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection;
+    const buddhistSection = topic === 'buddhist' ? `
+
+BUDDHIST TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+THE BUDDHA: Siddhartha Gautama (~563-483 AEC, datação tradicional; pesquisa moderna sugere ~480-400 AEC), príncipe do clã Shakya em Lumbini (atual Nepal). Renunciou ao palácio aos 29 anos após os "4 encontros" (velho, doente, morto, asceta). Após 6 anos de ascetismo extremo e a descoberta do CAMINHO DO MEIO, atingiu a iluminação (Bodhi) sob a árvore Bodhi em Bodh Gaya, tornando-se o BUDA ("Desperto"). Ensinou por 45 anos no norte da Índia até o Parinirvana em Kushinagar.
+
+SACRED TEXTS:
+- TRIPITAKA / TIPITAKA ("Três Cestas") — cânone Pali do Theravada, fixado no 4º Concílio (séc. I AEC, Sri Lanka):
+  • VINAYA PITAKA — disciplina monástica (Patimokkha, 227 regras para monges).
+  • SUTTA PITAKA — discursos do Buda, 5 Nikayas (Digha, Majjhima, Samyutta, Anguttara, Khuddaka).
+  • ABHIDHAMMA PITAKA — análise filosófico-psicológica.
+- DHAMMAPADA — 423 versos, o texto budista mais lido no Ocidente.
+- SUTRAS MAHAYANA: Lotus Sutra/Saddharma Pundarika (universalidade do despertar), Heart Sutra/Prajnaparamita Hridaya ("forma é vacuidade, vacuidade é forma"), Diamond Sutra/Vajracchedika, Avatamsaka/Flower Garland (interpenetração), Lankavatara, Vimalakirti, os 3 Sutras da Terra Pura.
+- VAJRAYANA: Tantras, Bardo Thodol (Livro Tibetano dos Mortos), Lamrim de Tsongkhapa.
+- ZEN/CHAN: Sutra da Plataforma de Huineng, Shobogenzo de Dogen, Mumonkan e Hekiganroku (coleções de koans), Shoyoroku.
+
+THE 4 NOBLE TRUTHS (Cattari Ariya Saccani — Primeiro Sermão em Sarnath):
+1. DUKKHA — toda existência condicionada envolve sofrimento/insatisfação.
+2. SAMUDAYA — a origem do sofrimento é o desejo/apego (tanha).
+3. NIRODHA — há cessação do sofrimento (Nirvana).
+4. MAGGA — o caminho para a cessação é o Nobre Caminho Óctuplo.
+
+THE NOBLE EIGHTFOLD PATH (Ariya Atthangika Magga) — agrupado em 3:
+- SABEDORIA (Pañña): 1) Visão correta (samma ditthi), 2) Intenção correta (samma sankappa).
+- ÉTICA (Sila): 3) Fala correta, 4) Ação correta, 5) Modo de vida correto.
+- DISCIPLINA MENTAL (Samadhi): 6) Esforço correto, 7) Atenção plena correta (samma sati), 8) Concentração correta (samma samadhi).
+
+CORE DOCTRINES:
+- 3 MARCAS DA EXISTÊNCIA (Tilakkhana): ANICCA (impermanência), DUKKHA (insatisfação), ANATTA (não-eu — não há um Self/alma permanente, em contraste explícito com o Atman hindu).
+- 12 ELOS DA ORIGINAÇÃO DEPENDENTE (Pratityasamutpada/Paticcasamuppada) — cadeia que produz o samsara.
+- 5 AGREGADOS (Skandhas): forma, sensação, percepção, formações mentais, consciência.
+- 5 PRECEITOS (Pancha Sila) para leigos: não matar, não roubar, não ter má conduta sexual, não mentir, não usar intoxicantes.
+- 4 IMENSURÁVEIS (Brahmaviharas): Metta (bondade amorosa), Karuna (compaixão), Mudita (alegria empática), Upekkha (equanimidade).
+- KARMA — não fatalismo, mas lei ética de causa e efeito que opera sem necessidade de juiz divino.
+- SAMSARA → NIRVANA — extinção do desejo, do ódio e da ilusão; não é "nada", mas a libertação incondicionada.
+
+THE 3 PRINCIPAL SCHOOLS:
+
+1. THERAVADA ("Doutrina dos Anciãos") — mais antiga, segue estritamente o Cânone Pali. Predominante em SRI LANKA, TAILÂNDIA, BIRMÂNIA/MIANMAR, LAOS, CAMBOJA. Ideal: o ARHAT (aquele que extinguiu as impurezas). Foco em meditação Vipassana (insight) e Samatha (calma). Mestres modernos: AJAHN CHAH (1918-1992, tradição da floresta tailandesa), AJAHN MUN, MAHASI SAYADAW (1904-1982, Birmânia), S.N. GOENKA (1924-2013, popularizou Vipassana globalmente), BHIKKHU BODHI (tradutor moderno do Cânone Pali).
+
+2. MAHAYANA ("Grande Veículo") — surgiu no séc. I AEC. Predominante em CHINA, JAPÃO, COREIA, VIETNÃ, TAIWAN. Ideal: o BODHISATTVA — adia o próprio Nirvana para libertar todos os seres (6 PARAMITAS: generosidade/dana, ética/sila, paciência/kshanti, esforço/virya, meditação/dhyana, sabedoria/prajna). Doutrinas distintivas: SUNYATA (vacuidade) e BODHICITTA (mente desperta). Sub-escolas:
+   • MADHYAMAKA — fundada por NAGARJUNA (~150-250 EC) — Mulamadhyamakakarika; doutrina da vacuidade/Sunyata e das duas verdades (convencional e última).
+   • YOGACHARA / CITTAMATRA — VASUBANDHU e ASANGA (séc. IV) — "tudo é mente".
+   • CHAN/ZEN — BODHIDHARMA (séc. V-VI) levou à China; HUINENG (638-713, 6º Patriarca, Sutra da Plataforma); na escola RINZAI: HAKUIN (1686-1769); na escola SOTO: DOGEN ZENJI (1200-1253) — Shobogenzo, prática do shikantaza ("apenas sentar"); EIHEI DOGEN; no Vietnã: THICH NHAT HANH (1926-2022) — mindfulness engajado, Plum Village; no Ocidente: DAISETZ T. SUZUKI (1870-1966) e SHUNRYU SUZUKI (1904-1971, "Zen Mind, Beginner's Mind", fundador do San Francisco Zen Center).
+   • TERRA PURA (Jodo / Pure Land) — devoção ao Buda Amitabha; HONEN (1133-1212) e SHINRAN (1173-1263) no Japão.
+   • TENDAI / TIANTAI — ZHIYI (538-597, China); base do budismo japonês medieval.
+   • NICHIREN — NICHIREN DAISHONIN (1222-1282) — devoção ao Lotus Sutra, mantra "Namu Myoho Renge Kyo".
+
+3. VAJRAYANA ("Veículo do Diamante") — budismo tântrico, ramificação do Mahayana. Predominante no TIBETE, MONGÓLIA, BUTÃO, NEPAL, partes do norte da Índia. PADMASAMBHAVA / Guru Rinpoche (séc. VIII) levou o budismo ao Tibete. 4 escolas tibetanas: NYINGMA (mais antiga, Padmasambhava, Dzogchen), KAGYU (Marpa, Milarepa, Gampopa, Karmapas), SAKYA, GELUG (TSONGKHAPA, 1357-1419 — escola dos Dalai Lamas e Panchen Lamas). Práticas: mantras, mudras, mandalas, deidades meditativas (yidams), tummo (calor interno), phowa (transferência de consciência), Dzogchen e Mahamudra (visões da natureza da mente).
+
+OS 14 DALAI LAMAS — linhagem reconhecida de tulkus (encarnações) de AVALOKITESHVARA (Bodhisattva da compaixão), tradição Gelug, líderes espirituais (e historicamente temporais) do Tibete. Atual: TENZIN GYATSO (n. 1935), o 14º Dalai Lama, exilado desde 1959, Nobel da Paz 1989, autor de "A Arte da Felicidade", "Ética para um Novo Milênio".
+
+PRINCIPAL BODHISATTVAS: AVALOKITESHVARA (Guanyin no chinês, Kannon no japonês, Chenrezig no tibetano — compaixão infinita), MANJUSHRI (sabedoria, espada que corta a ignorância), TARA (Verde e Branca, ação compassiva), MAITREYA (o Buda futuro), KSITIGARBHA / Jizo (protetor dos seres no inferno e crianças), SAMANTABHADRA (prática universal), VAJRAPANI (poder).
+
+KEY MANTRAS:
+- OM MANI PADME HUM — mantra de Avalokiteshvara, o mais recitado no Vajrayana.
+- GATE GATE PARAGATE PARASAMGATE BODHI SVAHA — fim do Heart Sutra ("Ido, ido, ido além, ido completamente além, despertar, salve!").
+- NAMU MYOHO RENGE KYO — Nichiren, devoção ao Lotus Sutra.
+- NAMO AMITUOFO / NAMU AMIDA BUTSU — Terra Pura, invocação de Amitabha.
+
+When the student asks about Buddhism, draw richly from this base. Make explicit when relevant the distinctives vs Christianity and Hinduism (sem Deus criador pessoal — não-teísmo metodológico; doutrina ANATTA contra o Atman hindu — não há Self permanente; Nirvana não é "céu" mas extinção do apego/sofrimento; karma sem juiz divino; o Buda é mestre, não salvador; pluralidade de "Budas" no Mahayana; ênfase na experiência meditativa direta sobre dogma).
+` : '';
+
+    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection;
 
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
