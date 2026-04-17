@@ -28,6 +28,34 @@ export default function Profile() {
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [subInfo, setSubInfo] = useState<{
+    cancel_at_period_end: boolean;
+    subscription_end: string | null;
+  } | null>(null);
+
+  const loadSubInfo = async () => {
+    if (!isSubscriber) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase.functions.invoke('check-subscription', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (data && !data.error) {
+        setSubInfo({
+          cancel_at_period_end: !!data.cancel_at_period_end,
+          subscription_end: data.subscription_end ?? null,
+        });
+      }
+    } catch (e) {
+      console.error('[Profile] Failed to load sub info:', e);
+    }
+  };
+
+  useEffect(() => {
+    loadSubInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSubscriber, user?.id]);
 
   const handleCancelSubscription = async () => {
     if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o fim do período pago.')) return;
@@ -44,6 +72,7 @@ export default function Profile() {
         title: 'Assinatura cancelada',
         description: 'Você manterá o acesso até o fim do período pago.',
       });
+      await loadSubInfo();
     } catch (e: any) {
       toast({ title: 'Erro', description: e.message, variant: 'destructive' });
     } finally {
@@ -122,6 +151,12 @@ export default function Profile() {
       : accessStatus === 'expired'
         ? 'Expirado'
         : 'Gratuito';
+
+  const formatEndDate = (iso: string | null) =>
+    iso
+      ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+      : null;
+  const cancelledEndDate = subInfo?.cancel_at_period_end ? formatEndDate(subInfo.subscription_end) : null;
 
   const handleSaveAndEnter = async () => {
     if (!user) return;
@@ -282,14 +317,28 @@ export default function Profile() {
             label="Plano"
             value={planLabel}
           />
+
+          {/* Cancellation notice — when subscription is set to end at period end */}
+          {cancelledEndDate && (
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
+              <p className="text-sm font-semibold text-foreground">
+                Assinatura cancelada
+              </p>
+              <p className="text-xs text-muted-foreground leading-snug">
+                Você mantém acesso completo até <strong className="text-primary">{cancelledEndDate}</strong>.
+                Após essa data, sua conta voltará ao plano gratuito.
+              </p>
+            </div>
+          )}
+
           <InfoRow
             icon={<Sparkles className="h-5 w-5 text-primary/70" />}
             label="Perguntas usadas"
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
 
-          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial */}
-          {isSubscriber && !isAdmin && accessStatus !== 'trial' && (
+          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial, and not already cancelled */}
+          {isSubscriber && !isAdmin && accessStatus !== 'trial' && !subInfo?.cancel_at_period_end && (
             <Button
               variant="outline"
               size="sm"

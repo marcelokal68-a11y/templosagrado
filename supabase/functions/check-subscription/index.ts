@@ -53,6 +53,7 @@ serve(async (req) => {
     let productId: string | null = null;
     let subscriptionEnd: string | null = null;
     let subId: string | null = null;
+    let cancelAtPeriodEnd = false;
 
     if (customers.data.length > 0) {
       const customerId = customers.data[0].id;
@@ -69,6 +70,7 @@ serve(async (req) => {
           ?? sub.items?.data?.[0]?.current_period_end;
         subscriptionEnd = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
         productId = sub.items.data[0].price.product as string;
+        cancelAtPeriodEnd = !!sub.cancel_at_period_end;
       }
     }
 
@@ -101,6 +103,7 @@ serve(async (req) => {
       subscribed: hasActive,
       product_id: productId,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
       trial_active: trialActive,
       trial_ends_at: profile?.trial_ends_at ?? null,
     }), {
