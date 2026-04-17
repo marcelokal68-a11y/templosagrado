@@ -38,6 +38,7 @@ export default function Profile() {
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [subInfo, setSubInfo] = useState<{
     cancel_at_period_end: boolean;
     subscription_end: string | null;
