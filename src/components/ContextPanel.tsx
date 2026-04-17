@@ -300,7 +300,18 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
   };
 
   const activeKey = chatContext.religion || chatContext.philosophy || '';
-  const playlistId = SPOTIFY_PLAYLISTS[activeKey] || SPOTIFY_PLAYLISTS.default;
+  const playlistOptions = SPOTIFY_PLAYLISTS[activeKey] || SPOTIFY_PLAYLISTS.default;
+
+  // Persisted playlist preference per tradition
+  const [playlistPrefs, setPlaylistPrefs] = useState<Record<string, string>>(() => loadPlaylistPrefs());
+  const savedPlaylistId = playlistPrefs[activeKey];
+  const playlistId = playlistOptions.find(p => p.id === savedPlaylistId)?.id || playlistOptions[0].id;
+
+  const handleSelectPlaylist = (id: string) => {
+    savePlaylistPref(activeKey || 'default', id);
+    setPlaylistPrefs(prev => ({ ...prev, [activeKey || 'default']: id }));
+  };
+
   const exploreLabel = exploreIntent?.label ?? '';
 
   return (
