@@ -20,6 +20,7 @@ import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle } f
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import SanskritGlossary from '@/components/learn/SanskritGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
