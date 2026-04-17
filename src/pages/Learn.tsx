@@ -59,13 +59,13 @@ function mulberry32(seed: number) {
   };
 }
 
-function getWeeklyTrending(preferredReligion: string | null): TrendingItem[] {
+function getWeeklyTrending(preferredReligion: string | null, shuffleOffset = 0): TrendingItem[] {
   const pool: TrendingItem[] = [
     ...RELIGIONS.map(k => ({ key: k, kind: 'religion' as const })),
     ...PHILOSOPHIES.map(k => ({ key: k, kind: 'philosophy' as const })),
   ].filter(item => item.key !== preferredReligion); // never recommend the user's own faith
 
-  const rand = mulberry32(getISOWeekSeed());
+  const rand = mulberry32(getISOWeekSeed() + shuffleOffset * 7919);
   const shuffled = [...pool];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
