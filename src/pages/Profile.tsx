@@ -27,6 +27,29 @@ export default function Profile() {
   const [searchParams] = useSearchParams();
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o fim do período pago.')) return;
+    setCancelling(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('cancel-subscription', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.error || resp.data?.error) {
+        throw new Error(resp.data?.error || resp.error?.message || 'Erro ao cancelar');
+      }
+      toast({
+        title: 'Assinatura cancelada',
+        description: 'Você manterá o acesso até o fim do período pago.',
+      });
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setCancelling(false);
+    }
+  };
   const [profile, setProfile] = useState<{
     display_name: string | null;
     preferred_religion: string | null;
