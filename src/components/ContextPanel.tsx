@@ -49,7 +49,7 @@ const TOPICS_BY_RELIGION: Record<string, string[]> = {
   jewish: ['torah', 'talmud', 'kabbalah', 'midrash', 'mitzvot', 'shabbat', 'pesach', 'yom_kippur', 'rosh_hashanah', 'sukkot', 'sages', 'tikkun_olam', 'prophets', 'covenant', 'prayer_topic', ...UNIVERSAL_TOPICS],
   islam: ['quran', 'five_pillars', 'tawhid', 'hadith', 'sunnah', 'prophets_islam', 'sufism', 'caliphs', 'islamic_theologians', 'ramadan', 'pilgrimage', 'jihad_greater', 'sharia', 'charity', 'prayer_topic', ...UNIVERSAL_TOPICS],
   hindu: ['vedas', 'upanishads', 'bhagavad_gita', 'puranas', 'main_deities', 'yoga', 'dharma_hindu', 'karma_hindu', 'moksha', 'samsara', 'vedanta', 'sankhya', 'rishis', 'meditation', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  buddhist: ['meditation', 'dharma_hindu', 'karma_hindu', ...UNIVERSAL_TOPICS],
+  buddhist: ['four_noble_truths', 'eightfold_path', 'theravada', 'mahayana', 'vajrayana', 'zen', 'sutras', 'dalai_lama', 'buddhist_masters', 'nirvana', 'bodhisattva', 'meditation', 'dharma_hindu', 'karma_hindu', 'suffering', 'enlightenment', ...UNIVERSAL_TOPICS],
   mormon: ['book_of_mormon', 'revelation', 'salvation', 'prayer_topic', 'jesus', ...UNIVERSAL_TOPICS],
   agnostic: ['ethics', 'philosophy', 'meaning', 'nature', 'science', ...UNIVERSAL_TOPICS],
 };
