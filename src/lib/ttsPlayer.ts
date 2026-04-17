@@ -1,5 +1,8 @@
 // Lightweight TTS player using MediaSource for progressive playback when supported,
-// falling back to blob URL. Works with the streaming elevenlabs-tts edge function.
+// falling back to blob URL. Caches finished audio in IndexedDB so repeated narrations
+// of the same text play instantly.
+
+import { hashKey, getCachedAudio, putCachedAudio } from './ttsCache';
 
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -15,7 +18,28 @@ export interface PlayTTSResult {
   stop: () => void;
 }
 
+async function playFromBlob(blob: Blob, onEnded?: () => void): Promise<PlayTTSResult> {
+  const audio = new Audio();
+  const url = URL.createObjectURL(blob);
+  audio.src = url;
+  const cleanup = () => URL.revokeObjectURL(url);
+  audio.addEventListener('ended', () => { cleanup(); onEnded?.(); });
+  await audio.play();
+  return {
+    audio,
+    stop: () => { audio.pause(); cleanup(); },
+  };
+}
+
 export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): Promise<PlayTTSResult> {
+  // 1) Cache hit → instant playback
+  const cacheKey = await hashKey(text, speed);
+  const cached = await getCachedAudio(cacheKey);
+  if (cached) {
+    return playFromBlob(cached, onEnded);
+  }
+
+  // 2) Cache miss → fetch streaming response
   const response = await fetch(TTS_URL, {
     method: 'POST',
     headers: {
@@ -29,6 +53,26 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
   if (!response.ok || !response.body) {
     throw new Error(`TTS failed: ${response.status}`);
   }
+
+  // Tee the body: one branch feeds the player, the other accumulates for the cache
+  const [playStream, cacheStream] = response.body.tee();
+
+  // Cache accumulator (runs in background)
+  (async () => {
+    try {
+      const reader = cacheStream.getReader();
+      const chunks: Uint8Array[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) chunks.push(value);
+      }
+      const blob = new Blob(chunks as BlobPart[], { type: 'audio/mpeg' });
+      if (blob.size > 0) await putCachedAudio(cacheKey, blob);
+    } catch (e) {
+      console.warn('TTS cache write skipped:', e);
+    }
+  })();
 
   const audio = new Audio();
   let stopped = false;
@@ -53,7 +97,7 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
     mediaSource.addEventListener('sourceopen', async () => {
       try {
         const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
-        const reader = response.body!.getReader();
+        const reader = playStream.getReader();
         const queue: Uint8Array[] = [];
         let isAppending = false;
         let readerDone = false;
@@ -79,7 +123,6 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
           }
         });
 
-        // Start reading chunks
         while (!stopped) {
           const { done, value } = await reader.read();
           if (done) {
@@ -99,11 +142,17 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
       }
     });
 
-    // Play as soon as enough data is buffered
     audio.play().catch(err => console.error('Audio play error:', err));
   } else {
-    // Fallback: blob (server still streams, but browser waits for full body)
-    const blob = await response.blob();
+    // Fallback: read full stream into a blob
+    const reader = playStream.getReader();
+    const chunks: Uint8Array[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) chunks.push(value);
+    }
+    const blob = new Blob(chunks as BlobPart[], { type: 'audio/mpeg' });
     audio.src = URL.createObjectURL(blob);
     await audio.play();
   }
