@@ -320,12 +320,12 @@ export default function Profile() {
 
           {/* Cancellation notice — when subscription is set to end at period end */}
           {cancelledEndDate && (
-            <div className="rounded-xl border border-amber-500/40 bg-amber-50 p-4 space-y-1">
-              <p className="text-sm font-semibold text-amber-900">
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
+              <p className="text-sm font-semibold text-foreground">
                 Assinatura cancelada
               </p>
-              <p className="text-xs text-amber-800 leading-snug">
-                Você mantém acesso completo até <strong>{cancelledEndDate}</strong>.
+              <p className="text-xs text-muted-foreground leading-snug">
+                Você mantém acesso completo até <strong className="text-primary">{cancelledEndDate}</strong>.
                 Após essa data, sua conta voltará ao plano gratuito.
               </p>
             </div>
