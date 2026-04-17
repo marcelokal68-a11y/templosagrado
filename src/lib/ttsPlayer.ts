@@ -3,9 +3,17 @@
 // of the same text play instantly.
 
 import { hashKey, getCachedAudio, putCachedAudio } from './ttsCache';
+import { supabase } from '@/integrations/supabase/client';
 
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+export class TTSCapReachedError extends Error {
+  constructor(public cap: number, public used: number, message: string) {
+    super(message);
+    this.name = 'TTSCapReachedError';
+  }
+}
 
 export interface PlayTTSOptions {
   text: string;
