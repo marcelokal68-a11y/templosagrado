@@ -308,6 +308,11 @@ export default function Learn() {
             </div>
           </section>
 
+          {/* Sanskrit glossary — visual primer for beginners (relevant to Hindu, Buddhist, Yoga) */}
+          <section className="mb-10">
+            <SanskritGlossary />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
