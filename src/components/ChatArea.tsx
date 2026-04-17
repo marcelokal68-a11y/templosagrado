@@ -477,9 +477,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         }
       }
 
-      if (user) {
-        setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
-      }
+      // Question counting removed — chat is unlimited
 
       if (user && assistantSoFar.length > 0 && !confessionalMode) {
         const ctx = {
