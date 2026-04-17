@@ -350,6 +350,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         prefix="topic"
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
+        specificItems={specificTopics}
       />
 
       {/* Spotify */}
