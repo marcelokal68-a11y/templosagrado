@@ -129,6 +129,195 @@ serve(async (req) => {
       });
     }
 
+    if (action === "get-analytics") {
+      // Lazy import Stripe to avoid loading on every action
+      const { default: Stripe } = await import("https://esm.sh/stripe@18.5.0");
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+        apiVersion: "2025-08-27.basil",
+      });
+
+      // --- 1. Users + profiles snapshot
+      const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const authUsers = authData?.users ?? [];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, is_subscriber, trial_ends_at, created_at");
+      const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
+      const now = Date.now();
+
+      const totalUsers = authUsers.length;
+      let trialActive = 0;
+      let trialExpired = 0;
+      let convertedFromTrial = 0;
+
+      // For conversion: someone is "converted" if subscriber AND has a trial_ends_at in the past (used trial then paid)
+      for (const u of authUsers) {
+        const p: any = profileMap.get(u.id);
+        if (!p) continue;
+        const trialMs = p.trial_ends_at ? new Date(p.trial_ends_at).getTime() : 0;
+        const trialIsActive = trialMs > now && !p.is_subscriber;
+        const trialIsExpired = trialMs > 0 && trialMs <= now && !p.is_subscriber;
+        if (trialIsActive) trialActive++;
+        if (trialIsExpired) trialExpired++;
+        if (p.is_subscriber && trialMs > 0 && trialMs <= now) convertedFromTrial++;
+      }
+      const trialFinished = convertedFromTrial + trialExpired;
+      const conversionRate = trialFinished > 0 ? (convertedFromTrial / trialFinished) * 100 : 0;
+
+      // --- 2. Stripe: active subs grouped by product, plus MRR
+      const subs: any[] = [];
+      let starting_after: string | undefined = undefined;
+      // Pull up to 300 active subs (3 pages of 100)
+      for (let i = 0; i < 3; i++) {
+        const page: any = await stripe.subscriptions.list({
+          status: "active",
+          limit: 100,
+          ...(starting_after ? { starting_after } : {}),
+          expand: ["data.items.data.price"],
+        });
+        subs.push(...page.data);
+        if (!page.has_more) break;
+        starting_after = page.data[page.data.length - 1]?.id;
+      }
+      // Also include trialing subs in counts (still revenue once they convert)
+      const trialingSubs: any[] = [];
+      const trialingPage: any = await stripe.subscriptions.list({
+        status: "trialing",
+        limit: 100,
+        expand: ["data.items.data.price"],
+      });
+      trialingSubs.push(...trialingPage.data);
+
+      // Canceled subs in last 30 days for churn
+      const thirtyDaysAgo = Math.floor((now - 30 * 24 * 60 * 60 * 1000) / 1000);
+      const canceledPage: any = await stripe.subscriptions.list({
+        status: "canceled",
+        limit: 100,
+        expand: ["data.items.data.price"],
+      });
+      const recentCancels = canceledPage.data.filter(
+        (s: any) => s.canceled_at && s.canceled_at >= thirtyDaysAgo
+      );
+
+      // Aggregate by product name
+      const fmtPrice = (p: any) => {
+        const amount = (p.unit_amount ?? 0) / 100;
+        const interval = p.recurring?.interval ?? "month";
+        // Normalize to monthly for MRR
+        const monthly =
+          interval === "year" ? amount / 12 :
+          interval === "week" ? amount * 4.33 :
+          interval === "day"  ? amount * 30 :
+          amount;
+        return { amount, interval, monthly };
+      };
+
+      const planAgg: Record<string, {
+        product_id: string;
+        plan_name: string;
+        active: number;
+        trialing: number;
+        canceled_30d: number;
+        mrr: number;
+        currency: string;
+      }> = {};
+
+      const ensure = (productId: string, name: string, currency: string) => {
+        if (!planAgg[productId]) {
+          planAgg[productId] = {
+            product_id: productId,
+            plan_name: name,
+            active: 0,
+            trialing: 0,
+            canceled_30d: 0,
+            mrr: 0,
+            currency,
+          };
+        }
+        return planAgg[productId];
+      };
+
+      // Cache for product names
+      const productNameCache = new Map<string, string>();
+      const getProductName = async (productId: string): Promise<string> => {
+        if (productNameCache.has(productId)) return productNameCache.get(productId)!;
+        try {
+          const prod: any = await stripe.products.retrieve(productId);
+          productNameCache.set(productId, prod.name);
+          return prod.name;
+        } catch {
+          productNameCache.set(productId, productId);
+          return productId;
+        }
+      };
+
+      const ingest = async (sub: any, key: "active" | "trialing" | "canceled_30d") => {
+        for (const item of sub.items.data) {
+          const price = item.price;
+          const productId = typeof price.product === "string" ? price.product : price.product?.id;
+          if (!productId) continue;
+          const name = await getProductName(productId);
+          const { monthly } = fmtPrice(price);
+          const row = ensure(productId, name, price.currency || "brl");
+          row[key] += 1;
+          if (key === "active" || key === "trialing") {
+            row.mrr += monthly * (item.quantity ?? 1);
+          }
+        }
+      };
+
+      for (const s of subs) await ingest(s, "active");
+      for (const s of trialingSubs) await ingest(s, "trialing");
+      for (const s of recentCancels) await ingest(s, "canceled_30d");
+
+      const planBreakdown = Object.values(planAgg);
+      const totalMrr = planBreakdown.reduce((sum, p) => sum + p.mrr, 0);
+      const totalActiveSubs = planBreakdown.reduce((sum, p) => sum + p.active + p.trialing, 0);
+      const totalCanceled30d = planBreakdown.reduce((sum, p) => sum + p.canceled_30d, 0);
+      const churnRate = totalActiveSubs + totalCanceled30d > 0
+        ? (totalCanceled30d / (totalActiveSubs + totalCanceled30d)) * 100
+        : 0;
+
+      // --- 3. Signups per day (last 30 days)
+      const signupsByDay: Record<string, number> = {};
+      const conversionsByDay: Record<string, number> = {};
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        signupsByDay[d] = 0;
+        conversionsByDay[d] = 0;
+      }
+      for (const u of authUsers) {
+        const day = (u.created_at || "").slice(0, 10);
+        if (day in signupsByDay) signupsByDay[day]++;
+      }
+      for (const s of subs) {
+        const created = s.created ? new Date(s.created * 1000).toISOString().slice(0, 10) : null;
+        if (created && created in conversionsByDay) conversionsByDay[created]++;
+      }
+      const timeline = Object.keys(signupsByDay).map((day) => ({
+        day,
+        signups: signupsByDay[day],
+        conversions: conversionsByDay[day],
+      }));
+
+      return new Response(JSON.stringify({
+        totals: {
+          totalUsers,
+          trialActive,
+          trialExpired,
+          convertedFromTrial,
+          conversionRate,
+          totalActiveSubs,
+          totalCanceled30d,
+          churnRate,
+          totalMrr,
+          arr: totalMrr * 12,
+        },
+        planBreakdown,
+        timeline,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "create-invite") {
       const { label, questions_limit, max_uses, expires_at } = body;
       const { data, error: insertErr } = await supabase
