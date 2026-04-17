@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, SendHorizonal, Loader2, GraduationCap } from 'lucide-react';
+import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -34,6 +34,45 @@ const PHILOSOPHIES = [
 ];
 
 const LEARN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learn-chat`;
+
+// ===== Trending traditions (deterministic weekly seed) =====
+type TrendingItem = { key: string; kind: 'religion' | 'philosophy' };
+
+function getISOWeekSeed(): number {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return d.getUTCFullYear() * 100 + weekNo;
+}
+
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function getWeeklyTrending(preferredReligion: string | null): TrendingItem[] {
+  const pool: TrendingItem[] = [
+    ...RELIGIONS.map(k => ({ key: k, kind: 'religion' as const })),
+    ...PHILOSOPHIES.map(k => ({ key: k, kind: 'philosophy' as const })),
+  ].filter(item => item.key !== preferredReligion); // never recommend the user's own faith
+
+  const rand = mulberry32(getISOWeekSeed());
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 3);
+}
 
 type Msg = { role: 'user' | 'assistant'; content: string; suggestions?: string[] };
 
@@ -290,6 +329,38 @@ export default function Learn() {
                   </button>
                 );
               })}
+            </div>
+          </section>
+
+          {/* Trending traditions — 3 picks rotating weekly */}
+          <section className="mt-10">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              {language === 'en' ? 'Recommended traditions' : language === 'es' ? 'Tradiciones recomendadas' : 'Tradições recomendadas'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {getWeeklyTrending(preferredReligion).map(item => (
+                <button
+                  key={`${item.kind}-${item.key}`}
+                  onClick={() => startTopic(item.key, item.kind)}
+                  className="group relative flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 hover:border-primary/50 transition-all text-left"
+                >
+                  {item.kind === 'religion' ? (
+                    <ReligionIcon religion={item.key} className="shrink-0" />
+                  ) : (
+                    <span className="shrink-0 text-base">📖</span>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground group-hover:text-primary truncate">
+                      {labelFor(item.key, item.kind)}
+                    </p>
+                    <p className="text-[10px] font-medium text-primary/80 mt-0.5 flex items-center gap-1">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      {language === 'en' ? 'Trending this week' : language === 'es' ? 'En tendencia esta semana' : 'Em alta esta semana'}
+                    </p>
+                  </div>
+                </button>
+              ))}
             </div>
           </section>
         </div>
