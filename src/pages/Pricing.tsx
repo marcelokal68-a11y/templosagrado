@@ -58,7 +58,7 @@ const TOP_EXTRAS = [
 ];
 
 export default function Pricing() {
-  const { language, user } = useApp();
+  const { language, user, refreshProfile } = useApp();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -70,7 +70,12 @@ export default function Pricing() {
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
       toast({ title: 'Assinatura realizada com sucesso! 🎉' });
-      checkSub();
+      (async () => {
+        await checkSub();
+        await refreshProfile();
+        // Redirect to chat after confirming subscription
+        setTimeout(() => navigate('/', { replace: true }), 1500);
+      })();
     }
   }, [searchParams]);
 
