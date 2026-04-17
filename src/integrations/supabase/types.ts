@@ -223,6 +223,33 @@ export type Database = {
           },
         ]
       }
+      moderation_flags: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       parasha_cache: {
         Row: {
           created_at: string
