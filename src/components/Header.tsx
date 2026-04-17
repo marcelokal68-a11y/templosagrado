@@ -38,9 +38,12 @@ export default function Header() {
     ...(!isSubscriber ? [{ label: 'Plano Pro ⭐', icon: Gem, action: () => navigate('/pricing') }] : []),
   ];
 
-  // Drawer items for visitors (not logged in)
+  // Drawer items for visitors (not logged in) — show all features; gating happens at route
   const visitorItems = [
     { label: 'Entrar', icon: LogIn, action: () => navigate('/auth') },
+    { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
+    { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
+    { label: 'Mural', icon: ScrollText, action: () => navigate('/mural') },
     { label: 'Ver Planos', icon: Gem, action: () => navigate('/pricing') },
   ];
 

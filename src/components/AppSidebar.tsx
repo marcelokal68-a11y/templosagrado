@@ -51,7 +51,7 @@ export default function AppSidebar() {
     })();
   }, [user]);
 
-  if (shouldHide || !user) return null;
+  if (shouldHide) return null;
 
   const allItems = [
     ...navItems,
