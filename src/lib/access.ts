@@ -11,13 +11,15 @@ export interface AccessProfile {
   questions_used?: number | null;
 }
 
-// Detects Lovable preview/sandbox environment — grants full access automatically there
+// Detects Lovable preview/sandbox environment — grants full access automatically there.
+// Broad on purpose: any lovable.* host, any lovableproject host, or localhost.
 export function isPreviewEnvironment(): boolean {
   if (typeof window === 'undefined') return false;
   const host = window.location.hostname;
   return (
-    host.includes('lovable.app') && host.includes('preview') ||
+    host.includes('lovable.app') ||
     host.includes('lovableproject.com') ||
+    host.includes('lovable.dev') ||
     host === 'localhost' ||
     host === '127.0.0.1'
   );

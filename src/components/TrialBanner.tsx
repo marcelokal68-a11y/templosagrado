@@ -1,9 +1,13 @@
 import { useApp } from '@/contexts/AppContext';
 import { Sparkles, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { isPreviewEnvironment } from '@/lib/access';
 
 export default function TrialBanner() {
   const { accessStatus, trialDaysLeft } = useApp();
+
+  // Never show paywall banners in preview/dev environments
+  if (isPreviewEnvironment()) return null;
 
   if (accessStatus === 'trial') {
     return (

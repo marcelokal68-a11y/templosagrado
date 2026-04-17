@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
+import { isPreviewEnvironment } from '@/lib/access';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -680,7 +681,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  const trialExpired = accessStatus === 'expired';
+  const inPreview = isPreviewEnvironment();
+  const trialExpired = !inPreview && accessStatus === 'expired';
   const isBlocked = false; // Chat is unlimited for everyone
 
   const handleLgpdAccept = () => {
@@ -1054,7 +1056,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       </div>
 
       {/* Upgrade modal */}
-      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+      <Dialog open={showUpgradeModal && !inPreview} onOpenChange={setShowUpgradeModal}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-display">

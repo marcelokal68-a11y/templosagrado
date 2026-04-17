@@ -18,20 +18,23 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+// Curated sacred-music playlists per tradition (public Spotify playlists)
 const SPOTIFY_PLAYLISTS: Record<string, string> = {
-  christian: '0Z5jq2YzMqMrqEQWMEVj9T',
-  catholic: '25lg9pkqwUaa7nOcIvd4ta',
-  protestant: '0Z5jq2YzMqMrqEQWMEVj9T',
-  spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',
-  umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',
-  candomble: '3kg2IhbcbiRE4ZmvYWlUdw',
-  jewish: '1RJKluktWr9Dh7fXhhRkHV',
-  hindu: '1RJKluktWr9Dh7fXhhRkHV',
-  mormon: '0Z5jq2YzMqMrqEQWMEVj9T',
-  agnostic: '1RJKluktWr9Dh7fXhhRkHV',
-  stoicism: '0As0R4eZyxaMKAqZfW9zUL',
+  christian: '37i9dQZF1DX0HRj9P7NxeE',   // Christian Worship
+  catholic: '4OS5x6yAS6dQQO8u2bXrnL',     // Gregorian Chants / Sacred Mass
+  protestant: '37i9dQZF1DX0HRj9P7NxeE',   // Worship / Hillsong
+  spiritist: '3kg2IhbcbiRE4ZmvYWlUdw',    // Música Espírita
+  umbanda: '3kg2IhbcbiRE4ZmvYWlUdw',      // Pontos cantados
+  candomble: '3kg2IhbcbiRE4ZmvYWlUdw',    // Pontos cantados
+  jewish: '37i9dQZF1DWVcbzTgVpNRm',       // Jewish Sacred / Psalms
+  islam: '37i9dQZF1DX5q67ZpWyRrZ',        // Quran Recitation / Nasheeds
+  hindu: '37i9dQZF1DX0XEnJgRtMrK',        // Mantras / Bhajans
+  buddhist: '37i9dQZF1DWZqd5JICZI0u',     // Tibetan Chants / Zen
+  mormon: '4LXVuZxkzLBaeOKQwzVz5z',       // Mormon Tabernacle Choir
+  agnostic: '37i9dQZF1DWVFeEut75IAL',     // Classical contemplative
+  stoicism: '37i9dQZF1DWVFeEut75IAL',     // Classical contemplative
   philosophy: '37i9dQZF1DWVFeEut75IAL',
-  default: '1RJKluktWr9Dh7fXhhRkHV',
+  default: '37i9dQZF1DWVFeEut75IAL',
 };
 
 const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', 'finances', 'relationship', 'family', 'politics', 'other'];
@@ -359,17 +362,24 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
           <Music className="h-4 w-4" />
           {t('panel.music', language)}
         </h3>
-        <div className="rounded-xl overflow-hidden border border-border">
+        <div className="relative rounded-xl overflow-hidden border border-border group">
           <iframe
             key={playlistId}
-            src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`}
+            src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0&autoplay=1`}
             width="100%"
             height="152"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
-            className="rounded-xl"
+            className="rounded-xl transition-opacity duration-300"
           />
         </div>
+        <p className="text-[10px] text-muted-foreground/70 text-center">
+          {language === 'en'
+            ? 'Tap ▶ inside the player to start sacred music'
+            : language === 'es'
+              ? 'Toca ▶ dentro del reproductor para iniciar la música sagrada'
+              : 'Toque ▶ no player para iniciar a música sacra'}
+        </p>
       </div>
 
       {onGenerate && hasContext && (
