@@ -27,8 +27,10 @@ serve(async (req) => {
 
     const voiceId = 'HOfBIVLhom4mc9WvXfyH';
 
+    // Use streaming endpoint + flash model for ~75% lower latency
+    // Lower bitrate (64kbps) cuts payload ~50% with no audible loss for speech
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_44100_64`,
       {
         method: 'POST',
         headers: {
@@ -37,7 +39,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           text: text.slice(0, 5000),
-          model_id: 'eleven_multilingual_v2',
+          model_id: 'eleven_flash_v2_5',
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
@@ -47,8 +49,8 @@ serve(async (req) => {
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!response.ok || !response.body) {
+      const errorText = await response.text().catch(() => '');
       console.error(`ElevenLabs API error [${response.status}]:`, errorText);
       return new Response(JSON.stringify({ error: 'TTS generation failed' }), {
         status: response.status,
@@ -56,12 +58,13 @@ serve(async (req) => {
       });
     }
 
-    const audioBuffer = await response.arrayBuffer();
-
-    return new Response(audioBuffer, {
+    // Stream audio bytes directly to client (no arrayBuffer buffering)
+    return new Response(response.body, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'public, max-age=3600',
+        'Transfer-Encoding': 'chunked',
       },
     });
   } catch (error) {
