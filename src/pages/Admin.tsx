@@ -86,6 +86,10 @@ export default function Admin() {
   const [freeNote, setFreeNote] = useState('');
   const [addingFree, setAddingFree] = useState(false);
 
+  // Moderation state
+  const [flags, setFlags] = useState<Array<{ id: string; user_id: string; content: string; category: string; reason: string | null; created_at: string; user_email?: string }>>([]);
+  const [loadingFlags, setLoadingFlags] = useState(false);
+
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
@@ -114,6 +118,23 @@ export default function Admin() {
     loadUsers(token);
     loadStats(token);
     loadFreeAccess(token);
+    loadFlags();
+  };
+
+  const loadFlags = async () => {
+    setLoadingFlags(true);
+    const { data } = await supabase
+      .from('moderation_flags')
+      .select('id, user_id, content, category, reason, created_at')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    setFlags(data || []);
+    setLoadingFlags(false);
+  };
+
+  const deleteFlag = async (id: string) => {
+    await supabase.from('moderation_flags').delete().eq('id', id);
+    loadFlags();
   };
 
   const loadInvites = async (token?: string) => {
