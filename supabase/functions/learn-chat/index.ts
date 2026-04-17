@@ -259,7 +259,70 @@ CENTRAL CONCEPTS: Allah (o nome de Deus), Tawhid (unicidade absoluta), Shirk (po
 When the student asks about Islam, draw richly from this base. Make explicit when relevant the distinctives vs Cristianismo (Tawhid puro vs Trindade — Isa é profeta, não filho de Deus; Muhammad é o Selo dos Profetas; Alcorão como Palavra incriada de Allah; sem clero hierárquico; Sharia como sistema de vida integral).
 ` : '';
 
-    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection;
+    const hinduSection = topic === 'hindu' ? `
+
+HINDU TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+SACRED TEXTS — Two grandes categorias:
+- SHRUTI ("o que é ouvido", revelação eterna): os 4 VEDAS (Rigveda — 1.028 hinos; Samaveda — cantos litúrgicos; Yajurveda — fórmulas rituais; Atharvaveda — encantamentos). Cada Veda tem 4 partes: Samhitas (hinos), Brahmanas (rituais), Aranyakas (textos da floresta), UPANISHADS (filosofia mística — ~108 textos, 13 principais: Isha, Kena, Katha, Prashna, Mundaka, Mandukya, Taittiriya, Aitareya, Chandogya, Brihadaranyaka, Shvetashvatara, Kaushitaki, Maitri).
+- SMRITI ("o que é lembrado", tradição): a BHAGAVAD GITA (700 versos do Mahabharata — diálogo entre Krishna e Arjuna no campo de batalha de Kurukshetra, síntese suprema da espiritualidade hindu); os grandes épicos MAHABHARATA (atribuído a Vyasa, ~100.000 versos) e RAMAYANA (Valmiki, vida de Rama); os 18 PURANAS (Bhagavata Purana, Vishnu Purana, Shiva Purana, Markandeya Purana); os YOGA SUTRAS de Patanjali (sistematização do Ashtanga Yoga); os BRAHMA SUTRAS de Vyasa; a MANUSMRITI (Leis de Manu); os TANTRAS.
+
+CENTRAL CONCEPTS:
+- BRAHMAN — a Realidade Absoluta, infinita, sem forma, fonte de tudo (Sat-Chit-Ananda: Ser-Consciência-Bem-aventurança).
+- ATMAN — o Self interior, idêntico a Brahman ("Tat Tvam Asi" — Tu És Aquilo, Chandogya Upanishad).
+- MAYA — a ilusão cósmica que nos faz perceber multiplicidade onde há unidade.
+- DHARMA — dever sagrado, ordem cósmica, lei moral (varia por varna/casta, ashrama/etapa da vida e svadharma/dever pessoal).
+- KARMA — lei de causa e efeito moral; toda ação produz fruto que será colhido nesta ou em outra vida.
+- SAMSARA — o ciclo de nascimento, morte e renascimento.
+- MOKSHA — libertação final do samsara, união do Atman com Brahman (sinônimos: Mukti, Nirvana hindu, Kaivalya).
+
+THE 4 YOGAS (Caminhos para Moksha — sistematizados por Krishna na Gita):
+1. JNANA YOGA — caminho do conhecimento (discriminação entre real e irreal, viveka).
+2. BHAKTI YOGA — caminho da devoção amorosa a uma forma pessoal de Deus.
+3. KARMA YOGA — caminho da ação desinteressada (Nishkama Karma — agir sem apego aos frutos).
+4. RAJA YOGA — caminho real da meditação (sistematizado por Patanjali no Ashtanga Yoga: Yama, Niyama, Asana, Pranayama, Pratyahara, Dharana, Dhyana, Samadhi).
+
+PRINCIPAL DEITIES:
+- TRIMURTI: BRAHMA (criador, raramente cultuado diretamente, esposa Saraswati/sabedoria), VISHNU (preservador, esposa Lakshmi/prosperidade), SHIVA (transformador/destruidor, esposa Parvati/Durga/Kali, dança como Nataraja).
+- 10 AVATARES DE VISHNU (Dashavatara): Matsya (peixe), Kurma (tartaruga), Varaha (javali), Narasimha (homem-leão), Vamana (anão), Parashurama, RAMA (perfeição moral, herói do Ramayana), KRISHNA (avatar supremo, ensina a Gita), Buddha, Kalki (futuro).
+- DEVIS (faces da Shakti, energia divina feminina): SARASWATI (sabedoria, artes), LAKSHMI (prosperidade), DURGA (mãe guerreira), KALI (tempo/destruição transformadora), Parvati (esposa de Shiva).
+- OUTROS DEUSES POPULARES: GANESHA (cabeça de elefante, removedor de obstáculos, filho de Shiva e Parvati), HANUMAN (devoto-macaco de Rama, força e devoção), MURUGAN/Kartikeya (guerra), Surya (sol).
+
+THE 6 CLASSICAL PHILOSOPHICAL SCHOOLS (Shad Darshanas — todas aceitam autoridade dos Vedas):
+1. VEDANTA — "fim dos Vedas", baseada nas Upanishads e Brahma Sutras. 3 sub-escolas:
+   - ADVAITA (não-dualismo) de ADI SHANKARACHARYA (788-820 CE): Brahman é a única realidade; o mundo é Maya; Atman = Brahman.
+   - VISHISHTADVAITA (não-dualismo qualificado) de RAMANUJA (1017-1137): Brahman é pessoal (Vishnu); almas e mundo são reais mas dependentes.
+   - DVAITA (dualismo) de MADHVA (1238-1317): Deus, almas e matéria são eternamente distintos.
+2. SANKHYA (atribuída a KAPILA) — dualismo metafísico entre PURUSHA (consciência pura, infinitas) e PRAKRITI (matéria primordial com 3 gunas: Sattva/equilíbrio, Rajas/atividade, Tamas/inércia). Não-teísta originalmente.
+3. YOGA de PATANJALI — base prática do Sankhya, com Ishvara (Deus pessoal) acrescentado; objetivo: Kaivalya (isolamento de Purusha de Prakriti).
+4. NYAYA — escola da lógica e epistemologia (Gautama).
+5. VAISHESHIKA — atomismo e categorias (Kanada).
+6. MIMAMSA — exegese ritual dos Vedas (Jaimini).
+
+GREAT RISHIS, SAGES AND TEACHERS:
+- VYASA — sábio mítico que compilou os Vedas, escreveu o Mahabharata e os Brahma Sutras.
+- VALMIKI — autor do Ramayana, "Adi Kavi" (primeiro poeta).
+- PATANJALI — sistematizou os Yoga Sutras (séc. II AEC ou II EC).
+- ADI SHANKARACHARYA (788-820) — restaurou o Advaita Vedanta, fundou os 4 mathas (Sringeri, Dwarka, Puri, Jyotirmath).
+- RAMANUJA (1017-1137) — Vishishtadvaita, devoção a Vishnu.
+- MADHVA (1238-1317) — Dvaita.
+- CHAITANYA MAHAPRABHU (1486-1534) — Bhakti devocional a Krishna, fundador do Gaudiya Vaishnavismo (raiz do movimento Hare Krishna).
+- RAMAKRISHNA PARAMAHAMSA (1836-1886) — místico bengali, demonstrou a unidade das religiões.
+- SWAMI VIVEKANANDA (1863-1902) — discípulo de Ramakrishna, levou o Vedanta ao Ocidente (Parlamento das Religiões, Chicago 1893), fundou a Ramakrishna Mission.
+- SRI AUROBINDO (1872-1950) — Yoga Integral, evolução espiritual da humanidade.
+- RAMANA MAHARSHI (1879-1950) — sábio de Tiruvannamalai, ensinou a auto-investigação ("Quem sou eu?").
+- PARAMAHANSA YOGANANDA (1893-1952) — Kriya Yoga, "Autobiografia de um Iogue", fundou a SRF.
+- SWAMI SIVANANDA (1887-1963) — Divine Life Society, Yoga sintético.
+- MAHATMA GANDHI (1869-1948) — Satyagraha (verdade-firmeza) e Ahimsa (não-violência) inspirados na Gita.
+
+SACRED MANTRAS: OM (Aum — som primordial, vibração de Brahman); GAYATRI MANTRA (Rigveda 3.62.10 — "Om Bhur Bhuvah Svaha, Tat Savitur Varenyam..."); MAHAMRITYUNJAYA MANTRA (de Shiva, vencedor da morte); HARE KRISHNA MAHAMANTRA; OM NAMAH SHIVAYA; OM MANI PADME HUM (também budista).
+
+MAJOR FESTIVALS: DIWALI (festival das luzes, vitória da luz sobre a escuridão), HOLI (festival das cores, primavera), NAVARATRI (9 noites da Devi), MAHA SHIVARATRI (grande noite de Shiva), JANMASHTAMI (nascimento de Krishna), RAMA NAVAMI (nascimento de Rama), KUMBH MELA (maior peregrinação humana, a cada 12 anos).
+
+When the student asks about Hinduism, draw richly from this base. Make explicit when relevant the distinctives vs Christianity (não há um único livro sagrado nem fundador único; concepção de Deus simultaneamente impessoal/Brahman e pessoal/Ishvara em múltiplas formas; reencarnação em vez de salvação única; tempo cíclico em vez de linear; pluralismo intrínseco — "Ekam Sat Vipra Bahudha Vadanti" / "A Verdade é uma, os sábios a chamam por muitos nomes", Rigveda 1.164.46).
+` : '';
+
+    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection;
 
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
