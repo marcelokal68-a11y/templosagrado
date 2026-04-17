@@ -306,10 +306,11 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="users">
-        <TabsList className="w-full grid grid-cols-4">
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="invites">Convites</TabsTrigger>
           <TabsTrigger value="free">Acesso Livre</TabsTrigger>
+          <TabsTrigger value="moderation">Moderação</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
 
