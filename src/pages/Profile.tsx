@@ -6,6 +6,16 @@ import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X, Brain, Shield,
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,6 +38,7 @@ export default function Profile() {
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [subInfo, setSubInfo] = useState<{
     cancel_at_period_end: boolean;
     subscription_end: string | null;
@@ -58,7 +69,7 @@ export default function Profile() {
   }, [isSubscriber, user?.id]);
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o fim do período pago.')) return;
+    setConfirmCancelOpen(false);
     setCancelling(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -344,7 +355,7 @@ export default function Profile() {
               size="sm"
               className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
               disabled={cancelling}
-              onClick={handleCancelSubscription}
+              onClick={() => setConfirmCancelOpen(true)}
             >
               <X className="h-4 w-4" />
               {cancelling ? 'Cancelando...' : 'Cancelar assinatura'}
@@ -475,6 +486,27 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você manterá acesso completo até o fim do período já pago.
+              Após essa data, sua conta voltará ao plano gratuito.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Manter assinatura</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelSubscription}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, cancelar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
