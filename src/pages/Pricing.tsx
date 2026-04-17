@@ -42,7 +42,7 @@ const TOP_PRODUCT_IDS = [PLANS.topMonthly.productId, PLANS.topAnnual.productId];
 const PREMIUM_PRODUCT_IDS = [PLANS.monthly.productId, PLANS.annual.productId];
 
 const FREE_FEATURES = [
-  '10 mensagens por dia',
+  '20 mensagens no mês',
   'Chat com mentor espiritual',
   'Versículo do dia básico',
 ];
