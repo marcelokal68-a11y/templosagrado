@@ -40,7 +40,7 @@ export default function PublishToMural({ originalContent, variant = 'icon', clas
       toast({ title: t('auth.login', language), variant: 'destructive' });
       return;
     }
-    if (!isSubscriber) {
+    if (!hasAccess) {
       toast({ title: t('chat.upgrade', language), description: t('chat.no_questions', language), variant: 'destructive' });
       return;
     }
