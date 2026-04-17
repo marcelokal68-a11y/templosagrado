@@ -24,7 +24,8 @@ interface PublishToMuralProps {
 }
 
 export default function PublishToMural({ originalContent, variant = 'icon', className }: PublishToMuralProps) {
-  const { language, user, chatContext, isSubscriber } = useApp();
+  const { language, user, chatContext, isSubscriber, isAdmin } = useApp();
+  const hasAccess = isSubscriber || isAdmin;
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [summary, setSummary] = useState('');
