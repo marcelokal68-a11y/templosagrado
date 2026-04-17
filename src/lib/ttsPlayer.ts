@@ -63,7 +63,7 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
           isAppending = true;
           const chunk = queue.shift()!;
           try {
-            sourceBuffer.appendBuffer(chunk);
+            sourceBuffer.appendBuffer(chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer);
           } catch (e) {
             console.error('appendBuffer error:', e);
             isAppending = false;
