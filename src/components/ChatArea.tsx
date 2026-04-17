@@ -767,14 +767,30 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </div>
         ) : (
           <>
+            {/* Visitor CTA banner */}
+            {!user && messages.length > 0 && (
+              <Link
+                to="/auth?next=/pricing"
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-primary/5 border-b border-primary/15 text-xs text-primary hover:bg-primary/10 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>💾 Salvar sua jornada e desbloquear áudio + Mural</span>
+              </Link>
+            )}
             {/* Remaining messages banner */}
             <div className="flex items-center justify-between px-4 py-1">
-              <span className={cn(
-                "text-xs font-medium",
-                remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
-              )}>
-                {remainingCount} {t('chat.questions_remaining', language)}
-              </span>
+              {user ? (
+                <span className={cn(
+                  "text-xs font-medium",
+                  remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
+                )}>
+                  {remainingCount} {t('chat.questions_remaining', language)}
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-muted-foreground">
+                  ✨ Conversa livre
+                </span>
+              )}
               <div className="flex items-center gap-1.5">
                 {!user && (
                   <Link to="/auth" className="text-xs text-primary hover:underline font-medium min-h-[44px] flex items-center">
