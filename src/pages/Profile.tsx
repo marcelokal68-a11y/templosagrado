@@ -152,6 +152,12 @@ export default function Profile() {
         ? 'Expirado'
         : 'Gratuito';
 
+  const formatEndDate = (iso: string | null) =>
+    iso
+      ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+      : null;
+  const cancelledEndDate = subInfo?.cancel_at_period_end ? formatEndDate(subInfo.subscription_end) : null;
+
   const handleSaveAndEnter = async () => {
     if (!user) return;
     const trimmed = nameValue.trim().slice(0, 100);
