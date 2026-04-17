@@ -197,7 +197,69 @@ CENTRAL CONCEPTS: Hashem (Nome inefável de Deus), Echad (Unidade de Deus — Sh
 
 When the student asks about Judaism, draw richly from this base. Make explicit when relevant the distinctives vs Christianity (Tanakh of 24 books vs Old Testament of 39/46, no Trinity — pure monoteísmo, Mashiach ainda não veio, ênfase na ação correta — ortopráxis — sobre a crença correta — ortodoxia, valor central da Torá oral e da disputa rabínica como expressão de devoção).
 ` : '';
-    const traditionsSection = catholicSection + protestantSection + jewishSection;
+
+    const islamSection = topic === 'islam' ? `
+
+ISLAMIC TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+SACRED TEXTS:
+- The ALCORÃO (Qur'an Karim) — 114 SURAS (capítulos) reveladas ao Profeta Muhammad ﷺ pelo arcanjo Jibril (Gabriel) entre 610-632 CE em Meca e Medina. Dividido em 30 juz' (partes). Suras famosas: Al-Fatiha (1, abertura, recitada em toda oração), Al-Baqarah (2, a mais longa, contém o Ayat al-Kursi 2:255), Yasin (36, "coração do Alcorão"), Al-Ikhlas (112, declaração de Tawhid). Língua sagrada: árabe clássico, considerado intraduzível na sua essência.
+- The HADITH (Sunnah do Profeta) — relatos das palavras, ações e silêncios aprovadores de Muhammad ﷺ. As 6 coleções canônicas sunitas (Kutub al-Sittah): Sahih al-Bukhari (~7.275 hadiths, considerada a mais autêntica depois do Alcorão), Sahih Muslim, Sunan Abu Dawud, Jami at-Tirmidhi, Sunan an-Nasa'i, Sunan ibn Majah. Para os xiitas: Al-Kafi de Al-Kulayni e os 4 livros principais.
+- The SIRA (biografia do Profeta), com destaque para Ibn Ishaq/Ibn Hisham.
+- The TAFSIR (exegese alcorânica) clássica: Tafsir at-Tabari, Tafsir Ibn Kathir, Tafsir al-Qurtubi, Tafsir al-Jalalayn.
+
+THE 5 PILLARS OF ISLAM (Arkan al-Islam):
+1. SHAHADA — testemunho da fé: "Não há divindade senão Allah, e Muhammad é o Mensageiro de Allah" (La ilaha illa Allah, Muhammadun rasul Allah).
+2. SALAT — as 5 orações diárias (Fajr/aurora, Dhuhr/meio-dia, Asr/tarde, Maghrib/pôr-do-sol, Isha/noite), realizadas voltadas para Meca (Qibla).
+3. ZAKAT — esmola obrigatória de 2,5% sobre a riqueza acumulada, redistribuída aos pobres.
+4. SAWM — jejum no mês de Ramadã (do amanhecer ao pôr-do-sol).
+5. HAJJ — peregrinação a Meca pelo menos uma vez na vida, durante Dhul Hijjah.
+
+THE 6 ARTICLES OF FAITH (Arkan al-Iman):
+1. Crença em Allah (TAWHID — unicidade absoluta, oposição a shirk/politeísmo).
+2. Crença nos anjos (Jibril, Mikail, Israfil, Azrail).
+3. Crença nos livros revelados (Tawrat/Torá a Musa, Zabur/Salmos a Dawud, Injil/Evangelho a Isa, Qur'an a Muhammad ﷺ).
+4. Crença nos profetas (25 nomeados no Alcorão).
+5. Crença no Dia do Juízo (Yawm al-Qiyamah).
+6. Crença no Qadar (decreto divino, predestinação).
+
+THE 25 PROPHETS NAMED IN THE QURAN: Adam, Idris/Enoque, Nuh/Noé, Hud, Saleh, Ibrahim/Abraão (Khalil Allah, "amigo de Deus"), Lut/Ló, Ismail/Ismael, Ishaq/Isaac, Yaqub/Jacó, Yusuf/José, Ayyub/Jó, Shu'ayb, Musa/Moisés (Kalim Allah, "aquele que falou com Deus"), Harun/Aarão, Dhul-Kifl, Dawud/Davi, Sulayman/Salomão, Ilyas/Elias, Al-Yasa/Eliseu, Yunus/Jonas, Zakariya/Zacarias, Yahya/João Batista, Isa/Jesus (Ruh Allah, "Espírito de Deus", nascido virginalmente de Maryam), e MUHAMMAD ﷺ (Khatam an-Nabiyyin, "Selo dos Profetas").
+
+THE 4 RASHIDUN CALIPHS (Caliphs Bem-Guiados, 632-661 CE):
+1. ABU BAKR AS-SIDDIQ (632-634) — sogro do Profeta, primeiro a aceitar o Islã entre os adultos homens, compilou o primeiro Mushaf.
+2. UMAR IBN AL-KHATTAB (634-644) — grande administrador, expandiu o Califado pela Pérsia, Síria, Egito.
+3. UTHMAN IBN AFFAN (644-656) — codificou o Alcorão na sua forma definitiva (Mushaf Uthmani).
+4. ALI IBN ABI TALIB (656-661) — primo e genro do Profeta, figura central também para os xiitas (que o consideram o primeiro Imam legítimo).
+
+GREAT THEOLOGIANS, PHILOSOPHERS AND MYSTICS:
+- AL-GHAZALI (Imam Hujjat al-Islam, 1058-1111) — autor do monumental Ihya Ulum al-Din (Revivificação das Ciências Religiosas), Tahafut al-Falasifa (Incoerência dos Filósofos), considerado o maior teólogo do Islã sunita. Reconciliou kalam, fiqh e tasawwuf (sufismo).
+- IBN SINA / AVICENA (980-1037) — filósofo e médico persa, autor do Kitab al-Shifa e do Cânone da Medicina (referência médica por séculos).
+- IBN RUSHD / AVERRÓIS (1126-1198, Córdoba) — comentador de Aristóteles, influência decisiva na escolástica latina (Tomás de Aquino).
+- AL-FARABI (872-950) — "o Segundo Mestre" depois de Aristóteles, filosofia política islâmica.
+- IBN ARABI (Sheikh al-Akbar, 1165-1240) — maior mestre da metafísica sufi, autor de Futuhat al-Makkiyya (Revelações de Meca) e Fusus al-Hikam (Engastes da Sabedoria), formulou a doutrina de Wahdat al-Wujud (unidade do Ser).
+- JALALUDDIN RUMI (Mevlana, 1207-1273, Konya) — maior poeta místico do Islã, autor do Masnavi-i Ma'navi (épico espiritual de 25.000 versos), fundador inspirador da ordem Mevlevi (dervixes giratórios).
+- IBN TAYMIYYA (1263-1328) — teólogo conservador, influência sobre o salafismo moderno.
+- AL-BUKHARI, MUSLIM, AT-TIRMIDHI — os grandes compiladores de hadith.
+- HAFIZ (1315-1390) e SAADI (1210-1291) — poetas persas sufis.
+- RABI'A AL-ADAWIYYA (717-801) — primeira grande mística sufi, ensinou o amor puro a Deus.
+
+SUFISM (TASAWWUF — Mystical Path):
+The inner dimension of Islam, focused on tazkiyat an-nafs (purificação da alma) and direct experience of the Divine. Key concepts: dhikr (lembrança de Deus), fana (aniquilação no Divino), baqa (subsistência em Deus), maqamat (estações espirituais) and ahwal (estados místicos). Major Sufi orders (Tariqas): Mevlevi (Rumi), Qadiri (Abdul Qadir Jilani), Naqshbandi (Bahauddin Naqshband), Chisti (Moinuddin Chisti — popular na Índia), Shadhili, Tijani.
+
+THE 4 SUNNI SCHOOLS OF FIQH (Madhabs):
+- HANAFI (Abu Hanifa, 699-767) — most followed, dominant in Turkey, Pakistan, India, Central Asia.
+- MALIKI (Malik ibn Anas, 711-795) — North and West Africa.
+- SHAFI'I (Al-Shafi'i, 767-820) — Egypt, East Africa, Southeast Asia.
+- HANBALI (Ahmad ibn Hanbal, 780-855) — most strict, dominant in Saudi Arabia.
+
+PRINCIPAL DENOMINATIONS: SUNITAS (~85-90%, seguem os Rashidun e os 4 madhabs), XIITAS (~10-15%, seguem Ali e os 12 Imams na principal vertente Twelver/Ithna Ashariya — também Ismaelitas e Zaiditas), SUFIS (transversal a sunitas e xiitas), IBADIS (em Omã).
+
+CENTRAL CONCEPTS: Allah (o nome de Deus), Tawhid (unicidade absoluta), Shirk (politeísmo, o pecado mais grave), Iman (fé), Islam (submissão a Deus), Ihsan (excelência espiritual), Ummah (comunidade global dos crentes), Sharia (lei revelada), Fiqh (jurisprudência), Halal/Haram (lícito/ilícito), Jihad (esforço — a Jihad Maior é interior, contra o ego/nafs; a Menor é a defesa armada da comunidade), Jannah (Paraíso), Jahannam (Inferno), Akhirah (Vida Futura).
+
+When the student asks about Islam, draw richly from this base. Make explicit when relevant the distinctives vs Cristianismo (Tawhid puro vs Trindade — Isa é profeta, não filho de Deus; Muhammad é o Selo dos Profetas; Alcorão como Palavra incriada de Allah; sem clero hierárquico; Sharia como sistema de vida integral).
+` : '';
+
+    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection;
 
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
