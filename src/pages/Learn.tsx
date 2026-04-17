@@ -335,14 +335,24 @@ export default function Learn() {
 
           {/* Trending traditions — 3 picks rotating weekly */}
           <section className="mt-10">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              {language === 'en' ? 'Recommended traditions' : language === 'es' ? 'Tradiciones recomendadas' : 'Tradições recomendadas'}
-            </h2>
+            <div className="flex items-center justify-between mb-3 gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                {language === 'en' ? 'Recommended traditions' : language === 'es' ? 'Tradiciones recomendadas' : 'Tradições recomendadas'}
+              </h2>
+              <button
+                onClick={() => setTrendingShuffle(s => s + 1)}
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-muted/50"
+                title={language === 'en' ? 'Shuffle recommendations' : language === 'es' ? 'Sortear nuevas' : 'Sortear novas'}
+              >
+                <Shuffle className="h-3 w-3" />
+                {language === 'en' ? 'See another' : language === 'es' ? 'Ver otra' : 'Ver outra recomendação'}
+              </button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {getWeeklyTrending(preferredReligion).map(item => (
+              {getWeeklyTrending(preferredReligion, trendingShuffle).map(item => (
                 <button
-                  key={`${item.kind}-${item.key}`}
+                  key={`${item.kind}-${item.key}-${trendingShuffle}`}
                   onClick={() => startTopic(item.key, item.kind)}
                   className="group relative flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 hover:border-primary/50 transition-all text-left"
                 >
@@ -357,7 +367,9 @@ export default function Learn() {
                     </p>
                     <p className="text-[10px] font-medium text-primary/80 mt-0.5 flex items-center gap-1">
                       <Sparkles className="h-2.5 w-2.5" />
-                      {language === 'en' ? 'Trending this week' : language === 'es' ? 'En tendencia esta semana' : 'Em alta esta semana'}
+                      {trendingShuffle === 0
+                        ? (language === 'en' ? 'Trending this week' : language === 'es' ? 'En tendencia esta semana' : 'Em alta esta semana')
+                        : (language === 'en' ? 'New suggestion' : language === 'es' ? 'Nueva sugerencia' : 'Nova sugestão')}
                     </p>
                   </div>
                 </button>
