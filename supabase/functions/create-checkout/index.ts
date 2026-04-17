@@ -35,6 +35,25 @@ serve(async (req) => {
     let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+
+      // Guard: prevent duplicate subscriptions if user already has an active one
+      const existingSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+      if (existingSubs.data.length > 0) {
+        return new Response(
+          JSON.stringify({
+            error: "Você já possui uma assinatura ativa. Use 'Gerenciar assinatura' para fazer alterações.",
+            already_subscribed: true,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 409,
+          },
+        );
+      }
     }
 
     const origin = req.headers.get("origin") || "https://templosagrado.lovable.app";
