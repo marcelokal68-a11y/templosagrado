@@ -26,54 +26,64 @@ serve(async (req) => {
     if (!authHeader?.startsWith("Bearer ")) throw new Error("No authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    
-    // Use admin client to get user from token
     const { data: { user }, error: userError } = await supabaseClient.auth.admin.getUserById(
-      // First decode JWT to get user id
       JSON.parse(atob(token.split('.')[1])).sub
     );
     if (userError || !user) throw new Error("User not authenticated");
     if (!user.email) throw new Error("User email not found");
+
+    // Load existing profile to preserve trial / admin status
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("trial_ends_at, is_pro, questions_limit")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const trialActive = profile?.trial_ends_at
+      ? new Date(profile.trial_ends_at).getTime() > Date.now()
+      : false;
+    const isFreeAccess = !!profile?.is_pro; // 100-year whitelist users
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-
-    const hasActive = subscriptions.data.length > 0;
+    let hasActive = false;
     let productId: string | null = null;
     let subscriptionEnd: string | null = null;
+    let subId: string | null = null;
 
+    if (customers.data.length > 0) {
+      const customerId = customers.data[0].id;
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+      hasActive = subscriptions.data.length > 0;
+      if (hasActive) {
+        const sub = subscriptions.data[0];
+        subId = sub.id;
+        subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+        productId = sub.items.data[0].price.product as string;
+      }
+    }
+
+    // Decide what to write back to profile
     if (hasActive) {
-      const sub = subscriptions.data[0];
-      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
-      productId = sub.items.data[0].price.product as string;
-
-      const isTop = TOP_PRODUCT_IDS.includes(productId);
+      const isTop = TOP_PRODUCT_IDS.includes(productId || "");
       const questionsLimit = isTop ? 999999 : 60;
-
       await supabaseClient
         .from("profiles")
         .update({
           is_subscriber: true,
-          subscription_id: sub.id,
+          subscription_id: subId,
           questions_limit: questionsLimit,
         })
         .eq("user_id", user.id);
-    } else {
+    } else if (!isFreeAccess && !trialActive) {
+      // Only downgrade to free tier when there's no active sub, no whitelist, and no trial
       await supabaseClient
         .from("profiles")
         .update({
@@ -83,11 +93,14 @@ serve(async (req) => {
         })
         .eq("user_id", user.id);
     }
+    // If trial is still active or user is whitelisted, do NOT touch their limits.
 
     return new Response(JSON.stringify({
       subscribed: hasActive,
       product_id: productId,
       subscription_end: subscriptionEnd,
+      trial_active: trialActive,
+      trial_ends_at: profile?.trial_ends_at ?? null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

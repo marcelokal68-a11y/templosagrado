@@ -73,18 +73,26 @@ serve(async (req) => {
 
       const now = Date.now();
       const users = authUsers.map((u: any) => {
-        const profile = profileMap.get(u.id);
+        const profile: any = profileMap.get(u.id);
         const userRoles = roleMap.get(u.id) ?? [];
         const lastSignIn = u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() : 0;
         const isOnline = lastSignIn > 0 && (now - lastSignIn) < 5 * 60 * 1000;
+
+        let trialDaysLeft = 0;
+        if (profile?.trial_ends_at) {
+          const ms = new Date(profile.trial_ends_at).getTime() - now;
+          if (ms > 0) trialDaysLeft = Math.ceil(ms / (1000 * 60 * 60 * 24));
+        }
 
         return {
           id: u.id,
           email: u.email ?? "",
           display_name: profile?.display_name ?? u.email ?? "",
           is_subscriber: profile?.is_subscriber ?? false,
+          is_pro: profile?.is_pro ?? false,
           is_admin: userRoles.includes("admin"),
           is_online: isOnline,
+          trial_days_left: trialDaysLeft,
           created_at: u.created_at,
           last_sign_in_at: u.last_sign_in_at,
         };
@@ -98,7 +106,7 @@ serve(async (req) => {
     if (action === "get-stats") {
       const { data: authData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
       const authUsers = authData?.users ?? [];
-      const { data: profiles } = await supabase.from("profiles").select("is_subscriber");
+      const { data: profiles } = await supabase.from("profiles").select("is_subscriber, trial_ends_at");
 
       const now = Date.now();
       const totalUsers = authUsers.length;
@@ -107,8 +115,12 @@ serve(async (req) => {
         return t > 0 && (now - t) < 5 * 60 * 1000;
       }).length;
       const subscribers = (profiles ?? []).filter((p: any) => p.is_subscriber).length;
+      const trialing = (profiles ?? []).filter((p: any) => {
+        if (!p.trial_ends_at) return false;
+        return new Date(p.trial_ends_at).getTime() > now && !p.is_subscriber;
+      }).length;
 
-      return new Response(JSON.stringify({ totalUsers, onlineUsers, subscribers }), {
+      return new Response(JSON.stringify({ totalUsers, onlineUsers, subscribers, trialing }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -159,6 +171,41 @@ serve(async (req) => {
         { user_id: target.id, role: "admin" },
         { onConflict: "user_id,role" }
       );
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Free Access management ---
+    if (action === "list-free-access") {
+      const { data } = await supabase
+        .from("free_access_emails")
+        .select("*")
+        .order("created_at", { ascending: false });
+      return new Response(JSON.stringify(data || []), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "add-free-access") {
+      const { email, note } = body;
+      if (!email || typeof email !== "string") throw new Error("Email required");
+      const cleanEmail = email.trim().toLowerCase();
+      const { error: insErr } = await supabase
+        .from("free_access_emails")
+        .upsert({ email: cleanEmail, note: note || null }, { onConflict: "email" });
+      if (insErr) throw insErr;
+      // Also update existing profile if present
+      await supabase.rpc("sync_free_access_profiles");
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "remove-free-access") {
+      const { email } = body;
+      if (!email) throw new Error("Email required");
+      await supabase.from("free_access_emails").delete().eq("email", email.trim().toLowerCase());
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
