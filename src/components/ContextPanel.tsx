@@ -38,7 +38,7 @@ const UNIVERSAL_TOPICS = ['future', 'deceased', 'animals', 'career', 'health', '
 
 const TOPICS_BY_RELIGION: Record<string, string[]> = {
   christian: ['jesus', 'heaven', 'hell', 'salvation', 'scripture', 'prayer_topic', ...UNIVERSAL_TOPICS],
-  catholic: ['jesus', 'heaven', 'hell', 'salvation', 'saints', 'mary', 'sacraments', 'prayer_topic', 'sacrifices', ...UNIVERSAL_TOPICS],
+  catholic: ['jesus', 'mary', 'marian_dogmas', 'saints', 'doctors_church', 'encyclicals', 'eucharist', 'sacraments', 'magisterium', 'papacy', 'salvation', 'prayer_topic', 'heaven', 'hell', 'sacrifices', ...UNIVERSAL_TOPICS],
   protestant: ['jesus', 'salvation', 'grace', 'protestant_bible', 'sola_scriptura', 'reformation', 'pastors_prophets', 'revival', 'pentecost', 'prophets', 'prayer_topic', 'heaven', 'hell', ...UNIVERSAL_TOPICS],
   spiritist: ['spirits', 'reincarnation', 'charity_spiritist', 'mediumship', 'gospel_kardec', ...UNIVERSAL_TOPICS],
   umbanda: ['orishas_candomble', 'ancestors_candomble', 'mediumship', 'offerings_candomble', ...UNIVERSAL_TOPICS],

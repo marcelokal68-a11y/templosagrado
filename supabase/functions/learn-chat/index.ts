@@ -64,6 +64,42 @@ serve(async (req) => {
     const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
     const responseLang = langMap[lang] || 'Brazilian Portuguese';
 
+    const catholicSection = topic === 'catholic' ? `
+
+CATHOLIC TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+SACRED BOOKS:
+- The Catholic Bible: 73 books (46 Old Testament + 27 New Testament). The Catholic OT INCLUDES 7 deuterocanonical books rejected by Protestants: Tobias, Judite, Sabedoria, Eclesiástico (Sirácide), Baruque, 1 and 2 Macabeus, plus additions to Esther and Daniel. Officially defined at the Council of Trent (1546).
+- Catechism of the Catholic Church (CIC, 1992) — the definitive synthesis of Catholic doctrine, structured in 4 parts (Creed, Sacraments, Morality, Prayer).
+- Documents of Vatican II (1962-1965): Lumen Gentium (the Church), Dei Verbum (Divine Revelation), Sacrosanctum Concilium (Liturgy), Gaudium et Spes (Church in the modern world), Nostra Aetate (interreligious dialogue).
+- Major Papal Encyclicals: Rerum Novarum (Leo XIII, 1891 — social doctrine), Pascendi (Pius X, 1907), Humanae Vitae (Paul VI, 1968), Redemptor Hominis (John Paul II, 1979), Evangelium Vitae (1995), Fides et Ratio (1998), Deus Caritas Est (Benedict XVI, 2005), Laudato Si' (Francis, 2015 — ecology), Fratelli Tutti (2020).
+
+THE 4 MARIAN DOGMAS:
+1. Mary, Mother of God (Theotokos) — Council of Ephesus, 431
+2. Perpetual Virginity of Mary — Council of Constantinople II, 553
+3. Immaculate Conception — defined by Pope Pius IX in Ineffabilis Deus, 1854
+4. Assumption of Mary into Heaven — defined by Pope Pius XII in Munificentissimus Deus, 1950
+
+THE 7 SACRAMENTS: Baptism, Confirmation, Eucharist (the "source and summit" of Christian life — real presence via transubstantiation), Reconciliation/Confession, Anointing of the Sick, Holy Orders, Matrimony.
+
+THE 37 DOCTORS OF THE CHURCH (titles awarded for outstanding theological contribution):
+- The 4 Great Doctors of the West: Augustine of Hippo (354-430, "Confessions", "City of God"), Jerome (347-420, Vulgate translator), Ambrose of Milan (340-397), Gregory the Great (540-604).
+- The 4 Great Doctors of the East: Athanasius, Basil the Great, Gregory Nazianzen, John Chrysostom.
+- Medieval and Scholastic: Thomas Aquinas (1225-1274, "Summa Theologica", angelic doctor), Bonaventure (Franciscan, seraphic doctor), Anselm of Canterbury (ontological argument), Bernard of Clairvaux, Albert the Great, Peter Damian, Hilary of Poitiers, Cyril of Alexandria, Cyril of Jerusalem, Leo the Great, Isidore of Seville, Bede the Venerable, John Damascene, Peter Chrysologus.
+- Mystics: Catherine of Siena (1347-1380, first woman doctor declared), Teresa of Ávila (1515-1582, mystical doctor), John of the Cross ("Dark Night of the Soul"), Thérèse of Lisieux (1873-1897, "Little Way"), Hildegard of Bingen (declared 2012), Gregory of Narek (declared 2015).
+- Modern: Francis de Sales, Alphonsus Liguori, Robert Bellarmine, Lawrence of Brindisi, Peter Canisius, John of Avila.
+
+KEY SAINTS (canonized — beyond the Doctors): Francis of Assisi (poverty, ecology), Dominic, Ignatius of Loyola (founder of Jesuits), Benedict (founder of Western monasticism), Padre Pio (stigmata), Faustina Kowalska (Divine Mercy), John Paul II, Mother Teresa of Calcutta, Maximilian Kolbe (Auschwitz martyr), Joan of Arc, Anthony of Padua, Rita of Cascia, Jude Thaddeus.
+
+PAPACY AND MAGISTERIUM:
+- Apostolic succession from Saint Peter (Mt 16:18) — unbroken line of bishops of Rome.
+- The Magisterium = the teaching authority of the Church (Pope + bishops in communion with him), divided into ordinary and extraordinary (ecumenical councils, ex cathedra papal definitions).
+- Papal infallibility ex cathedra defined at Vatican Council I (1870, Pastor Aeternus) — only invoked twice: Immaculate Conception (1854) and Assumption (1950).
+- Current Pope: Leo XIV (Robert Prevost), elected May 2025 after the death of Francis. Notable recent popes: Pius IX, Leo XIII, Pius X, Pius XII, John XXIII (convoked Vatican II), Paul VI, John Paul II (longest pontificate of the modern era), Benedict XVI, Francis.
+
+When the student asks about Catholicism, draw richly from this base. Make explicit when relevant the distinctives vs Protestantism (73 vs 66 books, Scripture+Tradition+Magisterium vs sola scriptura, faith+works vs sola fide, veneration of Mary and saints, purgatory, 7 sacraments vs 2, papal authority).
+` : '';
+
     const protestantSection = topic === 'protestant' ? `
 
 PROTESTANT TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
@@ -116,7 +152,7 @@ When the student asks about Protestantism, draw richly from this base. Make expl
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
 Your area of expertise for this session is: ${topicName}.
-${protestantSection}
+${catholicSection}${protestantSection}
 CRITICAL RULES:
 - Respond ALWAYS in ${responseLang}.
 - Be educational, engaging, and historically accurate.
