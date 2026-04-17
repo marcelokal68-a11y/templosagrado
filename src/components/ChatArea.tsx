@@ -393,11 +393,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
 
-    if (user && questionsRemaining <= 0) {
-      toast({ title: t('chat.no_questions', language), description: t('chat.upgrade', language), variant: 'destructive' });
-      return;
-    }
-
     const userMsg: Msg = { role: 'user', content: text.trim() };
     const newUserCount = userMessageCount + 1;
     const isClosing = newUserCount >= MAX_USER_MESSAGES;
