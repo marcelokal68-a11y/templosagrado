@@ -317,14 +317,28 @@ export default function Profile() {
             label="Plano"
             value={planLabel}
           />
+
+          {/* Cancellation notice — when subscription is set to end at period end */}
+          {cancelledEndDate && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-50 p-4 space-y-1">
+              <p className="text-sm font-semibold text-amber-900">
+                Assinatura cancelada
+              </p>
+              <p className="text-xs text-amber-800 leading-snug">
+                Você mantém acesso completo até <strong>{cancelledEndDate}</strong>.
+                Após essa data, sua conta voltará ao plano gratuito.
+              </p>
+            </div>
+          )}
+
           <InfoRow
             icon={<Sparkles className="h-5 w-5 text-primary/70" />}
             label="Perguntas usadas"
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
 
-          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial */}
-          {isSubscriber && !isAdmin && accessStatus !== 'trial' && (
+          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial, and not already cancelled */}
+          {isSubscriber && !isAdmin && accessStatus !== 'trial' && !subInfo?.cancel_at_period_end && (
             <Button
               variant="outline"
               size="sm"
