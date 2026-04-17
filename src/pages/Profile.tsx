@@ -176,22 +176,36 @@ export default function Profile() {
           {/* Religion — editable */}
           {editingReligion ? (
             <div className="p-4 rounded-xl bg-card border border-primary/30 space-y-3">
-              <p className="text-xs text-muted-foreground">Tradição</p>
+              <p className="text-xs text-muted-foreground">
+                Escolha seu caminho
+                {profile.preferred_religion && (
+                  <span className="ml-1 text-primary"> — sua fé está destacada</span>
+                )}
+              </p>
               <div className="space-y-2">
-                {traditions.map(tr => (
-                  <button
-                    key={tr.value}
-                    onClick={() => saveReligion(tr.value)}
-                    disabled={saving}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg border text-sm transition-colors ${
-                      profile.preferred_religion === tr.value
-                        ? 'border-primary bg-primary/10 text-primary font-medium'
-                        : 'border-border/50 hover:border-primary/30 hover:bg-primary/5 text-foreground/80'
-                    }`}
-                  >
-                    {t(tr.labelKey, language)}
-                  </button>
-                ))}
+                {traditions.map(tr => {
+                  const isSaved = profile.preferred_religion === tr.value;
+                  const isDimmed = !!profile.preferred_religion && !isSaved;
+                  return (
+                    <button
+                      key={tr.value}
+                      onClick={() => saveReligion(tr.value)}
+                      disabled={saving}
+                      className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border text-sm transition-all ${
+                        isSaved
+                          ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40'
+                          : isDimmed
+                            ? 'border-border/40 text-foreground/70 opacity-50 hover:opacity-100 hover:border-primary/30 hover:bg-primary/5'
+                            : 'border-border/50 hover:border-primary/30 hover:bg-primary/5 text-foreground/80'
+                      }`}
+                    >
+                      <span>{t(tr.labelKey, language)}</span>
+                      {isSaved && (
+                        <span className="text-[11px] font-medium text-primary shrink-0">★ sua tradição</span>
+                      )}
+                    </button>
+                  );
+                })}
                 <button
                   onClick={() => saveReligion(null)}
                   disabled={saving}
@@ -208,7 +222,7 @@ export default function Profile() {
             <EditableRow
               icon={<BookOpen className="h-5 w-5 text-primary/70" />}
               label="Tradição"
-              value={religionLabel}
+              value={profile.preferred_religion ? `★ ${religionLabel}` : religionLabel}
               onEdit={() => setEditingReligion(true)}
             />
           )}
