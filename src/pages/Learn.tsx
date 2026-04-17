@@ -84,6 +84,10 @@ export default function Learn() {
     setTopicKind(kind);
     setMessages([]);
     setFaithPromptShown(false);
+    // Track exploration: if user has a different preferred faith, mark this as "exploring"
+    if (kind === 'religion' && preferredReligion && preferredReligion !== key) {
+      try { sessionStorage.setItem('exploring_faith', key); } catch {}
+    }
     const introQuestion = language === 'en'
       ? `Give me a brief, fascinating introduction to ${labelFor(key, kind)}.`
       : language === 'es'
@@ -199,6 +203,7 @@ export default function Learn() {
     if (!user || !topic) return;
     await supabase.from('profiles').update({ preferred_religion: topic } as any).eq('user_id', user.id);
     setChatContext(prev => ({ ...prev, religion: topic, philosophy: '' }));
+    try { sessionStorage.removeItem('exploring_faith'); } catch {}
     toast.success(language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada');
     setShowFaithPrompt(false);
   };

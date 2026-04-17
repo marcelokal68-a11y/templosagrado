@@ -170,7 +170,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone, accessStatus } = useApp();
+  const { language, user, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone, accessStatus, refreshProfile } = useApp();
   const religion = chatContext.religion || '';
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -186,6 +186,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [summaryText, setSummaryText] = useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [lgpdAccepted, setLgpdAccepted] = useState(() => localStorage.getItem('lgpd_accepted') === 'true');
+  const [exploringFaith, setExploringFaith] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -196,6 +197,36 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const navigate = useNavigate();
 
   const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
+
+  // Detect "exploration return": user came back from /learn after clicking "Só explorar"
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const explored = sessionStorage.getItem('exploring_faith');
+      if (explored) {
+        setExploringFaith(explored);
+        sessionStorage.removeItem('exploring_faith');
+        // Auto-hide after 20s
+        const timer = setTimeout(() => setExploringFaith(null), 20000);
+        return () => clearTimeout(timer);
+      }
+    } catch {}
+  }, [user]);
+
+  const adoptExploredFaith = async () => {
+    if (!user || !exploringFaith) return;
+    const key = exploringFaith;
+    setExploringFaith(null);
+    const { error } = await supabase.from('profiles').update({ preferred_religion: key }).eq('user_id', user.id);
+    if (error) {
+      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+      return;
+    }
+    setChatContext(prev => ({ ...prev, religion: key, philosophy: '' }));
+    await refreshProfile();
+    toast({ title: language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada' });
+  };
+
 
   useEffect(() => {
     if (hasPendingUndo) {
@@ -654,6 +685,28 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       </Dialog>
       {/* Trial / expired banner */}
       <TrialBanner />
+      {/* Exploration return banner: user came back from /learn after exploring a different faith */}
+      {exploringFaith && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-primary/8 border-b border-primary/20 animate-fade-in">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground/85 flex-1 leading-snug">
+            Você estava explorando <strong className="text-primary">{t(`religion.${exploringFaith}` as any, language) || exploringFaith}</strong> — quer adotar como sua fé?
+          </p>
+          <button
+            onClick={adoptExploredFaith}
+            className="text-xs font-semibold text-primary hover:underline shrink-0 px-2 py-1"
+          >
+            Adotar
+          </button>
+          <button
+            onClick={() => setExploringFaith(null)}
+            className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
+            aria-label="Dispensar"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 md:py-4 space-y-3 md:space-y-4 mobile-scroll">
         {/* Empty state — welcome + suggested questions */}
