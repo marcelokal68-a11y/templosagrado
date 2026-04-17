@@ -205,6 +205,46 @@ export default function Admin() {
     }
   };
 
+  const loadFreeAccess = async (token?: string) => {
+    const t = token || await getToken();
+    const resp = await supabase.functions.invoke('admin', {
+      body: { action: 'list-free-access' },
+      headers: { Authorization: `Bearer ${t}` },
+    });
+    if (Array.isArray(resp.data)) setFreeAccess(resp.data);
+  };
+
+  const addFreeAccess = async () => {
+    if (!freeEmail.trim()) return;
+    setAddingFree(true);
+    try {
+      const token = await getToken();
+      const resp = await supabase.functions.invoke('admin', {
+        body: { action: 'add-free-access', email: freeEmail.trim(), note: freeNote.trim() || null },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resp.data?.error) throw new Error(resp.data.error);
+      toast({ title: 'Acesso livre concedido!' });
+      setFreeEmail(''); setFreeNote('');
+      loadFreeAccess();
+      loadUsers();
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setAddingFree(false);
+    }
+  };
+
+  const removeFreeAccess = async (email: string) => {
+    const token = await getToken();
+    await supabase.functions.invoke('admin', {
+      body: { action: 'remove-free-access', email },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    toast({ title: 'Removido' });
+    loadFreeAccess();
+  };
+
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
     else { setSortKey(key); setSortAsc(true); }
