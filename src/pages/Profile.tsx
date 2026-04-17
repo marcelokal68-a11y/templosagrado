@@ -38,6 +38,7 @@ export default function Profile() {
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [subInfo, setSubInfo] = useState<{
     cancel_at_period_end: boolean;
@@ -90,6 +91,29 @@ export default function Profile() {
       setCancelling(false);
     }
   };
+
+  const handleReactivateSubscription = async () => {
+    setReactivating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('reactivate-subscription', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.error || resp.data?.error) {
+        throw new Error(resp.data?.error || resp.error?.message || 'Erro ao reativar');
+      }
+      toast({
+        title: 'Assinatura reativada 🙏',
+        description: 'Que bom ter você de volta. Sua assinatura continuará normalmente.',
+      });
+      await loadSubInfo();
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setReactivating(false);
+    }
+  };
+
   const [profile, setProfile] = useState<{
     display_name: string | null;
     preferred_religion: string | null;
@@ -331,14 +355,25 @@ export default function Profile() {
 
           {/* Cancellation notice — when subscription is set to end at period end */}
           {cancelledEndDate && (
-            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
-              <p className="text-sm font-semibold text-foreground">
-                Assinatura cancelada
-              </p>
-              <p className="text-xs text-muted-foreground leading-snug">
-                Você mantém acesso completo até <strong className="text-primary">{cancelledEndDate}</strong>.
-                Após essa data, sua conta voltará ao plano gratuito.
-              </p>
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-3">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Assinatura cancelada
+                </p>
+                <p className="text-xs text-muted-foreground leading-snug">
+                  Você mantém acesso completo até <strong className="text-primary">{cancelledEndDate}</strong>.
+                  Após essa data, sua conta voltará ao plano gratuito.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="w-full gap-2"
+                disabled={reactivating}
+                onClick={handleReactivateSubscription}
+              >
+                <Sparkles className="h-4 w-4" />
+                {reactivating ? 'Reativando...' : 'Reativar assinatura'}
+              </Button>
             </div>
           )}
 
