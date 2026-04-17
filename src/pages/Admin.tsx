@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Copy, Plus, Loader2, ToggleLeft, ToggleRight, UserPlus, Link as LinkIcon,
-  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield, Gift, Trash2, Clock
+  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield, Gift, Trash2, Clock, ShieldAlert
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
