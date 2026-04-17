@@ -128,14 +128,35 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
                 )}
               </button>
             )}
-            <button
-              onClick={() => onCopy(displayText)}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-              title="Copiar"
-            >
-              <Copy className="h-3.5 w-3.5" />
-            </button>
-            {!isVisitor && <PublishToMural originalContent={displayText} />}
+            {isVisitor ? (
+              <>
+                <button
+                  onClick={onPremiumGate}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                  title="Entre para copiar"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={onPremiumGate}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                  title="Entre para publicar no Mural"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => onCopy(displayText)}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                  title="Copiar"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+                <PublishToMural originalContent={displayText} />
+              </>
+            )}
           </div>
         )}
 
