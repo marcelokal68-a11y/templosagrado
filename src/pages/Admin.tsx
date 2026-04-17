@@ -373,19 +373,48 @@ export default function Admin() {
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.created_at)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.last_sign_in_at)}</TableCell>
                       <TableCell>
-                        {!u.is_admin && (
+                        {u.id === user?.id ? (
+                          <span className="text-xs text-muted-foreground">Você</span>
+                        ) : u.is_admin ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Rebaixar admin"
+                            onClick={async () => {
+                              if (!confirm(`Rebaixar ${u.display_name || u.email} de admin?`)) return;
+                              const token = await getToken();
+                              const resp = await supabase.functions.invoke('admin', {
+                                body: { action: 'demote-admin', target_user_id: u.id },
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
+                              if (resp.data?.error) {
+                                toast({ title: 'Erro', description: resp.data.error, variant: 'destructive' });
+                              } else {
+                                toast({ title: 'Rebaixado a usuário comum' });
+                                loadUsers();
+                              }
+                            }}
+                          >
+                            <Shield className="h-4 w-4 text-purple-600" />
+                          </Button>
+                        ) : (
                           <Button
                             size="icon"
                             variant="ghost"
                             title="Promover a admin"
                             onClick={async () => {
+                              if (!confirm(`Promover ${u.display_name || u.email} a admin?`)) return;
                               const token = await getToken();
-                              await supabase.functions.invoke('admin', {
+                              const resp = await supabase.functions.invoke('admin', {
                                 body: { action: 'promote-admin', target_email: u.email },
                                 headers: { Authorization: `Bearer ${token}` },
                               });
-                              toast({ title: 'Promovido!' });
-                              loadUsers();
+                              if (resp.data?.error) {
+                                toast({ title: 'Erro', description: resp.data.error, variant: 'destructive' });
+                              } else {
+                                toast({ title: 'Promovido a admin!' });
+                                loadUsers();
+                              }
                             }}
                           >
                             <Shield className="h-4 w-4" />
