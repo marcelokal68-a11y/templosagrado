@@ -481,6 +481,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tts_usage: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          month_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          month_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          month_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_memory: {
         Row: {
           category: string
