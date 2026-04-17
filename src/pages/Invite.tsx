@@ -16,23 +16,35 @@ export default function Invite() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [timesUsed, setTimesUsed] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     loadOrCreateInvite();
   }, [user]);
 
   const loadOrCreateInvite = async () => {
     if (!user) return;
     setLoading(true);
+    setErrorMsg(null);
 
     // Check if user already has an invite link
-    const { data: existing } = await supabase
+    const { data: existing, error: selectErr } = await supabase
       .from('invite_links')
       .select('*')
       .eq('created_by', user.id)
       .order('created_at', { ascending: false })
       .limit(1);
+
+    if (selectErr) {
+      console.error('Error loading invite:', selectErr);
+      setErrorMsg(selectErr.message);
+      setLoading(false);
+      return;
+    }
 
     if (existing && existing.length > 0) {
       const inv = existing[0];
@@ -56,6 +68,7 @@ export default function Invite() {
 
     if (error) {
       console.error('Error creating invite:', error);
+      setErrorMsg(error.message);
       setLoading(false);
       return;
     }
@@ -109,7 +122,23 @@ export default function Invite() {
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <Card className="max-w-sm w-full">
+          <CardContent className="p-6 text-center space-y-3">
+            <div className="text-4xl">🎁</div>
+            <p className="text-sm text-muted-foreground">
+              Faça login para gerar seu link de convite e presentear amigos com 7 dias grátis.
+            </p>
+            <Button asChild className="w-full">
+              <a href="/auth?next=/invite-friends">Entrar</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto pb-20 md:pb-4">
@@ -160,6 +189,24 @@ export default function Invite() {
           <CardContent className="space-y-4">
             {loading ? (
               <div className="h-10 bg-muted animate-pulse rounded-md" />
+            ) : errorMsg ? (
+              <div className="space-y-3">
+                <p className="text-sm text-destructive">
+                  Não foi possível gerar seu link: {errorMsg}
+                </p>
+                <Button onClick={loadOrCreateInvite} variant="outline" size="sm">
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : !inviteLink ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Link ainda não gerado.
+                </p>
+                <Button onClick={loadOrCreateInvite} size="sm">
+                  Gerar meu link de convite
+                </Button>
+              </div>
             ) : (
               <>
                 <div className="flex gap-2">
