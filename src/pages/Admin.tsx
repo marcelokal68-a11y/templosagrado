@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Copy, Plus, Loader2, ToggleLeft, ToggleRight, UserPlus, Link as LinkIcon,
-  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield
+  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield, Gift, Trash2, Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,8 +31,10 @@ interface CrmUser {
   email: string;
   display_name: string;
   is_subscriber: boolean;
+  is_pro: boolean;
   is_admin: boolean;
   is_online: boolean;
+  trial_days_left: number;
   created_at: string;
   last_sign_in_at: string | null;
 }
@@ -41,7 +43,13 @@ interface Stats {
   totalUsers: number;
   onlineUsers: number;
   subscribers: number;
-  
+  trialing?: number;
+}
+
+interface FreeAccessRow {
+  email: string;
+  note: string | null;
+  created_at: string;
 }
 
 type SortKey = 'display_name' | 'created_at' | 'last_sign_in_at';
@@ -72,6 +80,12 @@ export default function Admin() {
   const [sortAsc, setSortAsc] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
+  // Free access state
+  const [freeAccess, setFreeAccess] = useState<FreeAccessRow[]>([]);
+  const [freeEmail, setFreeEmail] = useState('');
+  const [freeNote, setFreeNote] = useState('');
+  const [addingFree, setAddingFree] = useState(false);
+
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
@@ -99,6 +113,7 @@ export default function Admin() {
     loadInvites(token);
     loadUsers(token);
     loadStats(token);
+    loadFreeAccess(token);
   };
 
   const loadInvites = async (token?: string) => {
@@ -190,6 +205,46 @@ export default function Admin() {
     }
   };
 
+  const loadFreeAccess = async (token?: string) => {
+    const t = token || await getToken();
+    const resp = await supabase.functions.invoke('admin', {
+      body: { action: 'list-free-access' },
+      headers: { Authorization: `Bearer ${t}` },
+    });
+    if (Array.isArray(resp.data)) setFreeAccess(resp.data);
+  };
+
+  const addFreeAccess = async () => {
+    if (!freeEmail.trim()) return;
+    setAddingFree(true);
+    try {
+      const token = await getToken();
+      const resp = await supabase.functions.invoke('admin', {
+        body: { action: 'add-free-access', email: freeEmail.trim(), note: freeNote.trim() || null },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resp.data?.error) throw new Error(resp.data.error);
+      toast({ title: 'Acesso livre concedido!' });
+      setFreeEmail(''); setFreeNote('');
+      loadFreeAccess();
+      loadUsers();
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setAddingFree(false);
+    }
+  };
+
+  const removeFreeAccess = async (email: string) => {
+    const token = await getToken();
+    await supabase.functions.invoke('admin', {
+      body: { action: 'remove-free-access', email },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    toast({ title: 'Removido' });
+    loadFreeAccess();
+  };
+
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
     else { setSortKey(key); setSortAsc(true); }
@@ -225,9 +280,10 @@ export default function Admin() {
       <h1 className="font-display text-2xl font-bold">Painel Admin</h1>
 
       <Tabs defaultValue="users">
-        <TabsList className="w-full grid grid-cols-3">
+        <TabsList className="w-full grid grid-cols-4">
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="invites">Convites</TabsTrigger>
+          <TabsTrigger value="free">Acesso Livre</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
 
@@ -279,6 +335,7 @@ export default function Admin() {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Tipo</TableHead>
+                    <TableHead>Trial</TableHead>
                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('created_at')}>
                       <span className="flex items-center gap-1">Cadastro <ArrowUpDown className="h-3 w-3" /></span>
                     </TableHead>
@@ -308,6 +365,11 @@ export default function Admin() {
                           }
                         </div>
                       </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
+                        {u.trial_days_left > 0 && !u.is_subscriber
+                          ? <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />{u.trial_days_left}d</Badge>
+                          : <span className="text-muted-foreground">—</span>}
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.created_at)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.last_sign_in_at)}</TableCell>
                       <TableCell>
@@ -336,6 +398,53 @@ export default function Admin() {
               </Table>
             </div>
           )}
+        </TabsContent>
+
+        {/* ===== FREE ACCESS TAB ===== */}
+        <TabsContent value="free" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Gift className="h-5 w-5" /> Conceder Acesso Livre
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Emails nesta lista têm acesso completo permanente, sem precisar pagar.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <Input placeholder="email@exemplo.com" value={freeEmail} onChange={e => setFreeEmail(e.target.value)} />
+                <Input placeholder="Nota (opcional)" value={freeNote} onChange={e => setFreeNote(e.target.value)} />
+              </div>
+              <Button onClick={addFreeAccess} disabled={addingFree || !freeEmail.trim()}>
+                {addingFree ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                Adicionar
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="font-display text-lg">Emails com acesso livre</CardTitle></CardHeader>
+            <CardContent>
+              {freeAccess.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum email cadastrado.</p>
+              ) : (
+                <div className="space-y-2">
+                  {freeAccess.map(f => (
+                    <div key={f.email} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{f.email}</p>
+                        {f.note && <p className="text-xs text-muted-foreground truncate">{f.note}</p>}
+                      </div>
+                      <Button size="icon" variant="ghost" onClick={() => removeFreeAccess(f.email)} title="Remover">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ===== INVITES TAB ===== */}

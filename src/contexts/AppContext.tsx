@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { Language, t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { computeAccess, AccessStatus } from '@/lib/access';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +48,10 @@ interface AppContextType {
   setMemoryEnabled: (v: boolean) => void;
   chatTone: ChatTone;
   setChatTone: (v: ChatTone) => void;
+  accessStatus: AccessStatus;
+  trialDaysLeft: number;
+  isAdmin: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -69,6 +74,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [memoryEnabled, setMemoryEnabledState] = useState(false);
   const [chatTone, setChatToneState] = useState<ChatTone>('reflective');
+  const [accessStatus, setAccessStatus] = useState<AccessStatus>('anon');
+  const [trialDaysLeft, setTrialDaysLeft] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [profileRaw, setProfileRaw] = useState<any>(null);
 
   const setMemoryEnabled = useCallback(async (v: boolean) => {
     setMemoryEnabledState(v);
@@ -162,49 +171,73 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      supabase
-        .from('profiles')
-        .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude, memory_enabled, chat_tone')
-        .eq('user_id', user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-        if (data) {
-            setQuestionsRemaining(data.questions_limit - data.questions_used);
-            setIsSubscriber(!!(data as any).is_subscriber);
-            setMemoryEnabledState(!!(data as any).memory_enabled);
-            const tone = (data as any).chat_tone;
-            if (tone === 'concise' || tone === 'reflective') setChatToneState(tone);
-            if (data.preferred_language) setLanguage(data.preferred_language as Language);
-            if (data.preferred_religion) {
-              setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
-              hasPreferredReligionRef.current = true;
-            } else {
-              hasPreferredReligionRef.current = false;
-            }
-            if (data.latitude != null && data.longitude != null) {
-              setGeo({ latitude: data.latitude, longitude: data.longitude });
-            } else if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                  const geoData = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
-                  setGeo(geoData);
-                  supabase.from('profiles').update(geoData as any).eq('user_id', user.id).then(() => {});
-                },
-                () => {},
-                { timeout: 5000, maximumAge: 600000 }
-              );
-            }
-          }
-        });
+  const loadProfile = useCallback(async () => {
+    if (!user) {
+      setProfileRaw(null);
+      setAccessStatus('anon');
+      setTrialDaysLeft(0);
+      setIsAdmin(false);
+      return;
     }
+
+    // Load profile
+    const { data } = await supabase
+      .from('profiles')
+      .select('questions_used, questions_limit, preferred_language, preferred_religion, latitude, longitude, memory_enabled, chat_tone, is_subscriber, is_pro, trial_ends_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (data) {
+      setProfileRaw(data);
+      setQuestionsRemaining(data.questions_limit - data.questions_used);
+      setIsSubscriber(!!(data as any).is_subscriber);
+      setMemoryEnabledState(!!(data as any).memory_enabled);
+      const tone = (data as any).chat_tone;
+      if (tone === 'concise' || tone === 'reflective') setChatToneState(tone);
+      if (data.preferred_language) setLanguage(data.preferred_language as Language);
+      if (data.preferred_religion) {
+        setChatContext(prev => ({ ...prev, religion: data.preferred_religion! }));
+        hasPreferredReligionRef.current = true;
+      } else {
+        hasPreferredReligionRef.current = false;
+      }
+      if (data.latitude != null && data.longitude != null) {
+        setGeo({ latitude: data.latitude, longitude: data.longitude });
+      } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const geoData = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+            setGeo(geoData);
+            supabase.from('profiles').update(geoData as any).eq('user_id', user.id).then(() => {});
+          },
+          () => {},
+          { timeout: 5000, maximumAge: 600000 }
+        );
+      }
+    }
+
+    // Check admin role
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+    const admin = roles?.some((r: any) => r.role === 'admin') ?? false;
+    setIsAdmin(admin);
+
+    // Compute access status
+    const access = computeAccess(data as any, admin);
+    setAccessStatus(access.status);
+    setTrialDaysLeft(access.trialDaysLeft);
   }, [user]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const faithReligionLabel = faithPromptReligion ? t(`religion.${faithPromptReligion}`, language) : '';
 
   return (
-    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled, chatTone, setChatTone }}>
+    <AppContext.Provider value={{ language, setLanguage, user, loading, isSubscriber, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, clearChatWithUndo, undoClearChat, hasPendingUndo, geo, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile: loadProfile }}>
       {children}
       <AlertDialog open={!!faithPromptReligion}>
         <AlertDialogContent>

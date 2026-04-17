@@ -51,7 +51,7 @@ export default function Auth() {
           setLoading(false);
           return;
         }
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -60,7 +60,12 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        toast({ title: 'Conta criada!', description: 'Verifique seu email para confirmar.' });
+        // If session is created immediately (email auto-confirm ON), go to onboarding
+        if (data.session) {
+          navigate('/profile?onboarding=true', { replace: true });
+        } else {
+          toast({ title: 'Conta criada!', description: 'Verifique seu email para confirmar.' });
+        }
       }
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });

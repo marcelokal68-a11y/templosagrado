@@ -34,6 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
+import TrialBanner from '@/components/TrialBanner';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -147,7 +148,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
 }
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
-  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone } = useApp();
+  const { language, user, chatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone, accessStatus } = useApp();
   const religion = chatContext.religion || '';
   const [isLoading, setIsLoading] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -617,7 +618,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   ];
 
   const remainingCount = user ? questionsRemaining : Math.max(0, 12 - getAnonCount());
-  const isBlocked = remainingCount <= 0 && !sessionClosed;
+  const trialExpired = accessStatus === 'expired';
+  const isBlocked = (remainingCount <= 0 || trialExpired) && !sessionClosed;
 
   const handleLgpdAccept = () => {
     localStorage.setItem('lgpd_accepted', 'true');
@@ -646,6 +648,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </Button>
         </DialogContent>
       </Dialog>
+      {/* Trial / expired banner */}
+      <TrialBanner />
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 md:py-4 space-y-3 md:space-y-4 mobile-scroll">
         {/* Empty state — welcome + suggested questions */}
@@ -729,10 +733,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
             <div className="flex items-center justify-center gap-2 text-primary">
               <Lock className="h-5 w-5" />
-              <span className="text-sm font-semibold">Limite de mensagens atingido</span>
+              <span className="text-sm font-semibold">
+                {trialExpired ? 'Seu período grátis terminou' : 'Limite de mensagens atingido'}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
-              Para continuar sua jornada de reflexão, faça o upgrade para o Templo Sagrado Pro.
+              {trialExpired
+                ? 'Assine o Templo Sagrado para continuar conversando com o mentor.'
+                : 'Para continuar sua jornada de reflexão, faça o upgrade para o Templo Sagrado Pro.'}
             </p>
             <div className="flex gap-2 justify-center">
               {!user ? (
@@ -745,7 +753,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 <Link to="/pricing">
                   <Button className="bg-primary text-primary-foreground gap-1.5 h-11 px-6 text-sm">
                     <Sparkles className="h-4 w-4" />
-                    Upgrade Pro
+                    Ver planos
                   </Button>
                 </Link>
               )}
