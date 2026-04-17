@@ -64,10 +64,59 @@ serve(async (req) => {
     const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
     const responseLang = langMap[lang] || 'Brazilian Portuguese';
 
+    const protestantSection = topic === 'protestant' ? `
+
+PROTESTANT TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+SACRED BOOKS:
+- The Protestant Bible: 66 books total (39 Old Testament + 27 New Testament). The Protestant canon EXCLUDES the deuterocanonical/apocryphal books (Tobit, Judith, Wisdom, Sirach/Ecclesiasticus, Baruch, 1-2 Maccabees) — this is a key distinction from the Catholic 73-book canon.
+- Major confessions of faith: Confissão de Fé de Westminster (1646, presbiteriana/reformada), Confissão de Augsburgo (1530, luterana), 39 Artigos da Religião (1571, anglicana), Confissão Batista de Londres de 1689, Confissão Belga (1561), Catecismo de Heidelberg (1563).
+- Hymnals and devotional classics: O Peregrino (John Bunyan), Institutas da Religião Cristã (Calvino), 95 Teses (Lutero).
+
+THE 5 SOLAS OF THE REFORMATION:
+1. Sola Scriptura — only the Scripture is the supreme authority
+2. Sola Fide — justification by faith alone
+3. Sola Gratia — salvation by grace alone
+4. Solus Christus — Christ alone is the mediator
+5. Soli Deo Gloria — to God alone be the glory
+
+REFORMERS (16th century):
+- Martinho Lutero (1483-1546) — German monk, 95 Teses (1517), translated the Bible into German, founded Lutheranism.
+- João Calvino (1509-1564) — French theologian, Institutas, founded the Reformed/Presbyterian tradition in Geneva.
+- Ulrico Zuínglio (1484-1531) — Swiss reformer in Zurich.
+- John Knox (1514-1572) — Scottish reformer, founded Presbyterianism in Scotland.
+- William Tyndale (1494-1536) — translated the Bible into English, martyred.
+- Filipe Melanchthon, Martin Bucer, Heinrich Bullinger.
+
+GREAT PASTORS, PREACHERS AND THEOLOGIANS:
+- John Wesley (1703-1791) and Charles Wesley — founders of Methodism, Great Awakening.
+- George Whitefield (1714-1770) — itinerant Great Awakening preacher.
+- Jonathan Edwards (1703-1758) — American theologian, "Pecadores nas Mãos de um Deus Irado".
+- Charles Spurgeon (1834-1892) — "Príncipe dos Pregadores", Tabernáculo Metropolitano de Londres.
+- D.L. Moody (1837-1899) — American evangelist.
+- Billy Graham (1918-2018) — global evangelist of the 20th century.
+- Martyn Lloyd-Jones (1899-1981) — Welsh expositor pastor at Westminster Chapel.
+- John Stott (1921-2011) — Anglican, Lausanne Movement leader.
+- John Piper (b. 1946) — Reformed Baptist, "Desiring God".
+- Tim Keller (1950-2023) — Presbyterian, Redeemer NYC.
+- R.C. Sproul (1939-2017) — Reformed theologian, Ligonier Ministries.
+
+PROPHETS (recognized in the Protestant canon):
+- Major Prophets: Isaías, Jeremias, Ezequiel, Daniel (and Lamentações de Jeremias).
+- 12 Minor Prophets: Oséias, Joel, Amós, Obadias, Jonas, Miquéias, Naum, Habacuque, Sofonias, Ageu, Zacarias, Malaquias.
+- Earlier prophets in the historical books: Moisés, Samuel, Elias, Eliseu, Natã.
+- New Testament prophet: João Batista (precursor of Christ).
+- IMPORTANT: Mainstream Protestantism does NOT recognize post-biblical prophets (no Joseph Smith, no modern "apostles"). Pentecostal/charismatic streams accept contemporary "prophetic gifts" but distinguish them from Scripture.
+
+MAJOR DENOMINATIONAL FAMILIES: Luteranos, Reformados/Presbiterianos, Anglicanos, Batistas, Metodistas, Pentecostais (Assembleia de Deus, Congregação Cristã), Neopentecostais, Congregacionais.
+
+When the student asks about Protestantism, draw richly from this base. Make explicit when relevant the contrast with Catholicism (66 vs 73 books, sola scriptura vs scripture+tradition, sola fide vs faith+works, no veneration of saints/Mary, no purgatory, only 2 sacraments — batismo e ceia).
+` : '';
+
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
 Your area of expertise for this session is: ${topicName}.
-
+${protestantSection}
 CRITICAL RULES:
 - Respond ALWAYS in ${responseLang}.
 - Be educational, engaging, and historically accurate.
