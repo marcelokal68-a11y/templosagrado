@@ -2,11 +2,11 @@ import { useApp } from '@/contexts/AppContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { t } from '@/lib/i18n';
-import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X, Brain, Shield, Trash2, MessageCircle } from 'lucide-react';
+import { User, Mail, BookOpen, Crown, Sparkles, Pencil, Check, X, Brain, Shield, Trash2, MessageCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const traditions = [
@@ -21,8 +21,11 @@ const traditions = [
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft } = useApp();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [profile, setProfile] = useState<{
     display_name: string | null;
@@ -89,11 +92,40 @@ export default function Profile() {
     ? t(`religion.${profile.preferred_religion}`, language) || profile.preferred_religion
     : 'Não definida';
 
-  const planLabel = isSubscriber ? 'Pro ⭐' : 'Gratuito';
+  const planLabel = isSubscriber
+    ? 'Pro ⭐'
+    : accessStatus === 'trial'
+      ? `Trial (${trialDaysLeft} ${trialDaysLeft === 1 ? 'dia' : 'dias'})`
+      : accessStatus === 'expired'
+        ? 'Expirado'
+        : 'Gratuito';
+
+  const handleSaveAndEnter = async () => {
+    if (!user) return;
+    const trimmed = nameValue.trim().slice(0, 100);
+    if (trimmed && trimmed !== profile.display_name) {
+      await supabase.from('profiles').update({ display_name: trimmed }).eq('user_id', user.id);
+    }
+    toast({ title: 'Bem-vindo ao Templo Sagrado! 🙏' });
+    navigate('/', { replace: true });
+  };
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-md mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-md mx-auto px-4 py-8 space-y-6 pb-32">
+        {/* Onboarding banner */}
+        {isOnboarding && (
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
+            <Sparkles className="h-6 w-6 text-primary mx-auto mb-2" />
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Bem-vindo(a) ao Templo Sagrado
+            </p>
+            <p className="text-xs text-muted-foreground leading-snug">
+              Confirme seu nome e tradição para começar. Você tem <strong className="text-primary">7 dias grátis</strong> de acesso completo.
+            </p>
+          </div>
+        )}
+
         {/* Avatar */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
