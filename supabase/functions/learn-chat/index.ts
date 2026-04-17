@@ -149,10 +149,60 @@ MAJOR DENOMINATIONAL FAMILIES: Luteranos, Reformados/Presbiterianos, Anglicanos,
 When the student asks about Protestantism, draw richly from this base. Make explicit when relevant the contrast with Catholicism (66 vs 73 books, sola scriptura vs scripture+tradition, sola fide vs faith+works, no veneration of saints/Mary, no purgatory, only 2 sacraments — batismo e ceia).
 ` : '';
 
+    const jewishSection = topic === 'jewish' ? `
+
+JEWISH TRADITION — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+SACRED TEXTS:
+- The Tanakh (Hebrew Bible, 24 books in the Jewish enumeration): TORAH (5 books — Bereshit/Gênesis, Shemot/Êxodo, Vayikra/Levítico, Bamidbar/Números, Devarim/Deuteronômio), NEVI'IM (Profetas — Josué, Juízes, Samuel, Reis, Isaías, Jeremias, Ezequiel e os 12 Profetas Menores) and KETUVIM (Escritos — Salmos, Provérbios, Jó, Cantares, Rute, Lamentações, Eclesiastes, Ester, Daniel, Esdras-Neemias, Crônicas).
+- The Talmud — the great oral law put in writing. Composed of MISHNÁ (codified by Rabi Yehuda HaNassi around 200 CE, organized in 6 ordens: Zeraim, Moed, Nashim, Nezikin, Kodashim, Tohorot) and GUEMARÁ (rabbinic discussions about the Mishná). There are two Talmuds: the BABILÔNICO (Bavli, finished around the 5th century, the most studied) and the DE JERUSALÉM (Yerushalmi, finished around the 4th century).
+- The MIDRASH — exegetical and homiletical literature: Midrash Rabbah (on the Torah and Megilot), Pirkei Avot (Tratado dos Pais — ethical sayings of the Tanaítas), Mekhilta, Sifra, Sifrei.
+- The ZOHAR (Sefer ha-Zohar, "Livro do Esplendor"), foundational text of CABALA (Kabbalah), attributed to Rabi Shimon bar Yochai but written down by Moshe de León in 13th-century Spain.
+- Major legal codes: MISHNEH TORAH by Maimônides (1180, 14 books summarizing all the halacha) and SHULCHAN ARUCH by Joseph Karo (1565, the standard authoritative code of Jewish law) with the glosses of the Rama (Moses Isserles) for Ashkenazi communities.
+
+THE 613 MITZVOT (commandments):
+According to Maimonides in Sefer HaMitzvot, the Torah contains exactly 613 commandments: 248 MITZVOT ASSÊ (positive — "thou shalt") corresponding to the limbs of the human body, and 365 MITZVOT LO TA'ASSÊ (negative — "thou shalt not") corresponding to the days of the solar year. They cover all areas of life: ritual (Shabbat, kashrut, festivals), ethical (justice, charity, honesty), interpersonal (Bein Adam LeChavero) and between man and God (Bein Adam LaMakom). Famous examples: not eating blood, washing hands before meals, lighting Shabbat candles, putting tefillin, fixing mezuzot, observing kashrut (kosher), giving tzedaká.
+
+THE GREAT SAGES (Chazal and beyond):
+- HILLEL E SHAMMAI (1st century BCE - 1st century CE) — founders of the two great schools of interpretation. Hillel famous for the Golden Rule: "What is hateful to you, do not do to your fellow."
+- RABI AKIVA (50-135 CE) — one of the greatest tanaítas, martyred by Rome.
+- RABI YEHUDA HANASSI ("Rabbi", 135-217 CE) — codifier of the Mishná.
+- RASHI (Rabi Shlomo Yitzchaki, 1040-1105, France) — the most influential commentator on Tanakh and Talmud. His comments are studied to this day next to virtually every printed text.
+- RAMBAM / MAIMÔNIDES (Moshe ben Maimon, 1138-1204, Spain/Egypt) — physician, philosopher, halachist. Author of Mishneh Torah, Guia dos Perplexos (filosofia), the 13 Princípios da Fé.
+- RAMBAN / NACHMÂNIDES (Moshe ben Nachman, 1194-1270, Spain) — Talmudist, kabbalist, biblical commentator.
+- ARIZAL (Rabi Isaac Luria, 1534-1572, Tzfat/Safed) — fundador da Cabala Luriânica (Tzimtzum, Shevirat HaKelim, Tikkun).
+- BAAL SHEM TOV (Israel ben Eliezer, 1698-1760, Ucrânia) — fundador do Movimento Hassídico, ênfase na alegria e devoção (deveikut).
+- VILNA GAON (Eliyahu de Vilna, 1720-1797, Lituânia) — gigante intelectual do mundo lituano-mitnagdi, opositor ao Hassidismo inicial.
+- Modern: Rabi Joseph B. Soloveitchik (1903-1993, "the Rav"), Abraham Joshua Heschel (1907-1972, "Deus em Busca do Homem"), Rabi Menachem Mendel Schneerson (Lubavitcher Rebbe, 1902-1994), Rabi Adin Steinsaltz, Rabi Jonathan Sacks (1948-2020).
+
+THE MAJOR JEWISH FESTIVALS:
+- SHABBAT (semanal, sexta ao sábado à noite) — 4º Mandamento, descanso sagrado.
+- ROSH HASHANÁ (Ano Novo Judaico, Tishrei 1-2) — toque do shofar, autoexame.
+- YOM KIPUR (Dia da Expiação, Tishrei 10) — jejum de 25 horas, o mais sagrado do ano. Teshuvá (arrependimento), Tefilá (oração), Tzedaká (caridade).
+- SUCOT (Festa das Cabanas, Tishrei 15-21) — viver em sucá por 7 dias, lulav e etrog.
+- SIMCHAT TORÁ — celebração da conclusão e recomeço do ciclo anual de leitura da Torá.
+- CHANUCÁ (Festa das Luzes, Kislev 25 - 8 dias) — vitória dos Macabeus, milagre do óleo no 2º Templo.
+- PURIM (Adar 14) — livro de Ester, vitória sobre Hamã, leitura da Megilá.
+- PESSACH (Páscoa Judaica, Nissan 15 - 7/8 dias) — êxodo do Egito, Seder de Pessach com a Hagadá, matzá (pão sem fermento).
+- SHAVUOT (Pentecostes Judaico, Sivan 6-7) — entrega da Torá no Sinai, leitura dos Dez Mandamentos e do livro de Rute.
+
+THE PRINCIPAL DENOMINATIONS / MOVEMENTS:
+- ORTODOXO (Modern Orthodox, Haredi/Ultraortodoxo, Hassídico, Sefaradi)
+- CONSERVADOR / MASORTI
+- REFORMISTA / LIBERAL / PROGRESSISTA
+- RECONSTRUCIONISTA
+- HUMANISTA SECULAR
+
+CENTRAL CONCEPTS: Hashem (Nome inefável de Deus), Echad (Unidade de Deus — Shemá Israel: "Ouve, ó Israel, o Senhor nosso Deus, o Senhor é Um"), Aliança (Brit) com Avraham e no Sinai, Povo Eleito (responsabilidade, não privilégio), Tikkun Olam (consertar o mundo), Teshuvá (arrependimento como retorno), Tzedaká (justiça/caridade), Olam HaBá (Mundo Vindouro), Mashiach (Messias ainda por vir), Galut (Diáspora) e Geulá (Redenção).
+
+When the student asks about Judaism, draw richly from this base. Make explicit when relevant the distinctives vs Christianity (Tanakh of 24 books vs Old Testament of 39/46, no Trinity — pure monoteísmo, Mashiach ainda não veio, ênfase na ação correta — ortopráxis — sobre a crença correta — ortodoxia, valor central da Torá oral e da disputa rabínica como expressão de devoção).
+` : '';
+    const traditionsSection = catholicSection + protestantSection + jewishSection;
+
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
 Your area of expertise for this session is: ${topicName}.
-${catholicSection}${protestantSection}
+${traditionsSection}
 CRITICAL RULES:
 - Respond ALWAYS in ${responseLang}.
 - Be educational, engaging, and historically accurate.
