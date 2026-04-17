@@ -499,6 +499,60 @@ export default function Pricing() {
           Pagamento seguro via Stripe. PIX disponível no checkout.
         </p>
       </div>
+
+      {/* Change plan confirmation dialog */}
+      <AlertDialog open={!!pendingChange} onOpenChange={(open) => !open && setPendingChange(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingChange?.type === 'upgrade' ? 'Confirmar upgrade de plano?' : 'Confirmar downgrade de plano?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2 pt-2">
+              {pendingChange?.type === 'upgrade' ? (
+                <>
+                  <span className="block">
+                    Você está fazendo upgrade para <strong>{pendingChange?.label}</strong>.
+                  </span>
+                  <span className="block">
+                    Cobraremos <strong>hoje</strong> apenas a <strong>diferença proporcional</strong> dos dias restantes do seu ciclo atual no seu cartão cadastrado.
+                  </span>
+                  <span className="block">
+                    A partir da próxima renovação, será cobrado o valor cheio do novo plano.
+                  </span>
+                  <span className="block text-foreground/80">
+                    Seu acesso ao plano superior é liberado <strong>imediatamente</strong>.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="block">
+                    Sua assinatura <strong>atual já paga</strong> continuará vigente até o <strong>fim do período contratado</strong>
+                    {subscription?.subscription_end && (
+                      <> (<strong>{new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}</strong>)</>
+                    )}.
+                  </span>
+                  <span className="block text-destructive font-medium">
+                    Não há reembolso ou cashback pelo período não utilizado.
+                  </span>
+                  <span className="block">
+                    Após essa data, sua conta passará automaticamente para <strong>{pendingChange?.label}</strong>.
+                  </span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loadingChange}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmChangePlan(); }}
+              disabled={loadingChange}
+            >
+              {loadingChange && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {pendingChange?.type === 'upgrade' ? 'Confirmar upgrade' : 'Confirmar downgrade'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
