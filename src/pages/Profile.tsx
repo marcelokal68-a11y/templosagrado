@@ -28,6 +28,34 @@ export default function Profile() {
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [subInfo, setSubInfo] = useState<{
+    cancel_at_period_end: boolean;
+    subscription_end: string | null;
+  } | null>(null);
+
+  const loadSubInfo = async () => {
+    if (!isSubscriber) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase.functions.invoke('check-subscription', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (data && !data.error) {
+        setSubInfo({
+          cancel_at_period_end: !!data.cancel_at_period_end,
+          subscription_end: data.subscription_end ?? null,
+        });
+      }
+    } catch (e) {
+      console.error('[Profile] Failed to load sub info:', e);
+    }
+  };
+
+  useEffect(() => {
+    loadSubInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSubscriber, user?.id]);
 
   const handleCancelSubscription = async () => {
     if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o fim do período pago.')) return;
@@ -44,6 +72,7 @@ export default function Profile() {
         title: 'Assinatura cancelada',
         description: 'Você manterá o acesso até o fim do período pago.',
       });
+      await loadSubInfo();
     } catch (e: any) {
       toast({ title: 'Erro', description: e.message, variant: 'destructive' });
     } finally {
