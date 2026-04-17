@@ -180,6 +180,31 @@ serve(async (req) => {
       });
     }
 
+    if (action === "demote-admin") {
+      const { target_user_id, target_email } = body;
+      let targetId = target_user_id as string | undefined;
+      if (!targetId && target_email) {
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        targetId = authUsers?.users?.find((u: any) => u.email === target_email)?.id;
+      }
+      if (!targetId) throw new Error("User not found");
+      if (targetId === user.id) throw new Error("Você não pode rebaixar a si mesmo");
+      // Bloquear rebaixamento de admins hard-coded
+      const { data: targetAuth } = await supabase.auth.admin.getUserById(targetId);
+      const targetEmail = targetAuth?.user?.email?.toLowerCase();
+      if (targetEmail && ADMIN_EMAILS.map(e => e.toLowerCase()).includes(targetEmail)) {
+        throw new Error("Este admin é protegido e não pode ser rebaixado");
+      }
+      await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", targetId)
+        .eq("role", "admin");
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // --- Free Access management ---
     if (action === "list-free-access") {
       const { data } = await supabase
