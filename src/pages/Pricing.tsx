@@ -474,7 +474,7 @@ export default function Pricing() {
                 </div>
               ))}
             </div>
-            {isTopUser ? (
+            {isTopUser && getCurrentPriceId() === PLANS[billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual'].priceId ? (
               <>
                 <Button variant="outline" className="w-full border-amber-500/30" onClick={handleManage} disabled={loadingPortal}>
                   {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
@@ -485,11 +485,11 @@ export default function Pricing() {
             ) : (
               <Button
                 className="w-full bg-amber-500 text-black hover:bg-amber-600 gap-1.5"
-                onClick={() => handleSubscribe(billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual')}
-                disabled={!!loadingPlan || !!isSubscribed}
+                onClick={() => handleClickPlan(billingCycle === 'monthly' ? 'topMonthly' : 'topAnnual')}
+                disabled={!!loadingPlan}
               >
                 {(loadingPlan === 'topMonthly' || loadingPlan === 'topAnnual') && <Loader2 className="h-4 w-4 animate-spin" />}
-                Assinar Iluminado
+                {isSubscribed ? 'Mudar para Iluminado' : 'Assinar Iluminado'}
               </Button>
             )}
           </div>
