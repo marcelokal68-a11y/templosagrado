@@ -855,14 +855,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     Fazer login
                   </Link>
                 )}
-                {user && questionsRemaining <= 3 && (
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="text-xs text-primary hover:underline font-medium min-h-[44px] flex items-center"
-                  >
-                    {t('chat.upgrade', language)}
-                  </button>
-                )}
+
+
                 {messages.length > 0 && (
                   <button
                     onClick={async () => {
