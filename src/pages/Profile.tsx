@@ -21,7 +21,7 @@ const traditions = [
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin } = useApp();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -128,10 +128,23 @@ export default function Profile() {
 
         {/* Avatar */}
         <div className="flex flex-col items-center gap-3">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
-            <User className="h-10 w-10 text-primary" />
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
+              <User className="h-10 w-10 text-primary" />
+            </div>
+            {(isAdmin || (isSubscriber && accessStatus !== 'trial')) && (
+              <span
+                className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap shadow-sm ring-1 ${
+                  isAdmin
+                    ? 'bg-primary text-primary-foreground ring-primary/40'
+                    : 'bg-amber-500/90 text-white ring-amber-400/40'
+                }`}
+              >
+                {isAdmin ? '★ Admin' : '★ Vitalício'}
+              </span>
+            )}
           </div>
-          <h1 className="text-xl font-semibold text-foreground">
+          <h1 className="text-xl font-semibold text-foreground mt-2">
             {profile.display_name || 'Usuário'}
           </h1>
         </div>
