@@ -393,11 +393,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
 
-    if (user && questionsRemaining <= 0) {
-      toast({ title: t('chat.no_questions', language), description: t('chat.upgrade', language), variant: 'destructive' });
-      return;
-    }
-
     const userMsg: Msg = { role: 'user', content: text.trim() };
     const newUserCount = userMessageCount + 1;
     const isClosing = newUserCount >= MAX_USER_MESSAGES;
@@ -482,9 +477,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         }
       }
 
-      if (user) {
-        setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
-      }
+      // Question counting removed — chat is unlimited
 
       if (user && assistantSoFar.length > 0 && !confessionalMode) {
         const ctx = {
@@ -673,9 +666,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  const remainingCount = user ? questionsRemaining : Infinity;
   const trialExpired = accessStatus === 'expired';
-  const isBlocked = user ? ((remainingCount <= 0 || trialExpired) && !sessionClosed) : false;
+  const isBlocked = false; // Chat is unlimited for everyone
 
   const handleLgpdAccept = () => {
     localStorage.setItem('lgpd_accepted', 'true');
@@ -853,32 +845,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             )}
             {/* Remaining messages banner */}
             <div className="flex items-center justify-between px-4 py-1">
-              {user ? (
-                <span className={cn(
-                  "text-xs font-medium",
-                  remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
-                )}>
-                  {remainingCount} {t('chat.questions_remaining', language)}
-                </span>
-              ) : (
-                <span className="text-xs font-medium text-muted-foreground">
-                  ✨ Conversa livre
-                </span>
-              )}
+              <span className="text-xs font-medium text-muted-foreground">
+                ✨ Conversa livre
+              </span>
+
               <div className="flex items-center gap-1.5">
                 {!user && (
                   <Link to="/auth" className="text-xs text-primary hover:underline font-medium min-h-[44px] flex items-center">
                     Fazer login
                   </Link>
                 )}
-                {user && questionsRemaining <= 3 && (
-                  <button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="text-xs text-primary hover:underline font-medium min-h-[44px] flex items-center"
-                  >
-                    {t('chat.upgrade', language)}
-                  </button>
-                )}
+
+
                 {messages.length > 0 && (
                   <button
                     onClick={async () => {
