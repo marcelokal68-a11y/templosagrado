@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import { Sparkles, Church, BookOpen, Music, Flame, Sun, Leaf, Heart, ChevronRight, Moon, Globe, Cross, Compass } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -103,8 +105,10 @@ function ChipGroup({ label, items, prefix, selected, onSelect }: {
 }
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
-  const { language, chatContext, setChatContext, clearChatWithUndo } = useApp();
-  const [showConfirm, setShowConfirm] = useState(false);
+  const { language, chatContext, setChatContext, clearChatWithUndo, preferredReligion, user, refreshProfile } = useApp();
+  const navigate = useNavigate();
+  const [exploreIntent, setExploreIntent] = useState<typeof FAITH_OPTIONS[0] | null>(null);
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [pendingOption, setPendingOption] = useState<typeof FAITH_OPTIONS[0] | null>(null);
 
   const currentSelection = chatContext.religion || chatContext.philosophy || '';
@@ -123,16 +127,22 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       (option.mode === 'philosophy' && chatContext.philosophy === option.key);
 
     if (isAlreadySelected) {
-      // Deselect
       setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
       return;
     }
 
-    // If there's already a selection from a different mode, confirm the switch
+    // If user has a preferred religion and this is a *different* option, show 3-option dialog
+    const isDimmed = preferredReligion && option.key !== preferredReligion;
+    if (isDimmed) {
+      setExploreIntent(option);
+      return;
+    }
+
+    // Otherwise fallback to prior behavior: if something else selected, confirm switch
     const hasExisting = chatContext.religion || chatContext.philosophy;
     if (hasExisting) {
       setPendingOption(option);
-      setShowConfirm(true);
+      setShowSwitchConfirm(true);
     } else {
       applyOption(option);
     }
@@ -149,8 +159,36 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const confirmSwitch = () => {
     if (pendingOption) applyOption(pendingOption);
-    setShowConfirm(false);
+    setShowSwitchConfirm(false);
     setPendingOption(null);
+  };
+
+  // From the 3-option dialog: actually change the preferred faith
+  const handleChangeFaith = async () => {
+    if (!exploreIntent || !user) return;
+    const option = exploreIntent;
+    if (option.mode === 'religion') {
+      await supabase.from('profiles').update({ preferred_religion: option.key } as any).eq('user_id', user.id);
+    } else {
+      // switching to philosophy clears preferred religion
+      await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
+    }
+    await refreshProfile();
+    applyOption(option);
+    setExploreIntent(null);
+    toast.success(
+      language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada'
+    );
+  };
+
+  // From the 3-option dialog: explore in /learn without changing faith
+  const handleExploreOnly = () => {
+    if (!exploreIntent) return;
+    const key = exploreIntent.key;
+    const kind = exploreIntent.mode === 'religion' ? 'religion' : 'philosophy';
+    setExploreIntent(null);
+    onClose?.();
+    navigate(`/learn?topic=${key}&kind=${kind}`);
   };
 
   const handleSkip = () => {
@@ -164,6 +202,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const activeKey = chatContext.religion || chatContext.philosophy || '';
   const playlistId = SPOTIFY_PLAYLISTS[activeKey] || SPOTIFY_PLAYLISTS.default;
+  const exploreLabel = exploreIntent?.label ?? '';
 
   return (
     <div className="space-y-5 p-4">
