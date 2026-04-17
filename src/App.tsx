@@ -17,6 +17,7 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import InviteRedeem from "./pages/InviteRedeem";
 import Invite from "./pages/Invite";
 import Mural from "./pages/Mural";
+import Learn from "./pages/Learn";
 import Landing from "./pages/Landing";
 import Install from "./pages/Install";
 import Privacy from "./pages/Privacy";
@@ -46,6 +47,7 @@ const App = () => (
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
                     <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
+                    <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
