@@ -951,15 +951,27 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
                     rows={1}
                   />
-                  <Button
-                    onClick={toggleRecording}
-                    disabled={isTranscribing}
-                    size="icon"
-                    variant={isRecording ? "destructive" : "ghost"}
-                    className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
-                  >
-                    {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
-                  </Button>
+                  {user ? (
+                    <Button
+                      onClick={toggleRecording}
+                      disabled={isTranscribing}
+                      size="icon"
+                      variant={isRecording ? "destructive" : "ghost"}
+                      className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
+                    >
+                      {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => navigate('/auth?next=/pricing')}
+                      size="icon"
+                      variant="ghost"
+                      className="shrink-0 h-10 w-10 rounded-full"
+                      title="Entrar para falar"
+                    >
+                      <Lock className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                  )}
                   <Button
                     onClick={sendMessage}
                     disabled={isLoading || !chatInput.trim()}
