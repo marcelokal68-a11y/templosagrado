@@ -198,6 +198,36 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
+  // Detect "exploration return": user came back from /learn after clicking "Só explorar"
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const explored = sessionStorage.getItem('exploring_faith');
+      if (explored) {
+        setExploringFaith(explored);
+        sessionStorage.removeItem('exploring_faith');
+        // Auto-hide after 20s
+        const timer = setTimeout(() => setExploringFaith(null), 20000);
+        return () => clearTimeout(timer);
+      }
+    } catch {}
+  }, [user]);
+
+  const adoptExploredFaith = async () => {
+    if (!user || !exploringFaith) return;
+    const key = exploringFaith;
+    setExploringFaith(null);
+    const { error } = await supabase.from('profiles').update({ preferred_religion: key }).eq('user_id', user.id);
+    if (error) {
+      toast({ title: 'Erro ao salvar', variant: 'destructive' });
+      return;
+    }
+    setChatContext(prev => ({ ...prev, religion: key, philosophy: '' }));
+    await refreshProfile();
+    toast({ title: language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada' });
+  };
+
+
   useEffect(() => {
     if (hasPendingUndo) {
       toast({
