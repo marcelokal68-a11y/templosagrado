@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Copy, Plus, Loader2, ToggleLeft, ToggleRight, UserPlus, Link as LinkIcon,
-  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield, Gift, Trash2, Clock
+  Users, CreditCard, Wifi, Search, ArrowUpDown, Shield, Gift, Trash2, Clock, ShieldAlert
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -86,6 +86,10 @@ export default function Admin() {
   const [freeNote, setFreeNote] = useState('');
   const [addingFree, setAddingFree] = useState(false);
 
+  // Moderation state
+  const [flags, setFlags] = useState<Array<{ id: string; user_id: string; content: string; category: string; reason: string | null; created_at: string; user_email?: string }>>([]);
+  const [loadingFlags, setLoadingFlags] = useState(false);
+
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
@@ -114,6 +118,23 @@ export default function Admin() {
     loadUsers(token);
     loadStats(token);
     loadFreeAccess(token);
+    loadFlags();
+  };
+
+  const loadFlags = async () => {
+    setLoadingFlags(true);
+    const { data } = await supabase
+      .from('moderation_flags')
+      .select('id, user_id, content, category, reason, created_at')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    setFlags(data || []);
+    setLoadingFlags(false);
+  };
+
+  const deleteFlag = async (id: string) => {
+    await supabase.from('moderation_flags').delete().eq('id', id);
+    loadFlags();
   };
 
   const loadInvites = async (token?: string) => {
@@ -285,10 +306,11 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="users">
-        <TabsList className="w-full grid grid-cols-4">
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="invites">Convites</TabsTrigger>
           <TabsTrigger value="free">Acesso Livre</TabsTrigger>
+          <TabsTrigger value="moderation">Moderação</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
 
@@ -525,6 +547,64 @@ export default function Admin() {
                       </Button>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ===== MODERATION TAB ===== */}
+        <TabsContent value="moderation" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-destructive" /> Conteúdo Bloqueado pela IA
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-4">
+                Tentativas de publicação no Mural Ecumênico bloqueadas pelo moderador automático. Use esta lista para identificar usuários reincidentes.
+              </p>
+              {loadingFlags ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+              ) : flags.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Nenhum bloqueio registrado. 🕊️</p>
+              ) : (
+                <div className="space-y-3">
+                  {flags.map(f => {
+                    const u = users.find(x => x.id === f.user_id);
+                    const categoryColor: Record<string, string> = {
+                      hate: 'bg-destructive/15 text-destructive border-destructive/30',
+                      racism: 'bg-destructive/15 text-destructive border-destructive/30',
+                      violence: 'bg-destructive/15 text-destructive border-destructive/30',
+                      prejudice: 'bg-amber-500/15 text-amber-700 border-amber-500/30',
+                      profanity: 'bg-amber-500/15 text-amber-700 border-amber-500/30',
+                      other: 'bg-muted text-muted-foreground border-border',
+                    };
+                    return (
+                      <div key={f.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge className={categoryColor[f.category] || categoryColor.other}>{f.category}</Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {u?.email || u?.display_name || f.user_id.slice(0, 8)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">·</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(f.created_at)}</span>
+                          </div>
+                          <Button size="icon" variant="ghost" onClick={() => deleteFlag(f.id)} title="Apagar">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words bg-background rounded-md p-2 border border-border/50">
+                          {f.content}
+                        </p>
+                        {f.reason && (
+                          <p className="text-xs text-muted-foreground italic">Motivo: {f.reason}</p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
