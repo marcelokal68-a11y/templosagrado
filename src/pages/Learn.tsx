@@ -97,6 +97,7 @@ export default function Learn() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showFaithPrompt, setShowFaithPrompt] = useState(false);
+  const [trendingShuffle, setTrendingShuffle] = useState(0);
   const [faithPromptShown, setFaithPromptShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
