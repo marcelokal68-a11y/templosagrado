@@ -666,9 +666,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  const remainingCount = user ? questionsRemaining : Infinity;
   const trialExpired = accessStatus === 'expired';
-  const isBlocked = user ? ((remainingCount <= 0 || trialExpired) && !sessionClosed) : false;
+  const isBlocked = false; // Chat is unlimited for everyone
 
   const handleLgpdAccept = () => {
     localStorage.setItem('lgpd_accepted', 'true');
