@@ -417,7 +417,7 @@ export default function Pricing() {
                 </div>
               ))}
             </div>
-            {isPremiumUser ? (
+            {isPremiumUser && getCurrentPriceId() === PLANS[billingCycle === 'monthly' ? 'monthly' : 'annual'].priceId ? (
               <>
                 <Button variant="outline" className="w-full" onClick={handleManage} disabled={loadingPortal}>
                   {loadingPortal ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Settings className="h-4 w-4 mr-2" />}
@@ -428,12 +428,12 @@ export default function Pricing() {
             ) : (
               <Button
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
-                onClick={() => handleSubscribe(billingCycle === 'monthly' ? 'monthly' : 'annual')}
-                disabled={!!loadingPlan || isTopUser}
+                onClick={() => handleClickPlan(billingCycle === 'monthly' ? 'monthly' : 'annual')}
+                disabled={!!loadingPlan}
               >
                 {(loadingPlan === 'monthly' || loadingPlan === 'annual') && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Sparkles className="h-4 w-4" />
-                Assinar Devoto
+                {isSubscribed ? 'Mudar para Devoto' : 'Assinar Devoto'}
               </Button>
             )}
           </div>
