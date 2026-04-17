@@ -309,13 +309,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
   }, [playingIndex, stopAudio, language, toast]);
 
-  const getAnonCount = () => parseInt(localStorage.getItem('anon_chat_count') || '0', 10);
-  const incrementAnonCount = () => {
-    const count = getAnonCount() + 1;
-    localStorage.setItem('anon_chat_count', count.toString());
-    return count;
-  };
-
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: 'Copiado!' });
@@ -325,15 +318,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
-
-    if (!user) {
-      const anonUsed = getAnonCount();
-      if (anonUsed >= 12) {
-        toast({ title: 'Limite atingido', description: 'Faça login para continuar conversando.', variant: 'destructive' });
-        navigate('/auth');
-        return;
-      }
-    }
 
     if (user && questionsRemaining <= 0) {
       toast({ title: t('chat.no_questions', language), description: t('chat.upgrade', language), variant: 'destructive' });
@@ -426,8 +410,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
       if (user) {
         setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
-      } else {
-        incrementAnonCount();
       }
 
       if (user && assistantSoFar.length > 0 && !confessionalMode) {
