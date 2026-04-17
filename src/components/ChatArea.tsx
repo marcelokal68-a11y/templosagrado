@@ -845,18 +845,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             )}
             {/* Remaining messages banner */}
             <div className="flex items-center justify-between px-4 py-1">
-              {user ? (
-                <span className={cn(
-                  "text-xs font-medium",
-                  remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
-                )}>
-                  {remainingCount} {t('chat.questions_remaining', language)}
-                </span>
-              ) : (
-                <span className="text-xs font-medium text-muted-foreground">
-                  ✨ Conversa livre
-                </span>
-              )}
+              <span className="text-xs font-medium text-muted-foreground">
+                ✨ Conversa livre
+              </span>
+
               <div className="flex items-center gap-1.5">
                 {!user && (
                   <Link to="/auth" className="text-xs text-primary hover:underline font-medium min-h-[44px] flex items-center">
