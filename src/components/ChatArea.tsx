@@ -72,10 +72,11 @@ function DivineIcon() {
   );
 }
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick }: {
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate }: {
   msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
   isLast?: boolean; onSuggestionClick?: (text: string) => void;
+  isVisitor?: boolean; onPremiumGate?: () => void;
 }) {
   const isUser = msg.role === 'user';
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
@@ -103,20 +104,30 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
         {!isUser && displayText.length > 0 && (
           <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                style={{ opacity: 1 }}>
-            <button
-              onClick={() => onNarrate(displayText, index)}
-              disabled={loadingAudio === index}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-              title="Ouvir"
-            >
-              {loadingAudio === index ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : playingIndex === index ? (
-                <VolumeX className="h-3.5 w-3.5 text-primary" />
-              ) : (
-                <Volume2 className="h-3.5 w-3.5" />
-              )}
-            </button>
+            {isVisitor ? (
+              <button
+                onClick={onPremiumGate}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                title="Entre para ouvir"
+              >
+                <Lock className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                onClick={() => onNarrate(displayText, index)}
+                disabled={loadingAudio === index}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                title="Ouvir"
+              >
+                {loadingAudio === index ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : playingIndex === index ? (
+                  <VolumeX className="h-3.5 w-3.5 text-primary" />
+                ) : (
+                  <Volume2 className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
             <button
               onClick={() => onCopy(displayText)}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
@@ -124,12 +135,12 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
-            <PublishToMural originalContent={displayText} />
+            {!isVisitor && <PublishToMural originalContent={displayText} />}
           </div>
         )}
 
         {/* Suggestion buttons — only on last assistant message */}
-        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && (
+        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && !isVisitor && (
           <div className="flex flex-col gap-1.5 mt-2 w-full">
             {suggestions.map((s, i) => (
               <button
@@ -141,6 +152,17 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
               </button>
             ))}
           </div>
+        )}
+
+        {/* Visitor: show locked suggestions hint */}
+        {!isUser && isLast && isVisitor && suggestions.length > 0 && (
+          <button
+            onClick={onPremiumGate}
+            className="mt-2 w-full text-left px-3 py-2 rounded-xl bg-primary/5 border border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/10 transition-all text-xs text-muted-foreground flex items-center gap-2"
+          >
+            <Lock className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>Crie uma conta para receber perguntas sugeridas pelo mentor</span>
+          </button>
         )}
       </div>
     </div>
