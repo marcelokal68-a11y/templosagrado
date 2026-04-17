@@ -23,7 +23,11 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    // Save intended route so we can return user there after pricing/signup
+    try {
+      sessionStorage.setItem('post_signup_intent', location.pathname + location.search);
+    } catch {}
+    return <Navigate to={`/auth?next=/pricing&intent=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   return <>{children}</>;

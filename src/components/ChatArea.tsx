@@ -72,10 +72,11 @@ function DivineIcon() {
   );
 }
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick }: {
+function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate }: {
   msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
   isLast?: boolean; onSuggestionClick?: (text: string) => void;
+  isVisitor?: boolean; onPremiumGate?: () => void;
 }) {
   const isUser = msg.role === 'user';
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
@@ -103,20 +104,30 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
         {!isUser && displayText.length > 0 && (
           <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                style={{ opacity: 1 }}>
-            <button
-              onClick={() => onNarrate(displayText, index)}
-              disabled={loadingAudio === index}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-              title="Ouvir"
-            >
-              {loadingAudio === index ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : playingIndex === index ? (
-                <VolumeX className="h-3.5 w-3.5 text-primary" />
-              ) : (
-                <Volume2 className="h-3.5 w-3.5" />
-              )}
-            </button>
+            {isVisitor ? (
+              <button
+                onClick={onPremiumGate}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                title="Entre para ouvir"
+              >
+                <Lock className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                onClick={() => onNarrate(displayText, index)}
+                disabled={loadingAudio === index}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                title="Ouvir"
+              >
+                {loadingAudio === index ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : playingIndex === index ? (
+                  <VolumeX className="h-3.5 w-3.5 text-primary" />
+                ) : (
+                  <Volume2 className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
             <button
               onClick={() => onCopy(displayText)}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
@@ -124,12 +135,12 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
             >
               <Copy className="h-3.5 w-3.5" />
             </button>
-            <PublishToMural originalContent={displayText} />
+            {!isVisitor && <PublishToMural originalContent={displayText} />}
           </div>
         )}
 
         {/* Suggestion buttons — only on last assistant message */}
-        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && (
+        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && !isVisitor && (
           <div className="flex flex-col gap-1.5 mt-2 w-full">
             {suggestions.map((s, i) => (
               <button
@@ -141,6 +152,17 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
               </button>
             ))}
           </div>
+        )}
+
+        {/* Visitor: show locked suggestions hint */}
+        {!isUser && isLast && isVisitor && suggestions.length > 0 && (
+          <button
+            onClick={onPremiumGate}
+            className="mt-2 w-full text-left px-3 py-2 rounded-xl bg-primary/5 border border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/10 transition-all text-xs text-muted-foreground flex items-center gap-2"
+          >
+            <Lock className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>Crie uma conta para receber perguntas sugeridas pelo mentor</span>
+          </button>
         )}
       </div>
     </div>
@@ -309,13 +331,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
   }, [playingIndex, stopAudio, language, toast]);
 
-  const getAnonCount = () => parseInt(localStorage.getItem('anon_chat_count') || '0', 10);
-  const incrementAnonCount = () => {
-    const count = getAnonCount() + 1;
-    localStorage.setItem('anon_chat_count', count.toString());
-    return count;
-  };
-
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: 'Copiado!' });
@@ -325,15 +340,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
-
-    if (!user) {
-      const anonUsed = getAnonCount();
-      if (anonUsed >= 12) {
-        toast({ title: 'Limite atingido', description: 'Faça login para continuar conversando.', variant: 'destructive' });
-        navigate('/auth');
-        return;
-      }
-    }
 
     if (user && questionsRemaining <= 0) {
       toast({ title: t('chat.no_questions', language), description: t('chat.upgrade', language), variant: 'destructive' });
@@ -426,8 +432,6 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
       if (user) {
         setQuestionsRemaining(Math.max(0, questionsRemaining - 1));
-      } else {
-        incrementAnonCount();
       }
 
       if (user && assistantSoFar.length > 0 && !confessionalMode) {
@@ -617,9 +621,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     t(`rec.${chatContext.religion || 'default'}.3`, language),
   ];
 
-  const remainingCount = user ? questionsRemaining : Math.max(0, 12 - getAnonCount());
+  const remainingCount = user ? questionsRemaining : Infinity;
   const trialExpired = accessStatus === 'expired';
-  const isBlocked = (remainingCount <= 0 || trialExpired) && !sessionClosed;
+  const isBlocked = user ? ((remainingCount <= 0 || trialExpired) && !sessionClosed) : false;
 
   const handleLgpdAccept = () => {
     localStorage.setItem('lgpd_accepted', 'true');
@@ -702,6 +706,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             onCopy={handleCopy}
             isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
             onSuggestionClick={(text) => doSendMessage(text)}
+            isVisitor={!user}
+            onPremiumGate={() => navigate('/auth?next=/pricing')}
           />
         ))}
         
@@ -761,14 +767,30 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </div>
         ) : (
           <>
+            {/* Visitor CTA banner */}
+            {!user && messages.length > 0 && (
+              <Link
+                to="/auth?next=/pricing"
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-primary/5 border-b border-primary/15 text-xs text-primary hover:bg-primary/10 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>💾 Salvar sua jornada e desbloquear áudio + Mural</span>
+              </Link>
+            )}
             {/* Remaining messages banner */}
             <div className="flex items-center justify-between px-4 py-1">
-              <span className={cn(
-                "text-xs font-medium",
-                remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
-              )}>
-                {remainingCount} {t('chat.questions_remaining', language)}
-              </span>
+              {user ? (
+                <span className={cn(
+                  "text-xs font-medium",
+                  remainingCount > 5 ? "text-muted-foreground" : remainingCount > 2 ? "text-amber-600" : "text-destructive animate-pulse"
+                )}>
+                  {remainingCount} {t('chat.questions_remaining', language)}
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-muted-foreground">
+                  ✨ Conversa livre
+                </span>
+              )}
               <div className="flex items-center gap-1.5">
                 {!user && (
                   <Link to="/auth" className="text-xs text-primary hover:underline font-medium min-h-[44px] flex items-center">
@@ -929,15 +951,27 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
                     rows={1}
                   />
-                  <Button
-                    onClick={toggleRecording}
-                    disabled={isTranscribing}
-                    size="icon"
-                    variant={isRecording ? "destructive" : "ghost"}
-                    className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
-                  >
-                    {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
-                  </Button>
+                  {user ? (
+                    <Button
+                      onClick={toggleRecording}
+                      disabled={isTranscribing}
+                      size="icon"
+                      variant={isRecording ? "destructive" : "ghost"}
+                      className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
+                    >
+                      {isTranscribing ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-muted-foreground" />}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => navigate('/auth?next=/pricing')}
+                      size="icon"
+                      variant="ghost"
+                      className="shrink-0 h-10 w-10 rounded-full"
+                      title="Entrar para falar"
+                    >
+                      <Lock className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                  )}
                   <Button
                     onClick={sendMessage}
                     disabled={isLoading || !chatInput.trim()}

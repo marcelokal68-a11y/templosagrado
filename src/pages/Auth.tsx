@@ -25,11 +25,19 @@ export default function Auth() {
   const [lgpdAccepted, setLgpdAccepted] = useState(false);
   const [justSignedUp, setJustSignedUp] = useState(false);
 
+  // Check ?next= param to know whether to gate via /pricing after auth
+  const nextParam = new URLSearchParams(window.location.search).get('next');
+  const hasIntent = !!nextParam || (typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('post_signup_intent'));
+
   useEffect(() => {
     if (user) {
-      navigate(justSignedUp ? '/profile?onboarding=true' : '/', { replace: true });
+      if (hasIntent) {
+        navigate('/pricing?onboarding=1', { replace: true });
+      } else {
+        navigate(justSignedUp ? '/profile?onboarding=true' : '/', { replace: true });
+      }
     }
-  }, [user, navigate, justSignedUp]);
+  }, [user, navigate, justSignedUp, hasIntent]);
 
   const handleGoogleLogin = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
