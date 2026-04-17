@@ -11,11 +11,25 @@ export interface AccessProfile {
   questions_used?: number | null;
 }
 
+// Detects Lovable preview/sandbox environment — grants full access automatically there
+export function isPreviewEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  return (
+    host.includes('lovable.app') && host.includes('preview') ||
+    host.includes('lovableproject.com') ||
+    host === 'localhost' ||
+    host === '127.0.0.1'
+  );
+}
+
 export function computeAccess(
   profile: AccessProfile | null,
   isAdmin: boolean,
 ): { status: AccessStatus; trialDaysLeft: number; trialMsLeft: number } {
   if (!profile) return { status: 'anon', trialDaysLeft: 0, trialMsLeft: 0 };
+  // Preview environment: always grant subscriber-level access
+  if (isPreviewEnvironment()) return { status: 'subscriber', trialDaysLeft: 0, trialMsLeft: 0 };
   if (isAdmin) return { status: 'admin', trialDaysLeft: 0, trialMsLeft: 0 };
   if (profile.is_subscriber || profile.is_pro) {
     return { status: 'subscriber', trialDaysLeft: 0, trialMsLeft: 0 };
