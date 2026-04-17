@@ -27,6 +27,29 @@ export default function Profile() {
   const [searchParams] = useSearchParams();
   const isOnboarding = searchParams.get('onboarding') === 'true';
   const [deletingMemories, setDeletingMemories] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o fim do período pago.')) return;
+    setCancelling(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('cancel-subscription', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.error || resp.data?.error) {
+        throw new Error(resp.data?.error || resp.error?.message || 'Erro ao cancelar');
+      }
+      toast({
+        title: 'Assinatura cancelada',
+        description: 'Você manterá o acesso até o fim do período pago.',
+      });
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setCancelling(false);
+    }
+  };
   const [profile, setProfile] = useState<{
     display_name: string | null;
     preferred_religion: string | null;
@@ -265,6 +288,19 @@ export default function Profile() {
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
 
+          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial */}
+          {isSubscriber && !isAdmin && accessStatus !== 'trial' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+              disabled={cancelling}
+              onClick={handleCancelSubscription}
+            >
+              <X className="h-4 w-4" />
+              {cancelling ? 'Cancelando...' : 'Cancelar assinatura'}
+            </Button>
+          )}
           {/* Chat tone preference */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             <div className="flex items-center gap-2 mb-2">
