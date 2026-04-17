@@ -706,6 +706,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             onCopy={handleCopy}
             isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
             onSuggestionClick={(text) => doSendMessage(text)}
+            isVisitor={!user}
+            onPremiumGate={() => navigate('/auth?next=/pricing')}
           />
         ))}
         
