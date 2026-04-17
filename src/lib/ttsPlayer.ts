@@ -152,7 +152,7 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
       if (done) break;
       if (value) chunks.push(value);
     }
-    const blob = new Blob(chunks, { type: 'audio/mpeg' });
+    const blob = new Blob(chunks as BlobPart[], { type: 'audio/mpeg' });
     audio.src = URL.createObjectURL(blob);
     await audio.play();
   }
