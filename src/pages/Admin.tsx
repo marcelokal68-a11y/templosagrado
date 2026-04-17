@@ -365,6 +365,11 @@ export default function Admin() {
                           }
                         </div>
                       </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
+                        {u.trial_days_left > 0 && !u.is_subscriber
+                          ? <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />{u.trial_days_left}d</Badge>
+                          : <span className="text-muted-foreground">—</span>}
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.created_at)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(u.last_sign_in_at)}</TableCell>
                       <TableCell>
@@ -393,6 +398,53 @@ export default function Admin() {
               </Table>
             </div>
           )}
+        </TabsContent>
+
+        {/* ===== FREE ACCESS TAB ===== */}
+        <TabsContent value="free" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Gift className="h-5 w-5" /> Conceder Acesso Livre
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Emails nesta lista têm acesso completo permanente, sem precisar pagar.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <Input placeholder="email@exemplo.com" value={freeEmail} onChange={e => setFreeEmail(e.target.value)} />
+                <Input placeholder="Nota (opcional)" value={freeNote} onChange={e => setFreeNote(e.target.value)} />
+              </div>
+              <Button onClick={addFreeAccess} disabled={addingFree || !freeEmail.trim()}>
+                {addingFree ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                Adicionar
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="font-display text-lg">Emails com acesso livre</CardTitle></CardHeader>
+            <CardContent>
+              {freeAccess.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum email cadastrado.</p>
+              ) : (
+                <div className="space-y-2">
+                  {freeAccess.map(f => (
+                    <div key={f.email} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{f.email}</p>
+                        {f.note && <p className="text-xs text-muted-foreground truncate">{f.note}</p>}
+                      </div>
+                      <Button size="icon" variant="ghost" onClick={() => removeFreeAccess(f.email)} title="Remover">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ===== INVITES TAB ===== */}
