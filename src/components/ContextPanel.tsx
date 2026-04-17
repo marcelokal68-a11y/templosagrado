@@ -1,7 +1,7 @@
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { Sparkles, Church, BookOpen, Music, Flame, Sun, Leaf, Heart, ChevronRight, Moon, Globe, Cross, Compass } from 'lucide-react';
+import { Sparkles, Church, BookOpen, Music, Flame, Sun, Leaf, Heart, ChevronRight, Moon, Globe, Cross, Compass, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -372,13 +372,52 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
             loading="lazy"
             className="rounded-xl transition-opacity duration-300"
           />
+          {/* Floating "Play in Spotify app" button — deep link for real autoplay */}
+          <button
+            onClick={() => {
+              const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+              const deepLink = `spotify://playlist/${playlistId}`;
+              const webLink = `https://open.spotify.com/playlist/${playlistId}`;
+              if (isMobile) {
+                // Try to open the app; fall back to web after a short delay
+                const timeout = setTimeout(() => {
+                  window.location.href = webLink;
+                }, 800);
+                window.location.href = deepLink;
+                // If the app opens, the page is hidden — clear fallback
+                const onHide = () => {
+                  if (document.hidden) clearTimeout(timeout);
+                };
+                document.addEventListener('visibilitychange', onHide, { once: true });
+              } else {
+                window.open(webLink, '_blank', 'noopener,noreferrer');
+              }
+            }}
+            className={cn(
+              "absolute bottom-2 right-2 z-10",
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full",
+              "bg-[#1DB954] text-white text-xs font-semibold shadow-lg",
+              "hover:bg-[#1ed760] active:scale-95 transition-all",
+              "ring-2 ring-white/20"
+            )}
+            aria-label={
+              language === 'en'
+                ? 'Play now in Spotify app'
+                : language === 'es'
+                  ? 'Reproducir ahora en la app de Spotify'
+                  : 'Tocar agora no app do Spotify'
+            }
+          >
+            <Play className="h-3 w-3 fill-current" />
+            {language === 'en' ? 'Play now' : language === 'es' ? 'Reproducir ahora' : 'Tocar agora'}
+          </button>
         </div>
         <p className="text-[10px] text-muted-foreground/70 text-center">
           {language === 'en'
-            ? 'Tap ▶ inside the player to start sacred music'
+            ? 'Tap "Play now" to open the Spotify app for real autoplay'
             : language === 'es'
-              ? 'Toca ▶ dentro del reproductor para iniciar la música sagrada'
-              : 'Toque ▶ no player para iniciar a música sacra'}
+              ? 'Toca "Reproducir ahora" para abrir la app de Spotify con autoplay real'
+              : 'Toque "Tocar agora" para abrir o app do Spotify com autoplay real'}
         </p>
       </div>
 
