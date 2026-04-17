@@ -215,6 +215,8 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
             const isActive =
               (option.mode === 'religion' && chatContext.religion === option.key) ||
               (option.mode === 'philosophy' && chatContext.philosophy === option.key);
+            const isDimmed = !!preferredReligion && option.key !== preferredReligion && !isActive;
+            const isPreferred = !!preferredReligion && option.key === preferredReligion;
 
             return (
               <button
@@ -225,7 +227,8 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
                   "active:scale-[0.98]",
                   isActive
                     ? "bg-primary/10 border-primary/40 shadow-sm shadow-primary/10"
-                    : "bg-card border-border/60 hover:bg-muted/50 hover:border-border"
+                    : "bg-card border-border/60 hover:bg-muted/50 hover:border-border",
+                  isDimmed && "opacity-40 hover:opacity-90"
                 )}
               >
                 <div className={cn(
@@ -240,6 +243,9 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
                     isActive ? "text-primary" : "text-foreground"
                   )}>
                     {option.label}
+                    {isPreferred && (
+                      <span className="ml-1.5 text-[10px] font-medium text-primary/80">★ sua fé</span>
+                    )}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{option.sublabel}</p>
                 </div>
