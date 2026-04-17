@@ -103,6 +103,7 @@ serve(async (req) => {
       subscribed: hasActive,
       product_id: productId,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
       trial_active: trialActive,
       trial_ends_at: profile?.trial_ends_at ?? null,
     }), {
