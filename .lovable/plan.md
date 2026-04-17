@@ -1,55 +1,66 @@
 
-## Plano: Destacar fé escolhida e esmaecer outras tradições
 
-### Comportamento desejado
-Quando o usuário já tem `preferred_religion` salva no perfil:
-1. **No painel de contexto do Chat** (`ContextPanel.tsx`) — a fé escolhida fica destacada normalmente; as outras 7 tradições e os blocos "Em breve" ficam **transparentes (opacity-40)**. Clicar em uma esmaecida abre diálogo: "Deseja mudar sua fé para X?" com três opções:
-   - **Sim, mudar minha fé** → salva em `profiles.preferred_religion`, limpa chat (já existe `clearChatWithUndo`), e ativa a nova tradição.
-   - **Só explorar / tirar dúvidas** → abre /learn com aquela tradição pré-selecionada (não muda a fé).
-   - **Cancelar**.
+## Plano corrigido: Chat texto ilimitado para visitantes (recursos premium gated)
 
-2. **Na página Aprenda** (`Learn.tsx`) — mesmo visual: card da fé do usuário fica em destaque (ring/glow sutil "Sua tradição"), outras religiões e filosofias ficam com opacity reduzida mas clicáveis livremente (aprendizado é exploratório, não muda fé). Mantém o prompt já existente de "Deseja configurar como sua fé?" ao final da primeira resposta.
+### Diferença vs. plano anterior
+Visitantes deslogados têm chat de **texto ilimitado**, mas **TTS, STT, narração e perguntas sugeridas continuam exigindo login + assinatura/trial**.
 
-3. **Se `preferred_religion` não está definida** — tudo aparece normal, sem esmaecer (comportamento atual).
+### Comportamento por recurso (visitante deslogado)
+
+| Recurso | Acesso |
+|---|---|
+| Enviar/receber mensagens de texto | ✅ Ilimitado |
+| Áudio das respostas (TTS / botão Narrar) | 🔒 Login + trial/assinatura |
+| Microfone / ditado (STT) | 🔒 Login + trial/assinatura |
+| Perguntas sugeridas (parser `---SUGGESTIONS---`) | 🔒 Login + trial/assinatura |
+| Mural, Versículo, Aprenda, Convidar | 🔒 Login → /pricing → recurso |
+| Sidebar/drawer com todas as funcionalidades visíveis | ✅ Sempre visível (mas clica → /auth → /pricing) |
 
 ### Mudanças técnicas
 
-**`src/components/ContextPanel.tsx`**
-- Ler `preferred_religion` via `useApp` (vou expor um valor novo no contexto, ou ler direto do profile — mais simples: carregar uma vez via `supabase` no mount, ou adicionar `preferredReligion` ao `AppContext`). Vou adicionar `preferredReligion: string | null` ao `AppContextType` (já é carregado em `loadProfile`, basta expor).
-- Em `FAITH_OPTIONS.map` e `COMING_SOON_OPTIONS.map`: se `preferredReligion` existe e o card não é a fé escolhida → aplicar classes `opacity-40 hover:opacity-70`.
-- Novo estado `exploreIntent: { option, mode: 'switch' | 'learn' } | null` e novo `AlertDialog` com 3 botões (Mudar fé / Explorar / Cancelar). "Explorar" chama `navigate('/learn?topic=<key>')`.
-- O diálogo de confirmação atual (`showConfirm`) é substituído por este novo fluxo, mais rico.
+**1. `src/components/ChatArea.tsx`**
+- Remover limite de 12 mensagens para deslogados (apagar `getAnonCount`, `incrementAnonCount`, `anonUsed >= 12`).
+- **Esconder os botões de áudio/microfone/sugestões para visitantes**:
+  - Botão "Narrar" em cada resposta: só renderiza se `user` existe.
+  - Botão de microfone (STT) no input: só renderiza se `user` existe; senão mostra um botão "🔒 Entrar para falar" que leva a `/auth?next=/pricing`.
+  - Perguntas sugeridas (chips/botões abaixo das respostas): para visitantes, em vez de renderizar os chips clicáveis, mostrar um aviso discreto "🔒 Crie uma conta para receber perguntas sugeridas pelo mentor" → link para `/auth?next=/pricing`.
+- Adicionar CTA persistente no topo: "💾 Salvar sua jornada e desbloquear áudio + Mural" → `/auth?next=/pricing`.
+- Inserts em `chat_messages` / `activity_history` continuam só para logados.
 
-**`src/pages/Learn.tsx`**
-- Ler `preferredReligion` de `useApp`.
-- Aceitar query param `?topic=<key>` via `useSearchParams` para abrir direto em um tópico (usado ao clicar "Explorar" no Chat).
-- Nos grids de religiões e filosofias: se `preferredReligion` existe, destacar card correspondente (ring primary, badge "⭐ Sua tradição") e esmaecer outros com `opacity-50 hover:opacity-100`. Nada bloqueia o clique — segue exploratório.
+**2. `src/components/AppSidebar.tsx`**
+- Sidebar visível para visitantes (remover `if (!user) return null`).
+- Itens: Chat, Aprenda, Versículo, Mural — todos clicáveis. Cliques em qualquer um exceto Chat acionam o gate via `ProtectedRoute`.
 
-**`src/contexts/AppContext.tsx`**
-- Adicionar `preferredReligion: string | null` no type e no provider (já é lido em `loadProfile`, só precisa de state + expor).
-- Atualizar quando `handleFaithConfirm` roda e quando o Learn/Profile/Chat salva uma nova fé. `refreshProfile()` já recarrega tudo.
+**3. `src/components/Header.tsx`**
+- Drawer mobile mostra a mesma lista do logado (Aprenda, Versículo, Mural, Convidar, Pricing) + "Entrar" no topo.
 
-### Resultado visual
+**4. `src/components/ProtectedRoute.tsx`**
+- Ao bloquear visitante: redirecionar para `/auth?next=/pricing&intent=<rota>` e salvar `sessionStorage.post_signup_intent = <rota>`.
+- Continua liberando `/` (chat) para visitantes.
+
+**5. `src/pages/Auth.tsx`**
+- Após signup/login bem-sucedido: ler `?next=` ou `sessionStorage.post_signup_intent`. Se houver, ir para `/pricing?onboarding=1`; senão fluxo normal.
+
+**6. `src/pages/Pricing.tsx`**
+- Detectar `?onboarding=1` → mostrar copy: "Bem-vindo! Para acessar [funcionalidade], escolha um plano ou continue com seus 7 dias grátis."
+- Botão "Continuar com 7 dias grátis" → lê `sessionStorage.post_signup_intent`, limpa o flag, navega para a rota intencionada.
+
+### Resultado
 ```text
-  ChatContext panel (usuário=judaico):
-  ┌─────────────────────────────┐
-  │ ○ Católico         (40%)    │ ← clique abre diálogo
-  │ ○ Evangélico       (40%)    │
-  │ ● JUDAÍSMO ✓       (100%)   │ ← destacado
-  │ ○ Hinduísmo        (40%)    │
-  │ ...                         │
-  └─────────────────────────────┘
+Visitante em /:
+  ✅ Texto ilimitado
+  🔒 Botão Narrar oculto / Microfone oculto / Sugestões bloqueadas
+  💾 CTA suave: "Crie conta para áudio + Mural"
+  📋 Sidebar mostra Aprenda, Versículo, Mural
 
-  Diálogo ao clicar esmaecido:
-  ┌─────────────────────────────┐
-  │ Mudar para Hinduísmo?       │
-  │ [Mudar minha fé]            │
-  │ [Só explorar (Aprenda)]     │
-  │ [Cancelar]                  │
-  └─────────────────────────────┘
+Visitante clica em Mural (ou em qualquer botão 🔒):
+  → /auth?next=/pricing  
+  → /pricing?onboarding=1  
+  → "Continuar com 7 dias grátis" → /mural ✓
 ```
 
 ### Notas
-- Sem mudança de banco; só UI + contexto.
-- Mantém `preferred_religion = null` como "sem fé definida" (tudo normal).
-- "Prefiro não especificar" no Profile continua limpando a fé, o que reverte o esmaecimento.
+- Sem mudança de banco.
+- Rate-limit de edge function (429) protege contra abuso no chat de texto.
+- Tudo que custa API cara (TTS/STT/sugestões geradas pela IA) fica trancado atrás do login.
+
