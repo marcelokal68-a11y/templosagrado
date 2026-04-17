@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const MONTHLY_TTS_CAP = 300;
+
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,6 +32,84 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // ===== Soft cap: 300 narrações/mês para usuários autenticados =====
+    // Isentos: admins e usuários com acesso vitalício (free_access_emails)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const authHeader = req.headers.get('Authorization') ?? '';
+    let userId: string | null = null;
+
+    if (authHeader && supabaseUrl && serviceKey) {
+      try {
+        const anonClient = createClient(
+          supabaseUrl,
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        const { data: userData } = await anonClient.auth.getUser();
+        userId = userData?.user?.id ?? null;
+      } catch (e) {
+        console.warn('Auth check failed (proceeding as anon):', e);
+      }
+    }
+
+    if (userId) {
+      const admin = createClient(supabaseUrl, serviceKey);
+
+      // Verifica isenção: admin role ou e-mail com acesso vitalício
+      const [{ data: roleRow }, { data: userInfo }] = await Promise.all([
+        admin.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
+        admin.auth.admin.getUserById(userId),
+      ]);
+
+      let isExempt = !!roleRow;
+      if (!isExempt && userInfo?.user?.email) {
+        const { data: freeEmail } = await admin
+          .from('free_access_emails')
+          .select('email')
+          .ilike('email', userInfo.user.email)
+          .maybeSingle();
+        isExempt = !!freeEmail;
+      }
+
+      if (!isExempt) {
+        const monthKey = currentMonthKey();
+        const { data: usageRow } = await admin
+          .from('tts_usage')
+          .select('count')
+          .eq('user_id', userId)
+          .eq('month_key', monthKey)
+          .maybeSingle();
+
+        const used = usageRow?.count ?? 0;
+        if (used >= MONTHLY_TTS_CAP) {
+          return new Response(
+            JSON.stringify({
+              error: 'tts_monthly_cap_reached',
+              message: `Você atingiu o limite mensal de ${MONTHLY_TTS_CAP} narrações de áudio. O contador reinicia no próximo mês.`,
+              cap: MONTHLY_TTS_CAP,
+              used,
+            }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Incrementa contador (upsert)
+        if (usageRow) {
+          await admin
+            .from('tts_usage')
+            .update({ count: used + 1 })
+            .eq('user_id', userId)
+            .eq('month_key', monthKey);
+        } else {
+          await admin
+            .from('tts_usage')
+            .insert({ user_id: userId, month_key: monthKey, count: 1 });
+        }
+      }
+    }
+    // ===== Fim do soft cap =====
 
     const voiceId = 'HOfBIVLhom4mc9WvXfyH';
 
