@@ -17,15 +17,19 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [lgpdAccepted, setLgpdAccepted] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate(justSignedUp ? '/profile?onboarding=true' : '/', { replace: true });
+    }
+  }, [user, navigate, justSignedUp]);
 
   const handleGoogleLogin = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
