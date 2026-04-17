@@ -128,9 +128,36 @@ export default function Pricing() {
   const isPremiumUser = subscription?.subscribed && PREMIUM_PRODUCT_IDS.includes(subscription.product_id || '');
   const isSubscribed = subscription?.subscribed;
 
+  const isOnboarding = searchParams.get('onboarding') === '1';
+
+  const handleContinueTrial = () => {
+    let intent = '/';
+    try {
+      intent = sessionStorage.getItem('post_signup_intent') || '/';
+      sessionStorage.removeItem('post_signup_intent');
+    } catch {}
+    navigate(intent, { replace: true });
+  };
+
   return (
     <div className="flex-1 overflow-y-auto pb-20 md:pb-8">
       <div className="max-w-lg mx-auto px-4 py-8">
+        {/* Onboarding welcome banner */}
+        {isOnboarding && user && (
+          <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-center">
+            <p className="text-sm text-foreground/90 leading-relaxed">
+              ✨ <strong>Bem-vindo ao Templo Sagrado!</strong> Para acessar essa funcionalidade, escolha um plano abaixo ou continue com seus <strong>7 dias grátis</strong>.
+            </p>
+            <Button
+              onClick={handleContinueTrial}
+              variant="outline"
+              className="mt-3 w-full border-primary/40 text-primary hover:bg-primary/10"
+            >
+              Continuar com 7 dias grátis
+            </Button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 ring-1 ring-primary/20">
