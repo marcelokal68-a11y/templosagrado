@@ -77,29 +77,50 @@ const FAITH_OPTIONS = [
 
 const COMING_SOON_OPTIONS: { key: string; label: string; sublabel: string; icon: typeof Sun }[] = [];
 
-function ChipGroup({ label, items, prefix, selected, onSelect }: {
+function ChipGroup({ label, items, prefix, selected, onSelect, specificItems }: {
   label: string; items: string[]; prefix: string; selected: string; onSelect: (v: string) => void;
+  specificItems?: Set<string>;
 }) {
   const { language } = useApp();
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+        {label}
+        {specificItems && specificItems.size > 0 && (
+          <span className="text-[10px] font-normal text-muted-foreground inline-flex items-center gap-1">
+            <Sparkles className="h-2.5 w-2.5 text-primary/70" />
+            {language === 'en' ? 'tradition-specific' : language === 'es' ? 'específico de la tradición' : 'específico da tradição'}
+          </span>
+        )}
+      </h3>
       <div className="flex flex-wrap gap-1.5">
-        {items.map(item => (
-          <button
-            key={item}
-            onClick={() => onSelect(selected === item ? '' : item)}
-            className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-              selected === item
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
-            )}
-          >
-            {t(`${prefix}.${item}`, language)}
-          </button>
-        ))}
+        {items.map(item => {
+          const isSpecific = specificItems?.has(item);
+          const isSelected = selected === item;
+          return (
+            <button
+              key={item}
+              onClick={() => onSelect(isSelected ? '' : item)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all border inline-flex items-center gap-1",
+                isSelected
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : isSpecific
+                    ? "bg-primary/5 text-foreground border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+                    : "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:border-primary/30"
+              )}
+              title={isSpecific
+                ? (language === 'en' ? 'Specific to this tradition' : language === 'es' ? 'Específico de esta tradición' : 'Específico desta tradição')
+                : undefined}
+            >
+              {isSpecific && (
+                <Sparkles className={cn("h-2.5 w-2.5", isSelected ? "text-primary-foreground" : "text-primary/70")} />
+              )}
+              {t(`${prefix}.${item}`, language)}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -114,6 +135,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const currentSelection = chatContext.religion || chatContext.philosophy || '';
   const topics = getTopicsForSelection(chatContext.religion);
+  const specificTopics = new Set(topics.filter(t => !UNIVERSAL_TOPICS.includes(t)));
 
   const currentTopicValid = !chatContext.topic || topics.includes(chatContext.topic);
   if (!currentTopicValid) {
@@ -328,6 +350,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         prefix="topic"
         selected={chatContext.topic}
         onSelect={(v) => setChatContext(prev => ({ ...prev, topic: v }))}
+        specificItems={specificTopics}
       />
 
       {/* Spotify */}
