@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { useSearchParams } from 'react-router-dom';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -49,7 +50,8 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
 }
 
 export default function Learn() {
-  const { language, user, setChatContext } = useApp();
+  const { language, user, setChatContext, preferredReligion } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [topic, setTopic] = useState<string | null>(null);
   const [topicKind, setTopicKind] = useState<'religion' | 'philosophy' | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -58,6 +60,16 @@ export default function Learn() {
   const [showFaithPrompt, setShowFaithPrompt] = useState(false);
   const [faithPromptShown, setFaithPromptShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
+  useEffect(() => {
+    const qTopic = searchParams.get('topic');
+    const qKind = searchParams.get('kind') as 'religion' | 'philosophy' | null;
+    if (qTopic && (qKind === 'religion' || qKind === 'philosophy')) {
+      setSearchParams({}, { replace: true });
+      startTopic(qTopic, qKind);
+    }
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
