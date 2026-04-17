@@ -67,7 +67,7 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
         if (done) break;
         if (value) chunks.push(value);
       }
-      const blob = new Blob(chunks, { type: 'audio/mpeg' });
+      const blob = new Blob(chunks as BlobPart[], { type: 'audio/mpeg' });
       if (blob.size > 0) await putCachedAudio(cacheKey, blob);
     } catch (e) {
       console.warn('TTS cache write skipped:', e);
