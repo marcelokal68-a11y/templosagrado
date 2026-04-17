@@ -123,25 +123,13 @@ export default function Verse() {
     const text = `${content.title}. ${content.explanation}. ${content.reflection}`;
     setLoadingAudio(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text, speed: 1.15 }),
-        }
-      );
-      if (!response.ok) throw new Error('TTS failed');
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      audio.onended = () => { setIsPlaying(false); audioRef.current = null; };
-      await audio.play();
+      const { playTTS } = await import('@/lib/ttsPlayer');
+      const { audio, stop } = await playTTS({
+        text,
+        speed: 1.15,
+        onEnded: () => { setIsPlaying(false); audioRef.current = null; },
+      });
+      audioRef.current = { pause: stop } as unknown as HTMLAudioElement;
       setIsPlaying(true);
     } catch (e) {
       console.error('TTS error:', e);
