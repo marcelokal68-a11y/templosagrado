@@ -4,146 +4,131 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { SendHorizonal, Loader2, MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { SendHorizonal, Loader2, Globe } from 'lucide-react';
 import { containsProfanity } from '@/lib/profanityFilter';
 import { sanitizeDisplayName } from '@/lib/sanitizeDisplayName';
-
-// If display_name looks like an email, show only the part before @
-function friendlyName(name: string | null): string {
-  if (!name) return 'Alguém';
-  if (name.includes('@')) return name.split('@')[0];
-  return name;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  display_name: string | null;
-  is_anonymous: boolean;
-  user_id: string;
-  created_at: string;
-}
-
-interface Comment {
-  id: string;
-  post_id: string;
-  user_id: string;
-  content: string;
-  display_name: string | null;
-  created_at: string;
-}
-
-interface Reaction {
-  post_id: string;
-  user_id: string;
-  reaction_type: string;
-}
+import EcumenicalWall from '@/components/mural/EcumenicalWall';
 
 export default function Mural() {
   const { user } = useApp();
   const { toast } = useToast();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [reactions, setReactions] = useState<Reaction[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
   const [newPrayer, setNewPrayer] = useState('');
   const [posting, setPosting] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [preferredReligion, setPreferredReligion] = useState<string | null>(null);
 
-  // Load profile display name
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => setDisplayName(sanitizeDisplayName(data?.display_name)));
+    supabase.from('profiles').select('display_name, preferred_religion').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        setDisplayName(sanitizeDisplayName(data?.display_name));
+        setPreferredReligion(data?.preferred_religion || null);
+      });
   }, [user]);
 
-  // Load posts, reactions, comments
-  const loadData = useCallback(async () => {
-    const [postsRes, reactionsRes, commentsRes] = await Promise.all([
-      supabase.from('prayer_wall_posts').select('id, content, display_name, is_anonymous, user_id, created_at')
-        .order('created_at', { ascending: false }).limit(50),
-      supabase.from('prayer_reactions').select('post_id, user_id, reaction_type'),
-      supabase.from('prayer_comments').select('*').order('created_at', { ascending: true }),
-    ]);
-    if (postsRes.data) setPosts(postsRes.data);
-    if (reactionsRes.data) setReactions(reactionsRes.data);
-    if (commentsRes.data) setComments(commentsRes.data as Comment[]);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { loadData(); }, [loadData]);
-
-  // Realtime subscriptions
-  useEffect(() => {
-    const channel = supabase.channel('prayer-feed')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'prayer_wall_posts' }, () => loadData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'prayer_reactions' }, () => loadData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'prayer_comments' }, () => loadData())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [loadData]);
+  const moderateContent = useCallback(async (content: string): Promise<{ allowed: boolean; category: string; reason: string } | null> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/moderate-post`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+      if (resp.status === 429) {
+        toast({ title: 'Muitas requisições', description: 'Aguarde alguns segundos.', variant: 'destructive' });
+        return null;
+      }
+      if (resp.status === 402) {
+        toast({ title: 'Moderação indisponível', description: 'Tente novamente mais tarde.', variant: 'destructive' });
+        return null;
+      }
+      if (!resp.ok) return null;
+      return await resp.json();
+    } catch {
+      return null;
+    }
+  }, [toast]);
 
   const handlePost = async () => {
     if (!newPrayer.trim() || !user) return;
-    if (containsProfanity(newPrayer)) {
-      toast({ title: 'Conteúdo inadequado detectado', variant: 'destructive' });
+    const text = newPrayer.trim();
+
+    if (containsProfanity(text)) {
+      toast({ title: 'Conteúdo bloqueado', description: 'Linguagem inadequada detectada.', variant: 'destructive' });
+      await supabase.from('moderation_flags').insert({
+        user_id: user.id, content: text, category: 'profanity', reason: 'Filtro local de palavrões',
+      });
       return;
     }
+
     setPosting(true);
     try {
-      await supabase.from('prayer_wall_posts').insert({
+      const moderation = await moderateContent(text);
+      if (moderation && !moderation.allowed) {
+        toast({
+          title: 'Conteúdo bloqueado',
+          description: `${moderation.reason} O administrador foi notificado.`,
+          variant: 'destructive',
+        });
+        await supabase.from('moderation_flags').insert({
+          user_id: user.id,
+          content: text,
+          category: moderation.category,
+          reason: moderation.reason,
+        });
+        return;
+      }
+
+      const { error } = await supabase.from('prayer_wall_posts').insert({
         user_id: user.id,
-        content: newPrayer.trim(),
+        content: text,
         display_name: displayName,
         is_anonymous: false,
         is_public: true,
+        religion: preferredReligion,
       });
+      if (error) throw error;
       setNewPrayer('');
-      toast({ title: 'Oração publicada 🙏' });
-    } catch {
-      toast({ title: 'Erro ao publicar', variant: 'destructive' });
+      toast({ title: 'Oração publicada 🕊️', description: 'Que sua paz alcance todos.' });
+    } catch (e: any) {
+      toast({ title: 'Erro ao publicar', description: e.message, variant: 'destructive' });
     } finally {
       setPosting(false);
     }
   };
 
-  const handleAmem = async (postId: string) => {
-    if (!user) return;
-    const existing = reactions.find(r => r.post_id === postId && r.user_id === user.id && r.reaction_type === 'pray');
-    if (existing) {
-      await supabase.from('prayer_reactions').delete()
-        .eq('post_id', postId).eq('user_id', user.id).eq('reaction_type', 'pray');
-    } else {
-      await supabase.from('prayer_reactions').insert({
-        post_id: postId, user_id: user.id, reaction_type: 'pray',
-      });
-    }
-    loadData();
-  };
-
   return (
     <div className="flex-1 overflow-y-auto pb-20 md:pb-8">
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="font-display text-xl font-bold text-foreground">Corrente de Orações</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Compartilhe seu pedido e ore pelos outros
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+            <Globe className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">Pela Paz no Mundo</span>
+          </div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            Mural Ecumênico
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Um espaço sagrado para todas as tradições — onde a oração de cada um é a esperança de todos.
           </p>
         </div>
 
-        {/* New prayer input */}
+        {/* Composer */}
         {user && (
           <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
             <Textarea
               value={newPrayer}
-              onChange={e => setNewPrayer(e.target.value)}
-              placeholder="Qual é o seu pedido de oração hoje?"
-              className="min-h-[60px] max-h-[120px] resize-none text-sm rounded-xl bg-background border-border/50"
-              rows={2}
+              onChange={e => setNewPrayer(e.target.value.slice(0, 500))}
+              placeholder="Compartilhe uma oração, intenção ou bênção pela paz..."
+              className="min-h-[80px] max-h-[160px] resize-none text-sm rounded-xl bg-background border-border/50"
+              rows={3}
             />
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">{newPrayer.length}/500 · Conteúdo moderado por IA</span>
               <Button
                 onClick={handlePost}
                 disabled={posting || !newPrayer.trim()}
@@ -157,196 +142,9 @@ export default function Mural() {
           </div>
         )}
 
-        {/* Feed */}
-        {loading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-sm">Nenhuma oração ainda. Seja o primeiro a compartilhar!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {posts.map(post => (
-              <PrayerCard
-                key={post.id}
-                post={post}
-                reactions={reactions}
-                comments={comments.filter(c => c.post_id === post.id)}
-                currentUserId={user?.id}
-                displayName={displayName}
-                onAmem={handleAmem}
-                onRefresh={loadData}
-              />
-            ))}
-          </div>
-        )}
+        {/* Ecumenical Wall */}
+        <EcumenicalWall />
       </div>
     </div>
   );
-}
-
-function PrayerCard({ post, reactions, comments, currentUserId, displayName, onAmem, onRefresh }: {
-  post: Post;
-  reactions: Reaction[];
-  comments: Comment[];
-  currentUserId?: string;
-  displayName: string | null;
-  onAmem: (id: string) => void;
-  onRefresh: () => void;
-}) {
-  const { toast } = useToast();
-  const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [commenting, setCommenting] = useState(false);
-
-  const amenCount = reactions.filter(r => r.post_id === post.id && r.reaction_type === 'pray').length;
-  const userAmen = reactions.some(r => r.post_id === post.id && r.user_id === currentUserId && r.reaction_type === 'pray');
-  const isOwn = currentUserId === post.user_id;
-
-  const timeAgo = getTimeAgo(post.created_at);
-
-  const handleComment = async () => {
-    if (!newComment.trim() || !currentUserId) return;
-    if (containsProfanity(newComment)) {
-      toast({ title: 'Conteúdo inadequado', variant: 'destructive' });
-      return;
-    }
-    setCommenting(true);
-    try {
-      await supabase.from('prayer_comments').insert({
-        post_id: post.id,
-        user_id: currentUserId,
-        content: newComment.trim(),
-        display_name: displayName,
-      } as any);
-      setNewComment('');
-      onRefresh();
-    } catch {
-      toast({ title: 'Erro ao comentar', variant: 'destructive' });
-    } finally {
-      setCommenting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    await supabase.from('prayer_wall_posts').delete().eq('id', post.id);
-    onRefresh();
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    await supabase.from('prayer_comments').delete().eq('id', commentId);
-    onRefresh();
-  };
-
-  return (
-    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-      {/* Post content */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-              {(post.is_anonymous ? 'A' : friendlyName(post.display_name)[0]).toUpperCase()}
-            </div>
-            <div>
-              <span className="text-sm font-medium text-foreground">
-                {post.is_anonymous ? 'Anônimo' : friendlyName(post.display_name)}
-              </span>
-              <span className="text-[11px] text-muted-foreground ml-2">{timeAgo}</span>
-            </div>
-          </div>
-          {isOwn && (
-            <button onClick={handleDelete} className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
-          {post.content}
-        </p>
-      </div>
-
-      {/* Actions bar */}
-      <div className="flex items-center border-t border-border/30 px-2">
-        <button
-          onClick={() => onAmem(post.id)}
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors flex-1 justify-center",
-            userAmen ? "text-primary" : "text-muted-foreground hover:text-primary"
-          )}
-        >
-          🙏 Amém {amenCount > 0 && <span className="text-xs">({amenCount})</span>}
-        </button>
-        <div className="w-px h-6 bg-border/30" />
-        <button
-          onClick={() => setShowComments(!showComments)}
-          className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex-1 justify-center"
-        >
-          <MessageCircle className="h-4 w-4" />
-          Comentar {comments.length > 0 && <span className="text-xs">({comments.length})</span>}
-          {showComments ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-        </button>
-      </div>
-
-      {/* Comments section */}
-      {showComments && (
-        <div className="border-t border-border/30 bg-background/50">
-          {comments.length > 0 && (
-            <div className="px-4 py-2 space-y-2">
-              {comments.map(comment => (
-                <div key={comment.id} className="flex gap-2">
-                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 mt-0.5">
-                    {friendlyName(comment.display_name)[0].toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xs font-medium text-foreground">{friendlyName(comment.display_name)}</span>
-                      <span className="text-[10px] text-muted-foreground">{getTimeAgo(comment.created_at)}</span>
-                      {currentUserId === comment.user_id && (
-                        <button onClick={() => handleDeleteComment(comment.id)} className="text-muted-foreground hover:text-destructive ml-auto">
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-xs text-foreground/80 leading-relaxed">{comment.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {currentUserId && (
-            <div className="flex gap-2 px-4 py-2 border-t border-border/20">
-              <input
-                value={newComment}
-                onChange={e => setNewComment(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleComment())}
-                placeholder="Escreva um comentário..."
-                className="flex-1 text-xs bg-transparent border-0 outline-none placeholder:text-muted-foreground/50 py-1"
-              />
-              <button
-                onClick={handleComment}
-                disabled={commenting || !newComment.trim()}
-                className="text-primary disabled:opacity-40 text-xs font-medium px-2"
-              >
-                {commenting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Enviar'}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function getTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'agora';
-  if (minutes < 60) return `${minutes}min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(dateStr).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
 }
