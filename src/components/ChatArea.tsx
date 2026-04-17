@@ -685,6 +685,28 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       </Dialog>
       {/* Trial / expired banner */}
       <TrialBanner />
+      {/* Exploration return banner: user came back from /learn after exploring a different faith */}
+      {exploringFaith && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-primary/8 border-b border-primary/20 animate-fade-in">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground/85 flex-1 leading-snug">
+            Você estava explorando <strong className="text-primary">{t(`religion.${exploringFaith}` as any, language) || exploringFaith}</strong> — quer adotar como sua fé?
+          </p>
+          <button
+            onClick={adoptExploredFaith}
+            className="text-xs font-semibold text-primary hover:underline shrink-0 px-2 py-1"
+          >
+            Adotar
+          </button>
+          <button
+            onClick={() => setExploringFaith(null)}
+            className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
+            aria-label="Dispensar"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 md:py-4 space-y-3 md:space-y-4 mobile-scroll">
         {/* Empty state — welcome + suggested questions */}
