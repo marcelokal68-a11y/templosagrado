@@ -48,15 +48,30 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
   }
 
   // 2) Cache miss → fetch streaming response
+  // Use the user's session token (when logged in) so the edge function can
+  // identify them and apply the monthly TTS cap. Falls back to anon key.
+  const { data: { session } } = await supabase.auth.getSession();
+  const authToken = session?.access_token ?? ANON_KEY;
+
   const response = await fetch(TTS_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       apikey: ANON_KEY,
-      Authorization: `Bearer ${ANON_KEY}`,
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify({ text, speed }),
   });
+
+  if (response.status === 429) {
+    let payload: any = {};
+    try { payload = await response.json(); } catch {}
+    throw new TTSCapReachedError(
+      payload.cap ?? 300,
+      payload.used ?? 0,
+      payload.message ?? 'Limite mensal de narrações atingido.'
+    );
+  }
 
   if (!response.ok || !response.body) {
     throw new Error(`TTS failed: ${response.status}`);
