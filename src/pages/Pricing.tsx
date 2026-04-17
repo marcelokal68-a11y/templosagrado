@@ -156,6 +156,58 @@ export default function Pricing() {
     }
   };
 
+  const handleClickPlan = (planKey: keyof typeof PLANS) => {
+    if (!user) { navigate('/auth'); return; }
+
+    // If not subscribed → new checkout
+    if (!subscription?.subscribed) {
+      handleSubscribe(planKey);
+      return;
+    }
+
+    // Already subscribed → detect upgrade/downgrade
+    const currentPriceId = getCurrentPriceId();
+    const newPriceId = PLANS[planKey].priceId;
+    if (currentPriceId === newPriceId) return; // same plan
+
+    const currentAmount = currentPriceId ? PRICE_AMOUNTS[currentPriceId] ?? 0 : 0;
+    const newAmount = PRICE_AMOUNTS[newPriceId] ?? 0;
+    const type: 'upgrade' | 'downgrade' = newAmount > currentAmount ? 'upgrade' : 'downgrade';
+
+    setPendingChange({
+      planKey,
+      type,
+      label: PLAN_LABELS[planKey],
+      price: PLAN_LABELS[planKey],
+    });
+  };
+
+  const confirmChangePlan = async () => {
+    if (!pendingChange) return;
+    setLoadingChange(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('change-subscription', {
+        body: { newPriceId: PLANS[pendingChange.planKey].priceId },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.error) throw new Error(resp.error.message || 'Erro ao trocar plano');
+      if (resp.data?.error) throw new Error(resp.data.error);
+
+      toast({
+        title: pendingChange.type === 'upgrade' ? 'Upgrade realizado! 🎉' : 'Downgrade agendado',
+        description: resp.data?.message || 'Plano alterado com sucesso.',
+      });
+      await checkSub();
+      await refreshProfile();
+      setPendingChange(null);
+    } catch (e: any) {
+      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } finally {
+      setLoadingChange(false);
+    }
+  };
+
   const handleManage = async () => {
     setLoadingPortal(true);
     try {
