@@ -736,6 +736,18 @@ export default function Learn() {
 
       <div className="border-t border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-3">
+          {podcastMode && (
+            <PodcastControls
+              isPlaying={playingIndex !== null && !!playerRef.current && !playerRef.current.audio.paused}
+              topicLabel={labelFor(topic, topicKind!)}
+              speed={podcastSpeed}
+              hasActive={playerRef.current !== null}
+              onPlayPause={handlePodcastPlayPause}
+              onStop={handlePodcastStop}
+              onSpeedChange={setPodcastSpeed}
+              language={language as any}
+            />
+          )}
           <div className="flex gap-2 items-end">
             <Textarea
               value={input}
