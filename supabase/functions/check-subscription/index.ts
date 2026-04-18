@@ -93,7 +93,7 @@ serve(async (req) => {
         .update({
           is_subscriber: false,
           subscription_id: null,
-          questions_limit: 12,
+          questions_limit: 20,
         })
         .eq("user_id", user.id);
     }
