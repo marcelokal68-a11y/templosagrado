@@ -556,20 +556,6 @@ export default function Learn() {
                   )}>
                     {displayText || (loading && isLast ? '…' : '')}
                   </div>
-
-                  {!isUser && isLast && !loading && suggestions.length > 0 && (
-                    <div className="flex flex-col gap-1.5 w-full">
-                      {suggestions.map((s, si) => (
-                        <button
-                          key={si}
-                          onClick={() => sendMessage(s)}
-                          className="text-left text-sm px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 text-foreground/90 hover:text-primary transition-colors"
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             );
