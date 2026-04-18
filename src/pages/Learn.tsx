@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
 import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsComparison';
+import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -432,6 +433,11 @@ export default function Learn() {
           {/* Buddhist schools comparison inside Buddhist study session */}
           {topic === 'buddhist' && (
             <BuddhistSchoolsComparison compact />
+          )}
+
+          {/* Spiritist glossary inside Spiritism study session */}
+          {topic === 'spiritist' && (
+            <SpiritistGlossary compact />
           )}
 
           {messages.length === 0 && loading && (
