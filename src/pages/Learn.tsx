@@ -25,6 +25,7 @@ import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsCompari
 import ChristianBranchesComparison from '@/components/learn/ChristianBranchesComparison';
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
+import JewishBranchesComparison from '@/components/learn/JewishBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
 
