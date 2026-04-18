@@ -452,6 +452,11 @@ export default function Learn() {
             <BuddhistSchoolsComparison compact />
           )}
 
+          {/* Islam branches comparison inside Islam study session */}
+          {topic === 'islam' && (
+            <IslamBranchesComparison compact />
+          )}
+
           {/* Spiritist glossary inside Spiritism study session */}
           {topic === 'spiritist' && (
             <SpiritistGlossary compact />
