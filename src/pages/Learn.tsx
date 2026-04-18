@@ -25,6 +25,7 @@ import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsCompari
 import ChristianBranchesComparison from '@/components/learn/ChristianBranchesComparison';
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
+import JewishBranchesComparison from '@/components/learn/JewishBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
 
@@ -334,6 +335,11 @@ export default function Learn() {
             <IslamBranchesComparison />
           </section>
 
+          {/* Jewish branches comparison — visual primer */}
+          <section className="mb-10">
+            <JewishBranchesComparison />
+          </section>
+
           {/* Christian branches comparison — visual primer */}
           <section className="mb-10">
             <ChristianBranchesComparison />
@@ -467,6 +473,11 @@ export default function Learn() {
           {/* Islam branches comparison inside Islam study session */}
           {topic === 'islam' && (
             <IslamBranchesComparison compact />
+          )}
+
+          {/* Jewish branches comparison inside Jewish study session */}
+          {topic === 'jewish' && (
+            <JewishBranchesComparison compact />
           )}
 
           {/* Christian branches comparison inside Christian study sessions */}
