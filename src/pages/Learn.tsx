@@ -496,6 +496,9 @@ export default function Learn() {
           {(preferredReligion === 'candomble' || preferredReligion === 'umbanda') && (
             <section className="mb-10"><CandombleGlossary /></section>
           )}
+          {preferredReligion === 'spiritist' && (
+            <section className="mb-10"><SpiritistGlossary /></section>
+          )}
 
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
