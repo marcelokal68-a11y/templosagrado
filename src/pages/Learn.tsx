@@ -115,6 +115,120 @@ export default function Learn() {
   const [faithPromptShown, setFaithPromptShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ===== Podcast / TTS state =====
+  const [podcastMode, setPodcastMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('learn_podcast_mode') === '1'; } catch { return false; }
+  });
+  const [podcastSpeed, setPodcastSpeed] = useState<number>(() => {
+    try { return parseFloat(localStorage.getItem('learn_podcast_speed') || '1.15') || 1.15; } catch { return 1.15; }
+  });
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+  const playerRef = useRef<PlayTTSResult | null>(null);
+  const autoplayedRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    try { localStorage.setItem('learn_podcast_mode', podcastMode ? '1' : '0'); } catch {}
+  }, [podcastMode]);
+  useEffect(() => {
+    try { localStorage.setItem('learn_podcast_speed', String(podcastSpeed)); } catch {}
+  }, [podcastSpeed]);
+
+  // Stop any active player on unmount
+  useEffect(() => {
+    return () => {
+      try { playerRef.current?.stop(); } catch {}
+      playerRef.current = null;
+    };
+  }, []);
+
+  function cleanForTTS(raw: string): string {
+    let txt = raw;
+    // Remove "📚 Fontes:" / "Sources:" sections to end
+    txt = txt.replace(/(?:📚\s*)?(?:Fontes|Sources|Fuentes)\s*:[\s\S]*$/i, '');
+    // Remove citation markers like [1], [2,3]
+    txt = txt.replace(/\[\d+(?:\s*,\s*\d+)*\]/g, '');
+    // Strip light markdown
+    txt = txt.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
+    txt = txt.replace(/`(.+?)`/g, '$1');
+    txt = txt.replace(/^#{1,6}\s+/gm, '');
+    return txt.trim();
+  }
+
+  async function playMessage(index: number, rawText: string) {
+    try { playerRef.current?.stop(); } catch {}
+    playerRef.current = null;
+
+    const text = cleanForTTS(rawText);
+    if (!text) return;
+
+    setLoadingIndex(index);
+    try {
+      const result = await playTTS({
+        text,
+        speed: podcastSpeed,
+        onEnded: () => {
+          setPlayingIndex(prev => (prev === index ? null : prev));
+        },
+      });
+      playerRef.current = result;
+      setPlayingIndex(index);
+    } catch (e: any) {
+      if (e instanceof TTSCapReachedError) {
+        toast.error(language === 'en'
+          ? 'Monthly narration limit reached. Try again next month or upgrade.'
+          : language === 'es'
+            ? 'Límite mensual de narraciones alcanzado. Vuelve el próximo mes o haz upgrade.'
+            : 'Você atingiu o limite mensal de narrações. Volta no próximo mês ou faça upgrade.');
+        setPodcastMode(false);
+      } else {
+        console.error('TTS error:', e);
+        toast.error(language === 'en' ? 'Could not play audio.' : language === 'es' ? 'No se pudo reproducir.' : 'Não foi possível reproduzir o áudio.');
+      }
+    } finally {
+      setLoadingIndex(null);
+    }
+  }
+
+  function handleToggleListen(index: number, rawText: string) {
+    if (playingIndex === index) {
+      try { playerRef.current?.stop(); } catch {}
+      playerRef.current = null;
+      setPlayingIndex(null);
+      return;
+    }
+    playMessage(index, rawText);
+  }
+
+  function handlePodcastPlayPause() {
+    const audio = playerRef.current?.audio;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+    setPlayingIndex(prev => (audio.paused ? null : prev));
+  }
+
+  function handlePodcastStop() {
+    try { playerRef.current?.stop(); } catch {}
+    playerRef.current = null;
+    setPlayingIndex(null);
+  }
+
+  function togglePodcastMode() {
+    setPodcastMode(prev => {
+      const next = !prev;
+      if (!next) {
+        try { playerRef.current?.stop(); } catch {}
+        playerRef.current = null;
+        setPlayingIndex(null);
+      }
+      return next;
+    });
+  }
+
   // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
   useEffect(() => {
     const qTopic = searchParams.get('topic');
