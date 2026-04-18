@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import {
   Tooltip,
@@ -5,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen, Sparkles, X } from 'lucide-react';
 
 type Term = {
   sanskrit: string;
@@ -118,19 +119,16 @@ const TERMS: Term[] = [
 export default function BuddhistGlossary({ compact = false }: { compact?: boolean }) {
   const { language } = useApp();
   const lang = (language as 'pt' | 'en' | 'es') || 'pt';
+  const [selected, setSelected] = useState<Term | null>(null);
 
   const headerLabel =
-    lang === 'en'
-      ? 'Key Buddhist terms'
-      : lang === 'es'
-        ? 'Términos budistas clave'
+    lang === 'en' ? 'Key Buddhist terms'
+      : lang === 'es' ? 'Términos budistas clave'
         : 'Termos budistas essenciais';
 
   const subLabel =
-    lang === 'en'
-      ? 'Tap a term to see its meaning'
-      : lang === 'es'
-        ? 'Toca un término para ver su significado'
+    lang === 'en' ? 'Tap a term to see its meaning'
+      : lang === 'es' ? 'Toca un término para ver su significado'
         : 'Toque um termo para ver o significado';
 
   return (
@@ -157,16 +155,21 @@ export default function BuddhistGlossary({ compact = false }: { compact?: boolea
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
           {TERMS.map((term) => {
             const meaning = term[lang] ?? term.pt;
+            const isActive = selected?.sanskrit === term.sanskrit;
             return (
               <Tooltip key={term.sanskrit}>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    className="group flex items-center gap-2 px-2.5 py-2 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-left active:scale-[0.98]"
+                    onClick={() => setSelected(isActive ? null : term)}
+                    className={cnLocal(
+                      'group flex items-center gap-2 px-2.5 py-2 rounded-lg border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-left active:scale-[0.98]',
+                      isActive ? 'border-primary/60 bg-primary/10' : 'border-border/60',
+                    )}
                   >
                     <span className="text-lg shrink-0">{term.emoji}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-xs font-semibold text-foreground group-hover:text-primary leading-tight truncate">
+                      <span className={cnLocal('block text-xs font-semibold leading-tight truncate', isActive ? 'text-primary' : 'text-foreground group-hover:text-primary')}>
                         {term.sanskrit}
                       </span>
                       <span className="block text-[10px] text-muted-foreground font-serif leading-tight truncate">
@@ -177,7 +180,7 @@ export default function BuddhistGlossary({ compact = false }: { compact?: boolea
                 </TooltipTrigger>
                 <TooltipContent
                   side="top"
-                  className="max-w-[280px] text-xs leading-relaxed bg-popover text-popover-foreground border border-border shadow-lg"
+                  className="hidden md:block max-w-[280px] text-xs leading-relaxed bg-popover text-popover-foreground border border-border shadow-lg"
                 >
                   <p className="font-semibold mb-1 text-primary">
                     {term.sanskrit} <span className="font-normal text-muted-foreground">· {term.script}</span>
@@ -189,6 +192,24 @@ export default function BuddhistGlossary({ compact = false }: { compact?: boolea
           })}
         </div>
       </TooltipProvider>
+
+      {selected && (
+        <div className="mt-3 rounded-xl border border-primary/30 bg-card p-3 animate-fade-in relative">
+          <button
+            type="button"
+            onClick={() => setSelected(null)}
+            className="absolute top-2 right-2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            aria-label="Fechar"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+          <p className="text-sm font-semibold text-primary mb-1 pr-6">
+            {selected.emoji} {selected.sanskrit}
+            <span className="font-normal text-muted-foreground ml-1.5 font-serif">· {selected.script}</span>
+          </p>
+          <p className="text-xs text-foreground/85 leading-relaxed">{selected[lang] ?? selected.pt}</p>
+        </div>
+      )}
     </section>
   );
 }
