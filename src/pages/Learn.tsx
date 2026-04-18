@@ -699,7 +699,7 @@ export default function Learn() {
                     <GraduationCap className="h-4 w-4 text-primary" />
                   </div>
                 )}
-                <div className={cn('flex flex-col gap-2', isUser ? 'items-end' : 'items-start', 'max-w-[85%]')}>
+                <div className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start', 'max-w-[85%]')}>
                   <div className={cn(
                     'rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap',
                     isUser
@@ -708,6 +708,14 @@ export default function Learn() {
                   )}>
                     {displayText || (loading && isLast ? '…' : '')}
                   </div>
+                  {!isUser && displayText && !(loading && isLast) && (
+                    <ListenButton
+                      isPlaying={playingIndex === i}
+                      isLoading={loadingIndex === i}
+                      onClick={() => handleToggleListen(i, displayText)}
+                      language={language as any}
+                    />
+                  )}
                 </div>
               </div>
             );
