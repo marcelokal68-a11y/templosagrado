@@ -53,7 +53,16 @@ const FREE_LIMITATIONS = [
   'Sem memória personalizada',
 ];
 
-const PRO_FEATURES = [
+const DEVOTO_FEATURES = [
+  '60 mensagens por mês',
+  'Versículo do Dia exclusivo com áudio',
+  'Publicar no Mural Sagrado',
+  'Áudio em todas as respostas',
+  'Memória personalizada (o mentor lembra de você)',
+  'Histórico completo',
+];
+
+const TOP_FEATURES = [
   'Mensagens ilimitadas',
   'Versículo do Dia exclusivo com áudio',
   'Publicar no Mural Sagrado',
@@ -409,7 +418,7 @@ export default function Pricing() {
               </div>
             </div>
             <div className="space-y-2 mb-4">
-              {PRO_FEATURES.map((f) => (
+              {DEVOTO_FEATURES.map((f) => (
                 <div key={f} className="flex items-center gap-2 text-sm text-foreground/80">
                   <Check className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span>{f}</span>
@@ -460,7 +469,7 @@ export default function Pricing() {
               </div>
             </div>
             <div className="space-y-2 mb-4">
-              {PRO_FEATURES.map((f) => (
+              {TOP_FEATURES.map((f) => (
                 <div key={f} className="flex items-center gap-2 text-sm text-foreground/80">
                   <Check className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span>{f}</span>
