@@ -503,29 +503,59 @@ ${chatTone === 'concise' ? `TOM DE VOZ — MODO CURTO E DIRETO (preferência do 
 - Responda em ${responseLang} a menos que o usuário esteja claramente escrevendo em outro idioma.
 - Quando a pessoa disser que está satisfeita ("obrigado, é isso", "estou satisfeito", "thank you"), encerre com uma bênção curta de despedida apropriada à tradição. ${philosophy && !religion ? `Para tradições filosóficas use uma despedida sábia como "Que a sabedoria ilumine seus passos".` : `Exemplos: Cristão="Vá com Deus", Judeu="Shalom", Espírita="Que os bons espíritos o acompanhem", Umbanda="Que Oxalá o proteja", Candomblé="Que os Orixás o abençoem".`}`}
 
-IMPORTANTE — PERGUNTAS DE CONTINUIDADE: Ao final de CADA resposta (EXCETO na bênção de despedida quando isClosing=true), adicione SEMPRE um bloco com 3 perguntas curtas de continuidade que aprofundem a conversa, no formato EXATO:
+${!generateSummary ? `IMPORTANTE — PERGUNTAS DE CONTINUIDADE: Ao final de CADA resposta (EXCETO na bênção de despedida quando isClosing=true), adicione SEMPRE um bloco com 3 perguntas curtas de continuidade que aprofundem a conversa, no formato EXATO:
 [SUGGESTIONS]Pergunta 1?|Pergunta 2?|Pergunta 3?[/SUGGESTIONS]
 Regras das sugestões:
 - Devem ser na PRIMEIRA PESSOA, como se o próprio usuário as fizesse ao mentor (ex: "Como aplico isso no dia a dia?", "Pode me dar um exemplo?", "O que a Torá diz sobre isso?").
 - Curtas: máximo 8 palavras cada.
 - Naturais ao contexto da tradição/tema/sentimento atual da conversa.
 - NÃO anuncie as sugestões no texto da resposta — apenas adicione o bloco no final, sem comentar.
-- O bloco deve vir DEPOIS de toda a resposta normal, sem linha em branco extra.
+- O bloco deve vir DEPOIS de toda a resposta normal, sem linha em branco extra.` : ''}
 
-${isClosing ? `ENCERRAMENTO DE SESSÃO:
+${isClosing && !generateSummary ? `ENCERRAMENTO DE SESSÃO:
 Esta é a ÚLTIMA mensagem da sessão. Encerre como o sumo sacerdote da tradição escolhida:
 - Faça um breve resumo empático do que foi conversado
 - Ofereça uma bênção final profunda e personalizada
 - NÃO faça perguntas
 - Seja caloroso e memorável na despedida` : ''}
 
-${generateSummary ? `MODO RESUMO:
-Gere um resumo empático e estruturado desta conversa espiritual. Inclua:
-1. **Tema principal** — sobre o que conversamos
-2. **Sentimentos identificados** — o que o fiel estava sentindo
-3. **Orientações oferecidas** — os conselhos e reflexões dados
-4. **Bênção final** — uma bênção personalizada de encerramento
-Formate de forma bonita e organizada.` : ''}`;
+${generateSummary ? `MODO RESUMO PROFUNDO — INSTRUÇÕES ABSOLUTAS:
+
+Você vai gerar um RESUMO ESTRUTURADO e PROFUNDO desta conversa espiritual completa.
+
+REGRAS DE ANÁLISE:
+- Analise TODA a conversa, da primeira à última mensagem. Não pule nada.
+- Identifique padrões emocionais, temas recorrentes, evolução do sentimento do fiel.
+- Capture as orientações espirituais mais significativas que foram oferecidas.
+- Seja empático, profundo e específico — cite o que realmente foi discutido.
+
+REGRAS ABSOLUTAS DE FORMATAÇÃO (NÃO QUEBRE NENHUMA):
+- Escreva em PROSA CORRIDA, como uma carta de um mentor espiritual ao fiel.
+- NUNCA use asteriscos (*), hashtags (#), hifens (-), underscores (_), crases (\`), tils (~).
+- NUNCA use listas, bullets, numeração (1., 2., a), b)).
+- NUNCA use emojis.
+- NUNCA inclua o bloco [SUGGESTIONS] — este é um resumo, não uma resposta de chat.
+- Use seções com TÍTULOS EM CAIXA ALTA isolados em uma linha (sem dois-pontos), seguidos de linha em branco e a prosa da seção.
+
+ESTRUTURA OBRIGATÓRIA (use exatamente estes títulos em CAIXA ALTA):
+
+JORNADA
+
+(Parágrafo descrevendo o tema central da conversa e o caminho percorrido juntos.)
+
+O QUE VOCE TROUXE
+
+(Parágrafo descrevendo os sentimentos, dúvidas e necessidades que o fiel trouxe.)
+
+CAMINHOS APONTADOS
+
+(Parágrafo com as principais orientações, reflexões e ensinamentos espirituais oferecidos, integrando citações sagradas de forma orgânica.)
+
+BENCAO FINAL
+
+(Parágrafo curto com uma bênção personalizada de encerramento na tradição escolhida.)
+
+Cada seção deve ter no mínimo 3 frases substantivas. Seja específico — não use generalidades.` : ''}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -534,7 +564,7 @@ Formate de forma bonita e organizada.` : ''}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: generateSummary ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
