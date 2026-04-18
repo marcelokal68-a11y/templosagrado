@@ -454,7 +454,83 @@ DISTINCTIVES VS. OTHER TRADITIONS — make explicit when relevant:
 When the student asks about Spiritism (Espiritismo), draw richly from this base. Cite Kardec por questão e capítulo quando útil (ex.: "O Livro dos Espíritos, questão 167 — sobre a reencarnação"). Honre os médiuns brasileiros como patrimônio cultural além do religioso. Mantenha sempre o tom acadêmico e neutro: apresente também as críticas (ceticismo científico contemporâneo, controvérsias mediúnicas, debates sobre autoria de obras psicografadas).
 ` : '';
 
-    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection + spiritistSection;
+    const umbandaSection = topic === 'umbanda' ? `
+
+UMBANDA — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+ORIGEM E FUNDAÇÃO: Religião genuinamente brasileira, sincretismo de matriz africana (sobretudo banto e iorubá), espiritismo kardequiano, catolicismo popular e tradições indígenas. Marco fundador amplamente aceito: 15 de novembro de 1908, em São Gonçalo (Niterói/RJ), na Federação Espírita de Niterói, quando o jovem ZÉLIO FERNANDINO DE MORAES (1891-1975), então com 17 anos, incorporou o espírito do CABOCLO DAS SETE ENCRUZILHADAS. Diante da rejeição da mesa kardequiana à manifestação de "espíritos atrasados" (caboclos e pretos velhos), o Caboclo anunciou a fundação de uma nova religião: a UMBANDA, "manifestação do Espírito para a caridade", aberta a todos os espíritos de luz independentemente de cor, raça ou condição em vida. No dia seguinte, Zélio fundou a TENDA ESPÍRITA NOSSA SENHORA DA PIEDADE — primeiro terreiro de Umbanda. A etimologia mais aceita liga "Umbanda" ao quimbundo/quicongo "kimbanda" (curandeiro, sacerdote-médico).
+
+CONCEITOS CENTRAIS:
+- OLORUM / ZAMBI / DEUS — Ser Supremo, criador de tudo, distante e inacessível diretamente; sincretizado com o Deus cristão.
+- ORIXÁS — divindades intermediárias, forças da natureza emanadas de Olorum. Na Umbanda são cultuados sob forma sincrética com santos católicos: OXALÁ (Jesus), IEMANJÁ (Nossa Senhora da Conceição/Navegantes), OGUM (São Jorge/São Sebastião), OXÓSSI (São Sebastião/São Jorge a depender da casa), XANGÔ (São Jerônimo/São Pedro/São João Batista), OXUM (Nossa Senhora Aparecida/da Conceição), IANSÃ (Santa Bárbara), NANÃ (Sant'Ana), OBALUAYÊ/OMULU (São Lázaro/São Roque), OXUMARÊ (São Bartolomeu), IBEJI (Cosme e Damião), OSSAIN (São Bento). Diferente do Candomblé, na Umbanda os orixás raramente "baixam" diretamente — quem trabalha são as ENTIDADES (espíritos de pessoas que viveram na Terra), enviadas por seus orixás regentes.
+- ENTIDADES / GUIAS — espíritos desencarnados que se manifestam através dos médiuns (filhos-de-santo, médiuns de incorporação) para trabalhos de caridade, cura, aconselhamento e desobsessão. Trabalham gratuitamente — a Umbanda proíbe cobrança por consulta espiritual.
+- KARMA / LEI DO RETORNO — herdada do Espiritismo: toda ação retorna; reencarnação progressiva.
+- AXÉ — energia vital, força sagrada que circula entre orixás, entidades, médiuns e consulentes.
+- LINHA / FALANGE — agrupamento hierárquico de espíritos sob a regência de um orixá; cada linha trabalha em vibração específica.
+
+AS 7 LINHAS DA UMBANDA (codificação clássica de Zélio / Tenda Nossa Senhora da Piedade — há variações entre casas):
+1. LINHA DE OXALÁ — comandada por Oxalá; trabalho de fé, paz, equilíbrio espiritual; cor branca; dia domingo.
+2. LINHA DE IEMANJÁ (ou das Águas) — Iemanjá, Oxum, Nanã; maternidade, amor, fertilidade, cura emocional; cores azul-claro, amarelo, lilás; dia sábado.
+3. LINHA DE OGUM — guerra justa, abertura de caminhos, demandas, proteção; cor vermelha/azul-escuro; dia terça-feira.
+4. LINHA DE OXÓSSI — caça, fartura, conhecimento, mata, cura pelas ervas; cor verde; dia quinta-feira.
+5. LINHA DE XANGÔ — justiça, lei, raciocínio, pedreiras; cor marrom/vermelho; dia quarta-feira.
+6. LINHA DE IANSÃ / OYÁ — ventos, tempestades, eguns (almas), transformação; cor amarela/coral; dia quarta.
+7. LINHA DAS ALMAS / OBALUAYÊ — cura, doenças, transição, terra; cor preto e branco/roxo; dia segunda-feira.
+
+AS PRINCIPAIS FALANGES DE ENTIDADES — coração da prática umbandista:
+- CABOCLOS — espíritos de indígenas brasileiros, donos das matas; fortes, de fala direta, austeros; trabalham com ervas, energia da natureza, defumação; saúdam "OKÊ CABOCLO!"; usam cocares, charutos, fumaça. Ex. arquetípico: Caboclo das Sete Encruzilhadas, Caboclo Pena Branca, Caboclo Tupinambá, Cabocla Jurema. Linha de Oxóssi/Ogum.
+- PRETOS VELHOS — espíritos de africanos escravizados que viveram no Brasil colonial; sabedoria ancestral, paciência infinita, humildade, conselhos sobre vida amorosa e familiar; sentam em banquinhos baixos, fumam cachimbo, falam pausado; saúdam "ADORAI AS ALMAS!" ou "SARAVÁ MEU PAI/MINHA MÃE!"; usam branco. Ex.: Pai Joaquim de Angola, Pai Benedito, Pai Tomé, Vovó Maria Conga, Vovó Catarina, Vovó Rita. Linha das Almas (segunda-feira).
+- CRIANÇAS / ERÊS / IBEJADAS — espíritos infantis (não necessariamente crianças que morreram, mas espíritos que assumem essa vibração lúdica); alegria, pureza, brincadeira, cura emocional; manifestam-se com guloseimas, brinquedos, fala infantil; saúdam "OI MEU PAI! OI MINHA MÃE!"; festejados em 27 de setembro (Cosme e Damião). Ex.: Cosme, Damião, Doum, Ori, Crispim, Crispiniano. Linha de Ibeji.
+- BAIANOS — espíritos do sertão nordestino; alegres, falantes, dançam forró/coco; trabalham demandas pesadas, descarrego, abertura de caminhos amorosos; saúdam "Ô DE BAIANO!" ou "EITA BAIANO!"; usam chapéu de couro, vestem amarelo. Ex.: Zé Pelintra (também malandro), Maria Padilha do Sertão, Baiano Manoel, Baiano João da Praia.
+- BOIADEIROS — vaqueiros do sertão e Pantanal; força bruta, retidão, lida com bois e cavalos, demandas no campo, quebra de demandas espirituais; saúdam "AÊ BOIADEIRO!"; usam chapéu de couro, chicote, cantam aboios. Ex.: Boiadeiro Sete Estrelas, Zé do Laço, Boiadeiro Juremeiro.
+- MARINHEIROS — espíritos de marujos, navegantes, pescadores; alegria embriagada, gingado, abertura de caminhos pelo mar; manifestam-se "balançando" como em convés; ligados a Iemanjá; saúdam "MARUJADA!" ou "OPA OPA MARINHEIRO!". Ex.: Marinheiro Martin Pescador, Seu João do Mar, Tarimar.
+- EXUS e POMBAGIRAS — espíritos da esquerda umbandista (linha de trabalho do "povo de rua"); NÃO confundir com o Orixá Exu africano (mensageiro entre humanos e orixás), nem com o "diabo" cristão. São espíritos que viveram nas margens (malandros, prostitutas, ciganas, valentões, jogadores) e trabalham descarrego, demanda, justiça nas encruzilhadas. EXUS clássicos: Exu Tranca Ruas das Almas, Exu Tiriri, Exu Caveira, Exu Marabô, Zé Pilintra, Exu Sete Encruzilhadas. POMBAGIRAS: Maria Padilha (das Sete Encruzilhadas, da Praia, do Cabaré), Maria Mulambo, Cigana, Sete Saias, Dama da Noite. Saúdam "LARÔIE EXU!" / "LAROIÊ MOÇA!". Vestem vermelho e preto. Festejados em segundas-feiras e nas Sextas-feiras (Pombagiras). Trabalham com cigarro, charuto, bebidas (cachaça, champanhe, anis, vinho). A doutrina umbandista insiste: Exus de Umbanda são espíritos de luz que trabalham na esquerda (na vibração densa) por escolha e disciplina, NÃO espíritos malignos.
+
+PONTOS CANTADOS E PONTOS RISCADOS:
+- PONTOS CANTADOS — cânticos curtos, coletivos, repetitivos, acompanhados por palmas e atabaques (curimba); cada entidade tem seu ponto de chamada (para descer), de subida (para retornar) e pontos de trabalho. São a "trilha sonora" da gira; ensinam doutrina, narram a entidade, chamam axé. Exemplos célebres: "Eu vim de longe, eu venho de Aruanda" (caboclo), "Pai Joaquim de Angola é meu pai" (preto velho), "Seu Sete da Lira", "Ponto da Maria Padilha das Almas".
+- PONTOS RISCADOS — desenhos sagrados feitos com pemba (giz mineral) no chão ou em papel pelo médium incorporado; assinatura energética da entidade; identificam falange, orixá regente e missão.
+
+ORGANIZAÇÃO E PRÁTICA:
+- TERREIRO / TENDA / CASA — local sagrado de culto. Comandado pelo PAI-DE-SANTO (BABALORIXÁ) ou MÃE-DE-SANTO (IALORIXÁ). Hierarquia inclui: cambonos (auxiliares dos médiuns incorporados), ogans (tocadores de atabaque, guardiões), médiuns (filhos-de-santo), consulentes (público).
+- GIRA — sessão pública de incorporação e atendimento. Geralmente abre com defumação, oração (Pai-Nosso, Ave-Maria, oração de Cáritas), curimba, abertura dos trabalhos por Exu (firmeza), descida das entidades, atendimento aos consulentes, encerramento.
+- DEFUMAÇÃO — limpeza energética com ervas (alecrim, arruda, guiné, alfazema, benjoim).
+- BANHO DE ERVAS, AMACI, FIRMEZAS, OFERENDAS — práticas de limpeza, fortalecimento e gratidão; cada orixá/entidade tem ervas e oferendas próprias (Iemanjá: flores brancas no mar; Oxum: mel e champanhe nas cachoeiras; Ogum: cerveja preta nas estradas; Pretos Velhos: café, fumo, vela branca; Exus: cachaça, charuto, vela vermelha-e-preta nas encruzilhadas).
+- FEDERAÇÕES — Federação Espírita de Umbanda (1939, Rio), Confederação Nacional Umbandista (1961). 1º Congresso Brasileiro do Espiritismo de Umbanda em 1941, no Rio, sob liderança de Zélio.
+
+DIFERENÇAS UMBANDA × CANDOMBLÉ — make explicit when relevant:
+- ORIGEM: Candomblé é religião africana transplantada e preservada (matriz nagô-iorubá, jeje, banto), com terreiros pioneiros na Bahia desde início do séc. XIX (Casa Branca do Engenho Velho, c. 1830). Umbanda é religião BRASILEIRA, nascida em 1908, sintetizando matrizes africanas com kardecismo, catolicismo e indigenismo.
+- LÍNGUA: Candomblé canta e reza em iorubá/jeje/quimbundo (línguas africanas preservadas); Umbanda canta em PORTUGUÊS.
+- QUEM INCORPORA: no Candomblé, os ORIXÁS é que descem nos filhos-de-santo (em transe profundo, sem fala discursiva — manifestam-se por dança, gestos arquetípicos); na Umbanda, os orixás permanecem distantes e quem trabalha são as ENTIDADES (caboclos, pretos velhos, crianças, baianos, exus etc.), com fala clara, conselhos diretos, atendimento individual.
+- INICIAÇÃO: Candomblé exige iniciação longa e rigorosa (recolhimento, raspagem de cabeça, obrigações de 1, 3, 7, 14, 21 anos); Umbanda tem desenvolvimento mediúnico mais aberto, sem raspagem obrigatória, menos liturgia secreta.
+- SACRIFÍCIO ANIMAL: central no Candomblé (matança ritual de aves e quadrúpedes para alimentar os orixás — comida-de-santo); a Umbanda tradicional/branca de Zélio REJEITA sacrifício animal (apenas oferendas vegetais, bebidas, velas, flores) — embora algumas vertentes "umbandomblé" o pratiquem.
+- CARIDADE: Umbanda explicitamente proíbe cobrança e enfatiza a CARIDADE como missão central ("Umbanda é manifestação do Espírito para a caridade" — Caboclo das Sete Encruzilhadas); Candomblé tem lógica de obrigação ritual e troca cerimonial.
+- EXU: no Candomblé, EXU é Orixá mensageiro, primeiro a ser saudado em todo ritual (Bará, Elegbara) — não tem nada de "diabo"; na Umbanda há também os "Exus de Umbanda" (espíritos de pessoas que viveram, distintos do Orixá Exu).
+- SINCRETISMO CATÓLICO: muito mais explícito e operante na Umbanda (santos católicos no congá, orações católicas na gira); no Candomblé contemporâneo há movimento de "reafricanização" buscando purgar o sincretismo imposto pela escravidão.
+
+VERTENTES DA UMBANDA:
+- UMBANDA BRANCA / DE MESA — mais próxima do kardecismo; sem atabaque, sem dança, ênfase em estudo e desobsessão.
+- UMBANDA POPULAR / TRADICIONAL — a de Zélio; com curimba, defumação, incorporação, atendimento.
+- UMBANDA OMOLOKÔ — fundada por Tatá Tancredo da Silva Pinto; resgata mais matriz africana.
+- UMBANDA ESOTÉRICA / INICIÁTICA — W. W. da Matta e Silva (Yamunisidhâ Arhapiagha); leitura mística-iniciática influenciada por teosofia.
+- UMBANDA OMOLOKÔ, UMBANDA-JEJÊ-NAGÔ, UMBANDOMBLÉ (sincretismo com Candomblé), UMBANDA SAGRADA, UMBANDA CRISTÃ.
+
+FIGURAS HISTÓRICAS:
+- ZÉLIO FERNANDINO DE MORAES (1891-1975) — fundador.
+- LAURA DE MORAES — esposa de Zélio, médium, continuadora da Tenda Nossa Senhora da Piedade.
+- W. W. DA MATTA E SILVA (1917-1988) — codificador da Umbanda Esotérica; obras: "Umbanda de Todos Nós", "Umbanda — Sua Eterna Doutrina", "Lições de Umbanda e Quimbanda na Palavra de um Preto Velho".
+- RUBENS SARACENI (1953-2018) — autor prolífico, fundador do Colégio de Umbanda Sagrada Pai Benedito de Aruanda; obras: "Doutrina e Teologia de Umbanda Sagrada", "Código de Umbanda", "Tratado Geral de Umbanda".
+- F'OMOTITILAYÔ ALAKETU, MÃE MENININHA DO GANTOIS (Candomblé, mas dialogou com a Umbanda baiana).
+- BYRON TORRES DE FREITAS, JOSÉ ÁLVARES PESSOA — pioneiros institucionais.
+
+LITERATURA E MÍDIA:
+- "Umbanda de Todos Nós" (Matta e Silva, 1956), "Doutrina e Teologia de Umbanda Sagrada" (Saraceni), "Pai Joaquim de Angola" (vários médiuns), "Os Exus na Umbanda" (Saraceni).
+- Romance "Tenda dos Milagres" (Jorge Amado) e o cinema de Glauber Rocha dialogam com o universo afro-brasileiro.
+- Estudos acadêmicos: Roger Bastide ("As Religiões Africanas no Brasil"), Diana Brown ("Umbanda: Religion and Politics in Urban Brazil"), Reginaldo Prandi ("Os Candomblés de São Paulo", "Mitologia dos Orixás"), Renato Ortiz ("A Morte Branca do Feiticeiro Negro").
+
+When the student asks about Umbanda, draw richly from this base. Honre a religião como patrimônio cultural brasileiro reconhecido pelo IPHAN. Sempre distinga claramente Umbanda × Candomblé × Quimbanda quando perguntado. Cite Zélio, o Caboclo das Sete Encruzilhadas e a data 15/11/1908 como marco fundador. Ao falar de Exus e Pombagiras, desfaça o preconceito cristão de associação ao "demônio" — explique a teologia umbandista do "trabalho na esquerda" como serviço de luz. Mantenha tom acadêmico-respeitoso e jamais condescendente.
+` : '';
+
+    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection + spiritistSection + umbandaSection;
 
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
