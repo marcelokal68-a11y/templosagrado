@@ -88,7 +88,8 @@ function getWeeklyTrending(preferredReligion: string | null, shuffleOffset = 0):
   return shuffled.slice(0, 3);
 }
 
-type Msg = { role: 'user' | 'assistant'; content: string; suggestions?: string[] };
+type Source = { id: string; title: string; author: string | null };
+type Msg = { role: 'user' | 'assistant'; content: string; suggestions?: string[]; sources?: Source[] };
 
 function parseSuggestions(content: string): { text: string; suggestions: string[] } {
   const idx = content.indexOf('---SUGGESTIONS---');
