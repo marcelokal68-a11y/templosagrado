@@ -249,6 +249,7 @@ export default function Learn() {
   const handleSubmit = () => {
     const text = input.trim();
     if (!text || loading) return;
+    setUserHasAsked(true);
     sendMessage(text);
   };
 
