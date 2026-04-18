@@ -108,6 +108,7 @@ export default function Learn() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [topic, setTopic] = useState<string | null>(null);
   const [topicKind, setTopicKind] = useState<'religion' | 'philosophy' | null>(null);
+  const [showOtherPrimers, setShowOtherPrimers] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
