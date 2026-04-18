@@ -80,9 +80,12 @@ export default function Header() {
                     <Menu className="h-7 w-7" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border/40">
+                <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border/40 data-[state=open]:duration-500 data-[state=closed]:duration-300 data-[state=open]:ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl">
                   {/* Drawer header */}
-                  <div className="flex items-center justify-between px-4 py-4 border-b border-border/30">
+                  <div
+                    className="flex items-center justify-between px-4 py-4 border-b border-border/30 animate-fade-in"
+                    style={{ animationDelay: '120ms', animationFillMode: 'both' }}
+                  >
                     <div className="flex items-center gap-2">
                       <img src={temploLogo} alt="Templo Sagrado" className="h-8" />
                     </div>
@@ -95,7 +98,7 @@ export default function Header() {
 
                   {/* Drawer items */}
                   <nav className="flex flex-col py-2">
-                    {drawerItems.map((item) => {
+                    {drawerItems.map((item, idx) => {
                       const itemPath = (() => {
                         if (item.label === t('nav.chat', language)) return '/';
                         if (item.label === 'Meu Perfil') return '/profile';
@@ -120,8 +123,12 @@ export default function Header() {
                             item.action();
                             setDrawerOpen(false);
                           }}
+                          style={{
+                            animationDelay: `${180 + idx * 45}ms`,
+                            animationFillMode: 'both',
+                          }}
                           className={cn(
-                            "flex items-center gap-3 px-5 py-4 transition-all text-left relative",
+                            "flex items-center gap-3 px-5 py-4 transition-all text-left relative animate-fade-in",
                             isActive
                               ? "bg-primary/12 text-primary font-semibold border-l-4 border-primary"
                               : "text-foreground/80 hover:bg-primary/8 hover:text-primary border-l-4 border-transparent",
