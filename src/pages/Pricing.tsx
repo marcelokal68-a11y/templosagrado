@@ -60,6 +60,7 @@ const DEVOTO_FEATURES = [
   'Áudio em todas as respostas',
   'Memória personalizada (o mentor lembra de você)',
   'Histórico completo',
+  'Acesso exclusivo à área de Educação em Religiões e Filosofias de Vida, com curadoria de sábios de cada tradição',
 ];
 
 const TOP_FEATURES = [
@@ -69,6 +70,7 @@ const TOP_FEATURES = [
   'Áudio em todas as respostas',
   'Memória personalizada (o mentor lembra de você)',
   'Histórico completo',
+  'Acesso exclusivo à área de Educação em Religiões e Filosofias de Vida, com curadoria de sábios de cada tradição',
 ];
 
 const TOP_EXTRAS = [
