@@ -63,7 +63,6 @@ const PRO_FEATURES = [
 ];
 
 const TOP_EXTRAS = [
-  'Mensagens ilimitadas',
   'Acesso antecipado a novidades',
   'Suporte prioritário',
 ];
