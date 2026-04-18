@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { retrieveRagContext } from "../_shared/rag.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -649,10 +650,25 @@ When the student asks about Candomblé, draw richly from this base. Cite os terr
 
     const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection + spiritistSection + umbandaSection + candombleSection;
 
+    // ===== RAG: retrieve relevant chunks from knowledge library =====
+    let ragSection = "";
+    let ragSources: Array<{ id: string; title: string; author: string | null }> = [];
+    try {
+      const lastUserMsg = messages?.filter((m: { role: string }) => m.role === "user").pop();
+      if (lastUserMsg?.content) {
+        const rag = await retrieveRagContext(lastUserMsg.content, topic || null, LOVABLE_API_KEY, 5);
+        ragSection = rag.promptSection;
+        ragSources = rag.sources;
+      }
+    } catch (e) {
+      console.error("RAG retrieval failed:", e);
+    }
+
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
 Your area of expertise for this session is: ${topicName}.
 ${traditionsSection}
+${ragSection}
 CRITICAL RULES:
 - Respond ALWAYS in ${responseLang}.
 - Be educational, engaging, and historically accurate.
@@ -698,7 +714,28 @@ CRITICAL RULES:
       });
     }
 
-    return new Response(response.body, {
+    if (ragSources.length === 0) {
+      return new Response(response.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
+    const sourcesPayload = `data: ${JSON.stringify({ __sources: ragSources })}\n\n`;
+    const encoder = new TextEncoder();
+    const upstream = response.body!;
+    const stream = new ReadableStream({
+      async start(controller) {
+        controller.enqueue(encoder.encode(sourcesPayload));
+        const reader = upstream.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          controller.enqueue(value);
+        }
+        controller.close();
+      },
+    });
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { retrieveRagContext } from "../_shared/rag.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -350,6 +351,21 @@ serve(async (req) => {
 
     const temporalContext = buildTemporalContext(datetime, timezone);
 
+    // ===== RAG: retrieve relevant chunks from knowledge library =====
+    let ragSection = "";
+    let ragSources: Array<{ id: string; title: string; author: string | null }> = [];
+    try {
+      const lastUserMsg = messages?.filter((m: { role: string }) => m.role === "user").pop();
+      if (lastUserMsg?.content && !generateSummary && !isClosing) {
+        const filterRel = religion || null;
+        const rag = await retrieveRagContext(lastUserMsg.content, filterRel, LOVABLE_API_KEY, 5);
+        ragSection = rag.promptSection;
+        ragSources = rag.sources;
+      }
+    } catch (e) {
+      console.error("RAG retrieval failed:", e);
+    }
+
     let persona: string;
     let sourceInstruction: string;
     let religionDetection = "";
@@ -449,6 +465,7 @@ ${memorySection}
 ${temporalContext}
 ${religionDetection}
 ${traditionTone}
+${ragSection}
 
 MEMORY & CONTINUITY:
 You have continuous memory of this conversation. The messages include previous interactions from past sessions.
@@ -540,7 +557,29 @@ Formate de forma bonita e organizada.` : ''}`;
       });
     }
 
-    return new Response(response.body, {
+    // Inject sources as a custom SSE event before forwarding the AI stream.
+    if (ragSources.length === 0) {
+      return new Response(response.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
+    const sourcesPayload = `data: ${JSON.stringify({ __sources: ragSources })}\n\n`;
+    const encoder = new TextEncoder();
+    const upstream = response.body!;
+    const stream = new ReadableStream({
+      async start(controller) {
+        controller.enqueue(encoder.encode(sourcesPayload));
+        const reader = upstream.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          controller.enqueue(value);
+        }
+        controller.close();
+      },
+    });
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {

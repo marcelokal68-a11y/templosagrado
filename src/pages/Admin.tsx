@@ -300,9 +300,14 @@ export default function Admin() {
     <div className="flex-1 p-4 max-w-6xl mx-auto space-y-6 pb-24">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="font-display text-2xl font-bold">Painel Admin</h1>
-        <Button variant="outline" size="sm" onClick={() => navigate('/admin/analytics')}>
-          📈 Analytics
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate('/admin/knowledge')}>
+            📚 Biblioteca
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/admin/analytics')}>
+            📈 Analytics
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="users">

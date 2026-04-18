@@ -37,7 +37,8 @@ import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
 import { isPreviewEnvironment } from '@/lib/access';
 
-type Msg = { role: 'user' | 'assistant'; content: string };
+type Source = { id: string; title: string; author: string | null };
+type Msg = { role: 'user' | 'assistant'; content: string; sources?: Source[] };
 
 // Threshold to warn the user that their quota is running out (free/trial only)
 const LOW_QUOTA_WARNING_THRESHOLD = 5;
@@ -100,6 +101,19 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
             : "bg-card border border-border text-foreground rounded-bl-sm"
         )}>
           <p className="whitespace-pre-wrap">{displayText}</p>
+          {!isUser && msg.sources && msg.sources.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-border/60">
+              <p className="text-[11px] font-medium text-muted-foreground mb-1">📚 Fontes</p>
+              <ul className="space-y-0.5">
+                {msg.sources.map((s, i) => (
+                  <li key={s.id} className="text-[11px] text-muted-foreground">
+                    [{i + 1}] <span className="text-foreground/80">{s.title}</span>
+                    {s.author && <span> — {s.author}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         
         {/* Action row for assistant messages — compact, below bubble */}
@@ -456,6 +470,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
           try {
             const parsed = JSON.parse(jsonStr);
+            // Custom event: RAG sources injected by edge function
+            if (parsed.__sources && Array.isArray(parsed.__sources)) {
+              const incomingSources = parsed.__sources as Source[];
+              setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, sources: incomingSources } : m);
+                }
+                return [...prev, { role: 'assistant', content: '', sources: incomingSources }];
+              });
+              continue;
+            }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantSoFar += content;
