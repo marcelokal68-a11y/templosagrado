@@ -314,6 +314,11 @@ export default function Learn() {
             <SanskritGlossary />
           </section>
 
+          {/* Buddhist schools comparison — visual primer */}
+          <section className="mb-10">
+            <BuddhistSchoolsComparison />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
