@@ -443,14 +443,16 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         return;
       }
       if (resp.status === 402) {
-        // Quota esgotada — atualiza contador e mostra banner suave
+        // Quota esgotada — atualiza contador, encerra a sessão e oferece upgrade
         setQuestionsRemaining(0);
         refreshProfile?.();
         toast({
           title: 'Limite mensal atingido',
-          description: 'Você usou suas 20 perguntas do mês. Assine o plano Devoto para continuar.',
+          description: 'Você usou suas perguntas do mês. Faça upgrade para continuar.',
         });
         setMessages(prev => prev.slice(0, -1)); // remove pergunta não respondida
+        setSessionClosed(true);
+        setShowUpgradeModal(true);
         setIsLoading(false);
         return;
       }
