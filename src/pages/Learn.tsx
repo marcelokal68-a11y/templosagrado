@@ -516,13 +516,13 @@ export default function Learn() {
             <CandombleGlossary compact />
           )}
 
-          {/* Starter question chips — shown until user sends their first message */}
-          {topic && topicKind && !messages.some(m => m.role === 'user' && m.content !== messages[0]?.content) && (
+          {/* Starter question chips — shown until the user asks their first question */}
+          {topic && topicKind && !userHasAsked && (
             <StarterQuestionChips
               topic={topic}
               topicLabel={labelFor(topic, topicKind)}
               disabled={loading}
-              onPick={(q) => sendMessage(q)}
+              onPick={(q) => { setUserHasAsked(true); sendMessage(q); }}
             />
           )}
 
