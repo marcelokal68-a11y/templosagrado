@@ -39,7 +39,8 @@ import { isPreviewEnvironment } from '@/lib/access';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
-const MAX_USER_MESSAGES = 6;
+// Threshold to warn the user that their quota is running out (free/trial only)
+const LOW_QUOTA_WARNING_THRESHOLD = 5;
 
 function parseSuggestions(content: string): { text: string; suggestions: string[] } {
   const match = content.match(/\[SUGGESTIONS\](.*?)\[\/SUGGESTIONS\]/s);
