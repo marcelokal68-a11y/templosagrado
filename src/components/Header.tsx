@@ -95,22 +95,52 @@ export default function Header() {
 
                   {/* Drawer items */}
                   <nav className="flex flex-col py-2">
-                    {drawerItems.map((item) => (
-                      <button
-                        key={item.label}
-                        onClick={() => {
-                          item.action();
-                          setDrawerOpen(false);
-                        }}
-                        className={cn(
-                          "flex items-center gap-3 px-5 py-4 text-foreground/80 hover:bg-primary/8 hover:text-primary transition-colors text-left",
-                          item.label.includes('Pro') && "text-primary font-semibold"
-                        )}
-                      >
-                        <item.icon className={cn("h-6 w-6", item.label.includes('Pro') ? "text-primary" : "text-primary/70")} />
-                        <span className="text-base font-medium">{item.label}</span>
-                      </button>
-                    ))}
+                    {drawerItems.map((item) => {
+                      const itemPath = (() => {
+                        if (item.label === t('nav.chat', language)) return '/';
+                        if (item.label === 'Meu Perfil') return '/profile';
+                        if (item.label === t('nav.learn', language)) return '/learn';
+                        if (item.label === t('nav.verse', language)) return '/verse';
+                        if (item.label === 'Mural') return '/mural';
+                        if (item.label === t('nav.journey', language)) return '/journey';
+                        if (item.label === 'Convidar Amigos') return '/invite-friends';
+                        if (item.label.includes('Pro') || item.label.includes('Planos')) return '/pricing';
+                        if (item.label === 'Entrar') return '/auth';
+                        return null;
+                      })();
+                      const isActive = itemPath === '/' 
+                        ? location.pathname === '/' 
+                        : itemPath && location.pathname.startsWith(itemPath);
+                      const isPro = item.label.includes('Pro');
+
+                      return (
+                        <button
+                          key={item.label}
+                          onClick={() => {
+                            item.action();
+                            setDrawerOpen(false);
+                          }}
+                          className={cn(
+                            "flex items-center gap-3 px-5 py-4 transition-all text-left relative",
+                            isActive
+                              ? "bg-primary/12 text-primary font-semibold border-l-4 border-primary"
+                              : "text-foreground/80 hover:bg-primary/8 hover:text-primary border-l-4 border-transparent",
+                            isPro && !isActive && "text-primary font-semibold"
+                          )}
+                        >
+                          <item.icon className={cn(
+                            "h-6 w-6",
+                            isActive || isPro ? "text-primary" : "text-primary/70"
+                          )} />
+                          <span className="text-base font-medium">{item.label}</span>
+                          {isActive && (
+                            <span className="ml-auto text-[10px] uppercase tracking-wider text-primary/70 font-bold">
+                              Aqui
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </nav>
 
                   {/* Drawer footer */}
