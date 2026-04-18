@@ -26,6 +26,7 @@ import ChristianBranchesComparison from '@/components/learn/ChristianBranchesCom
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
+import UmbandaGlossary from '@/components/learn/UmbandaGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
