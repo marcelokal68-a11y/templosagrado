@@ -108,6 +108,7 @@ export default function Learn() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [topic, setTopic] = useState<string | null>(null);
   const [topicKind, setTopicKind] = useState<'religion' | 'philosophy' | null>(null);
+  const [showOtherPrimers, setShowOtherPrimers] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -499,6 +500,59 @@ export default function Learn() {
           {preferredReligion === 'spiritist' && (
             <section className="mb-10"><SpiritistGlossary /></section>
           )}
+
+          {/* Toggle sutil — explorar primers das demais tradições sem mudar a preferida */}
+          <div className="mb-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowOtherPrimers(v => !v)}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full border border-border/60 hover:border-primary/40 bg-background/50"
+              aria-expanded={showOtherPrimers}
+            >
+              <Sparkles className="h-3 w-3" />
+              {showOtherPrimers
+                ? (language === 'en' ? 'Hide other traditions' : language === 'es' ? 'Ocultar otras tradiciones' : 'Ocultar outras tradições')
+                : (language === 'en' ? 'Explore other traditions' : language === 'es' ? 'Explorar otras tradiciones' : 'Explorar outras tradições')}
+              <span className="ml-0.5 text-[10px] opacity-60">{showOtherPrimers ? '▴' : '▾'}</span>
+            </button>
+          </div>
+
+          {showOtherPrimers && (
+            <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              {preferredReligion !== 'jewish' && (
+                <>
+                  <section className="mb-10"><HebrewGlossary /></section>
+                  <section className="mb-10"><JewishBranchesComparison /></section>
+                </>
+              )}
+              {!(preferredReligion === 'christian' || preferredReligion === 'catholic'
+                || preferredReligion === 'protestant' || preferredReligion === 'mormon') && (
+                <section className="mb-10"><ChristianBranchesComparison /></section>
+              )}
+              {preferredReligion !== 'islam' && (
+                <section className="mb-10"><IslamBranchesComparison /></section>
+              )}
+              {preferredReligion !== 'hindu' && (
+                <>
+                  <section className="mb-10"><SanskritGlossary /></section>
+                  <section className="mb-10"><HinduDarshanasComparison /></section>
+                </>
+              )}
+              {preferredReligion !== 'buddhist' && (
+                <>
+                  <section className="mb-10"><BuddhistGlossary /></section>
+                  <section className="mb-10"><BuddhistSchoolsComparison /></section>
+                </>
+              )}
+              {!(preferredReligion === 'candomble' || preferredReligion === 'umbanda') && (
+                <section className="mb-10"><CandombleGlossary /></section>
+              )}
+              {preferredReligion !== 'spiritist' && (
+                <section className="mb-10"><SpiritistGlossary /></section>
+              )}
+            </div>
+          )}
+
 
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
