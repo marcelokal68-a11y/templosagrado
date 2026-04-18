@@ -409,7 +409,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
 
-    const userMsg: Msg = { role: 'user' | 'assistant'; content: string } as any && { role: 'user', content: text.trim() } as Msg;
+    const userMsg: Msg = { role: 'user', content: text.trim() };
 
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
