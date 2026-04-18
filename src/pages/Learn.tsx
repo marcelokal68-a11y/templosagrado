@@ -243,6 +243,25 @@ export default function Learn() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
+  // Autoplay newest assistant message when podcast mode is on
+  useEffect(() => {
+    if (!podcastMode || loading) return;
+    if (messages.length === 0) return;
+    const lastIdx = messages.length - 1;
+    const last = messages[lastIdx];
+    if (last?.role !== 'assistant') return;
+    if (!last.content || last.content.length < 20) return;
+    if (autoplayedRef.current.has(lastIdx)) return;
+    autoplayedRef.current.add(lastIdx);
+    playMessage(lastIdx, last.content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, loading, podcastMode]);
+
+  // Reset autoplay tracker when topic changes
+  useEffect(() => {
+    autoplayedRef.current = new Set();
+  }, [topic]);
+
   const labelFor = (key: string, kind: 'religion' | 'philosophy') => {
     return t(`${kind}.${key}` as any, language);
   };
