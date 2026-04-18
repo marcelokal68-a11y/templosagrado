@@ -162,31 +162,6 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
           </div>
         )}
 
-        {/* Suggestion buttons — only on last assistant message */}
-        {!isUser && isLast && suggestions.length > 0 && onSuggestionClick && !isVisitor && (
-          <div className="flex flex-col gap-1.5 mt-2 w-full">
-            {suggestions.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => onSuggestionClick(s)}
-                className="text-left px-3 py-2 rounded-xl bg-primary/5 border border-primary/20 hover:border-primary/40 hover:bg-primary/10 transition-all text-xs text-foreground/80"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Visitor: show locked suggestions hint */}
-        {!isUser && isLast && isVisitor && suggestions.length > 0 && (
-          <button
-            onClick={onPremiumGate}
-            className="mt-2 w-full text-left px-3 py-2 rounded-xl bg-primary/5 border border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/10 transition-all text-xs text-muted-foreground flex items-center gap-2"
-          >
-            <Lock className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span>Crie uma conta para receber perguntas sugeridas pelo mentor</span>
-          </button>
-        )}
       </div>
     </div>
   );

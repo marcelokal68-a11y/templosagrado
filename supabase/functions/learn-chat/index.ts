@@ -662,19 +662,7 @@ CRITICAL RULES:
 - Cite historical sources, scholars, and primary texts naturally.
 - Make connections to other traditions when relevant to enrich understanding.
 - NEVER proselytize or advocate for any tradition. Present facts with academic neutrality.
-
-SUGGESTION FORMAT:
-After EVERY response, you MUST end with exactly this format:
-
----SUGGESTIONS---
-["question 1 in ${responseLang}", "question 2 in ${responseLang}", "question 3 in ${responseLang}"]
-
-The 3 suggested questions must:
-- Be naturally related to what you just discussed
-- Progressively deepen understanding of the topic
-- Be diverse: one about history, one about practices/beliefs, one about cultural impact or comparisons
-- Be written in ${responseLang}
-- Be compelling and make the student curious to learn more`;
+- NEVER append suggested questions, follow-up question lists, or any "---SUGGESTIONS---" block at the end. Just answer and stop. Let the student lead the next question.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
