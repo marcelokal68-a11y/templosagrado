@@ -28,6 +28,7 @@ import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison'
 import JewishBranchesComparison from '@/components/learn/JewishBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
+import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -320,6 +321,11 @@ export default function Learn() {
             <SanskritGlossary />
           </section>
 
+          {/* Buddhist glossary — visual primer */}
+          <section className="mb-10">
+            <BuddhistGlossary />
+          </section>
+
           {/* Buddhist schools comparison — visual primer */}
           <section className="mb-10">
             <BuddhistSchoolsComparison />
@@ -465,9 +471,12 @@ export default function Learn() {
             <HinduDarshanasComparison compact />
           )}
 
-          {/* Buddhist schools comparison inside Buddhist study session */}
+          {/* Buddhist glossary + schools comparison inside Buddhist study session */}
           {topic === 'buddhist' && (
-            <BuddhistSchoolsComparison compact />
+            <>
+              <BuddhistGlossary compact />
+              <BuddhistSchoolsComparison compact />
+            </>
           )}
 
           {/* Islam branches comparison inside Islam study session */}
