@@ -467,50 +467,35 @@ export default function Learn() {
             </div>
           </section>
 
-          {/* Sanskrit glossary — visual primer for beginners (relevant to Hindu, Buddhist, Yoga) */}
-          <section className="mb-10">
-            <SanskritGlossary />
-          </section>
-
-          {/* Buddhist glossary — visual primer */}
-          <section className="mb-10">
-            <BuddhistGlossary />
-          </section>
-
-          {/* Buddhist schools comparison — visual primer */}
-          <section className="mb-10">
-            <BuddhistSchoolsComparison />
-          </section>
-
-          {/* Hindu Darshanas comparison — visual primer */}
-          <section className="mb-10">
-            <HinduDarshanasComparison />
-          </section>
-
-          {/* Islam branches comparison — visual primer */}
-          <section className="mb-10">
-            <IslamBranchesComparison />
-          </section>
-
-          {/* Hebrew glossary — visual primer */}
-          <section className="mb-10">
-            <HebrewGlossary />
-          </section>
-
-          {/* Jewish branches comparison — visual primer */}
-          <section className="mb-10">
-            <JewishBranchesComparison />
-          </section>
-
-          {/* Christian branches comparison — visual primer */}
-          <section className="mb-10">
-            <ChristianBranchesComparison />
-          </section>
-
-          {/* Candomblé glossary — visual primer */}
-          <section className="mb-10">
-            <CandombleGlossary />
-          </section>
+          {/* Primers visuais — apenas da tradição preferida do usuário (progressive disclosure) */}
+          {preferredReligion === 'jewish' && (
+            <>
+              <section className="mb-10"><HebrewGlossary /></section>
+              <section className="mb-10"><JewishBranchesComparison /></section>
+            </>
+          )}
+          {(preferredReligion === 'christian' || preferredReligion === 'catholic'
+            || preferredReligion === 'protestant' || preferredReligion === 'mormon') && (
+            <section className="mb-10"><ChristianBranchesComparison /></section>
+          )}
+          {preferredReligion === 'islam' && (
+            <section className="mb-10"><IslamBranchesComparison /></section>
+          )}
+          {preferredReligion === 'hindu' && (
+            <>
+              <section className="mb-10"><SanskritGlossary /></section>
+              <section className="mb-10"><HinduDarshanasComparison /></section>
+            </>
+          )}
+          {preferredReligion === 'buddhist' && (
+            <>
+              <section className="mb-10"><BuddhistGlossary /></section>
+              <section className="mb-10"><BuddhistSchoolsComparison /></section>
+            </>
+          )}
+          {(preferredReligion === 'candomble' || preferredReligion === 'umbanda') && (
+            <section className="mb-10"><CandombleGlossary /></section>
+          )}
 
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
