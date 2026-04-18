@@ -29,6 +29,7 @@ import JewishBranchesComparison from '@/components/learn/JewishBranchesCompariso
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
 import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
+import HebrewGlossary from '@/components/learn/HebrewGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
