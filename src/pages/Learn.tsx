@@ -351,6 +351,11 @@ export default function Learn() {
             <ChristianBranchesComparison />
           </section>
 
+          {/* Umbanda glossary — visual primer */}
+          <section className="mb-10">
+            <UmbandaGlossary />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
@@ -484,6 +489,11 @@ export default function Learn() {
           {/* Spiritist glossary inside Spiritism study session */}
           {topic === 'spiritist' && (
             <SpiritistGlossary compact />
+          )}
+
+          {/* Umbanda glossary inside Umbanda study session */}
+          {topic === 'umbanda' && (
+            <UmbandaGlossary compact />
           )}
 
           {messages.length === 0 && loading && (
