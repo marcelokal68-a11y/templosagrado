@@ -26,6 +26,7 @@ import ChristianBranchesComparison from '@/components/learn/ChristianBranchesCom
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
+import CandombleGlossary from '@/components/learn/CandombleGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -338,6 +339,11 @@ export default function Learn() {
             <ChristianBranchesComparison />
           </section>
 
+          {/* Candomblé glossary — visual primer */}
+          <section className="mb-10">
+            <CandombleGlossary />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
@@ -471,6 +477,11 @@ export default function Learn() {
           {/* Spiritist glossary inside Spiritism study session */}
           {topic === 'spiritist' && (
             <SpiritistGlossary compact />
+          )}
+
+          {/* Candomblé glossary inside Candomblé study session */}
+          {topic === 'candomble' && (
+            <CandombleGlossary compact />
           )}
 
           {messages.length === 0 && loading && (
