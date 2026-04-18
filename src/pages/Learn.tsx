@@ -21,6 +21,7 @@ import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
+import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsComparison';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -421,6 +422,11 @@ export default function Learn() {
           {/* Sanskrit glossary inside Hindu/Buddhist study sessions */}
           {(topic === 'hindu' || topic === 'buddhist') && (
             <SanskritGlossary compact />
+          )}
+
+          {/* Buddhist schools comparison inside Buddhist study session */}
+          {topic === 'buddhist' && (
+            <BuddhistSchoolsComparison compact />
           )}
 
           {messages.length === 0 && loading && (
