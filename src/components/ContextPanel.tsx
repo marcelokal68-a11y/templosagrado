@@ -572,15 +572,15 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
             </AlertDialogTitle>
             <AlertDialogDescription>
               {language === 'en'
-                ? 'You can change your faith, or just explore this tradition in the Learn section without changing your profile.'
+                ? 'Changing your faith will permanently erase your chat history so the Mentor starts fresh in the new tradition. Or just explore it in the Learn section without changing your profile.'
                 : language === 'es'
-                  ? 'Puedes cambiar tu fe, o solo explorar esta tradición en la sección Aprende sin cambiar tu perfil.'
-                  : 'Você pode mudar sua fé, ou apenas explorar esta tradição na aba Aprenda sem alterar seu perfil.'}
+                  ? 'Cambiar tu fe borrará permanentemente tu historial de chat para que el Mentor comience de nuevo en la nueva tradición. O solo explórala en la sección Aprende sin cambiar tu perfil.'
+                  : 'Mudar de fé apagará permanentemente seu histórico de conversas para que o Mentor recomece dentro da nova tradição. Ou apenas explore na aba Aprenda sem alterar seu perfil.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-2 mt-2">
-            <Button onClick={handleChangeFaith} className="w-full">
-              {language === 'en' ? 'Yes, change my faith' : language === 'es' ? 'Sí, cambiar mi fe' : 'Sim, mudar minha fé'}
+            <Button onClick={handleChangeFaith} className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {language === 'en' ? 'Yes, change & erase history' : language === 'es' ? 'Sí, cambiar y borrar historial' : 'Sim, mudar e apagar histórico'}
             </Button>
             <Button onClick={handleExploreOnly} variant="outline" className="w-full">
               {language === 'en' ? 'Just explore (Learn)' : language === 'es' ? 'Solo explorar (Aprende)' : 'Só explorar (Aprenda)'}
