@@ -53,6 +53,7 @@ interface AppContextType {
   isAdmin: boolean;
   preferredReligion: string | null;
   refreshProfile: () => Promise<void>;
+  changeFaithWithCleanup: (newReligion: string | null) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
