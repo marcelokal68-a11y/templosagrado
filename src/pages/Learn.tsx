@@ -342,6 +342,18 @@ export default function Learn() {
           if (jsonStr === '[DONE]') { done = true; break; }
           try {
             const parsed = JSON.parse(jsonStr);
+            // Custom event: RAG sources injected by edge function
+            if (parsed.__sources && Array.isArray(parsed.__sources)) {
+              const incomingSources = parsed.__sources as Source[];
+              setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, sources: incomingSources } : m);
+                }
+                return [...prev, { role: 'assistant', content: '', sources: incomingSources }];
+              });
+              continue;
+            }
             const c = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (c) {
               assistantSoFar += c;
