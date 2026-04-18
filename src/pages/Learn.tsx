@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
 import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsComparison';
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
+import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 
 const RELIGIONS = [
@@ -326,6 +327,11 @@ export default function Learn() {
             <HinduDarshanasComparison />
           </section>
 
+          {/* Islam branches comparison — visual primer */}
+          <section className="mb-10">
+            <IslamBranchesComparison />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
@@ -444,6 +450,11 @@ export default function Learn() {
           {/* Buddhist schools comparison inside Buddhist study session */}
           {topic === 'buddhist' && (
             <BuddhistSchoolsComparison compact />
+          )}
+
+          {/* Islam branches comparison inside Islam study session */}
+          {topic === 'islam' && (
+            <IslamBranchesComparison compact />
           )}
 
           {/* Spiritist glossary inside Spiritism study session */}
