@@ -27,6 +27,7 @@ import HinduDarshanasComparison from '@/components/learn/HinduDarshanasCompariso
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import UmbandaDayGuide from '@/components/learn/UmbandaDayGuide';
+import StoicPrimer from '@/components/learn/StoicPrimer';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -356,6 +357,11 @@ export default function Learn() {
             <UmbandaDayGuide />
           </section>
 
+          {/* Stoicism primer — visual primer */}
+          <section className="mb-10">
+            <StoicPrimer />
+          </section>
+
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
               {language === 'en' ? 'Life Philosophies' : language === 'es' ? 'Filosofías de Vida' : 'Filosofias de Vida'}
@@ -494,6 +500,11 @@ export default function Learn() {
           {/* Umbanda day-rulership guide inside Umbanda study session */}
           {topic === 'umbanda' && (
             <UmbandaDayGuide compact />
+          )}
+
+          {/* Stoicism primer inside Stoicism study session */}
+          {topic === 'stoicism' && (
+            <StoicPrimer compact />
           )}
 
           {messages.length === 0 && loading && (
