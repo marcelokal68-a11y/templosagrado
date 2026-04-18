@@ -463,6 +463,11 @@ export default function Learn() {
             <IslamBranchesComparison compact />
           )}
 
+          {/* Christian branches comparison inside Christian study sessions */}
+          {(topic === 'christian' || topic === 'catholic' || topic === 'protestant') && (
+            <ChristianBranchesComparison compact />
+          )}
+
           {/* Spiritist glossary inside Spiritism study session */}
           {topic === 'spiritist' && (
             <SpiritistGlossary compact />
