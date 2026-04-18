@@ -335,6 +335,11 @@ export default function Learn() {
             <IslamBranchesComparison />
           </section>
 
+          {/* Jewish branches comparison — visual primer */}
+          <section className="mb-10">
+            <JewishBranchesComparison />
+          </section>
+
           {/* Christian branches comparison — visual primer */}
           <section className="mb-10">
             <ChristianBranchesComparison />
