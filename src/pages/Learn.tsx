@@ -16,10 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle } from 'lucide-react';
+import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle, Mic, MicOff } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { playTTS, TTSCapReachedError, type PlayTTSResult } from '@/lib/ttsPlayer';
+import ListenButton from '@/components/learn/ListenButton';
+import PodcastControls from '@/components/learn/PodcastControls';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
 import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsComparison';
 import ChristianBranchesComparison from '@/components/learn/ChristianBranchesComparison';
@@ -112,6 +115,120 @@ export default function Learn() {
   const [faithPromptShown, setFaithPromptShown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ===== Podcast / TTS state =====
+  const [podcastMode, setPodcastMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('learn_podcast_mode') === '1'; } catch { return false; }
+  });
+  const [podcastSpeed, setPodcastSpeed] = useState<number>(() => {
+    try { return parseFloat(localStorage.getItem('learn_podcast_speed') || '1.15') || 1.15; } catch { return 1.15; }
+  });
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+  const playerRef = useRef<PlayTTSResult | null>(null);
+  const autoplayedRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    try { localStorage.setItem('learn_podcast_mode', podcastMode ? '1' : '0'); } catch {}
+  }, [podcastMode]);
+  useEffect(() => {
+    try { localStorage.setItem('learn_podcast_speed', String(podcastSpeed)); } catch {}
+  }, [podcastSpeed]);
+
+  // Stop any active player on unmount
+  useEffect(() => {
+    return () => {
+      try { playerRef.current?.stop(); } catch {}
+      playerRef.current = null;
+    };
+  }, []);
+
+  function cleanForTTS(raw: string): string {
+    let txt = raw;
+    // Remove "📚 Fontes:" / "Sources:" sections to end
+    txt = txt.replace(/(?:📚\s*)?(?:Fontes|Sources|Fuentes)\s*:[\s\S]*$/i, '');
+    // Remove citation markers like [1], [2,3]
+    txt = txt.replace(/\[\d+(?:\s*,\s*\d+)*\]/g, '');
+    // Strip light markdown
+    txt = txt.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
+    txt = txt.replace(/`(.+?)`/g, '$1');
+    txt = txt.replace(/^#{1,6}\s+/gm, '');
+    return txt.trim();
+  }
+
+  async function playMessage(index: number, rawText: string) {
+    try { playerRef.current?.stop(); } catch {}
+    playerRef.current = null;
+
+    const text = cleanForTTS(rawText);
+    if (!text) return;
+
+    setLoadingIndex(index);
+    try {
+      const result = await playTTS({
+        text,
+        speed: podcastSpeed,
+        onEnded: () => {
+          setPlayingIndex(prev => (prev === index ? null : prev));
+        },
+      });
+      playerRef.current = result;
+      setPlayingIndex(index);
+    } catch (e: any) {
+      if (e instanceof TTSCapReachedError) {
+        toast.error(language === 'en'
+          ? 'Monthly narration limit reached. Try again next month or upgrade.'
+          : language === 'es'
+            ? 'Límite mensual de narraciones alcanzado. Vuelve el próximo mes o haz upgrade.'
+            : 'Você atingiu o limite mensal de narrações. Volta no próximo mês ou faça upgrade.');
+        setPodcastMode(false);
+      } else {
+        console.error('TTS error:', e);
+        toast.error(language === 'en' ? 'Could not play audio.' : language === 'es' ? 'No se pudo reproducir.' : 'Não foi possível reproduzir o áudio.');
+      }
+    } finally {
+      setLoadingIndex(null);
+    }
+  }
+
+  function handleToggleListen(index: number, rawText: string) {
+    if (playingIndex === index) {
+      try { playerRef.current?.stop(); } catch {}
+      playerRef.current = null;
+      setPlayingIndex(null);
+      return;
+    }
+    playMessage(index, rawText);
+  }
+
+  function handlePodcastPlayPause() {
+    const audio = playerRef.current?.audio;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+    setPlayingIndex(prev => (audio.paused ? null : prev));
+  }
+
+  function handlePodcastStop() {
+    try { playerRef.current?.stop(); } catch {}
+    playerRef.current = null;
+    setPlayingIndex(null);
+  }
+
+  function togglePodcastMode() {
+    setPodcastMode(prev => {
+      const next = !prev;
+      if (!next) {
+        try { playerRef.current?.stop(); } catch {}
+        playerRef.current = null;
+        setPlayingIndex(null);
+      }
+      return next;
+    });
+  }
+
   // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
   useEffect(() => {
     const qTopic = searchParams.get('topic');
@@ -125,6 +242,25 @@ export default function Learn() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
+
+  // Autoplay newest assistant message when podcast mode is on
+  useEffect(() => {
+    if (!podcastMode || loading) return;
+    if (messages.length === 0) return;
+    const lastIdx = messages.length - 1;
+    const last = messages[lastIdx];
+    if (last?.role !== 'assistant') return;
+    if (!last.content || last.content.length < 20) return;
+    if (autoplayedRef.current.has(lastIdx)) return;
+    autoplayedRef.current.add(lastIdx);
+    playMessage(lastIdx, last.content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, loading, podcastMode]);
+
+  // Reset autoplay tracker when topic changes
+  useEffect(() => {
+    autoplayedRef.current = new Set();
+  }, [topic]);
 
   const labelFor = (key: string, kind: 'religion' | 'philosophy') => {
     return t(`${kind}.${key}` as any, language);
@@ -453,7 +589,7 @@ export default function Learn() {
               {language === 'en' ? 'Change topic' : language === 'es' ? 'Cambiar tema' : 'Trocar tópico'}
             </span>
           </Button>
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {topicKind === 'religion' ? (
               <ReligionIcon religion={topic} />
             ) : (
@@ -463,6 +599,22 @@ export default function Learn() {
               {labelFor(topic, topicKind!)}
             </h1>
           </div>
+          <Button
+            variant={podcastMode ? 'default' : 'ghost'}
+            size="sm"
+            onClick={togglePodcastMode}
+            className={cn(
+              'gap-1.5 h-9 px-2.5 shrink-0',
+              podcastMode ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground hover:text-foreground'
+            )}
+            aria-label={podcastMode
+              ? (language === 'en' ? 'Disable podcast mode' : language === 'es' ? 'Desactivar modo podcast' : 'Desativar modo podcast')
+              : (language === 'en' ? 'Enable podcast mode' : language === 'es' ? 'Activar modo podcast' : 'Ativar modo podcast')}
+            title={language === 'en' ? 'Podcast mode: auto-narrate replies' : language === 'es' ? 'Modo podcast: narrar respuestas' : 'Modo Podcast: narrar respostas automaticamente'}
+          >
+            {podcastMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+            <span className="hidden sm:inline text-xs font-medium">Podcast</span>
+          </Button>
         </div>
       </div>
 
@@ -547,7 +699,7 @@ export default function Learn() {
                     <GraduationCap className="h-4 w-4 text-primary" />
                   </div>
                 )}
-                <div className={cn('flex flex-col gap-2', isUser ? 'items-end' : 'items-start', 'max-w-[85%]')}>
+                <div className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start', 'max-w-[85%]')}>
                   <div className={cn(
                     'rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap',
                     isUser
@@ -556,6 +708,14 @@ export default function Learn() {
                   )}>
                     {displayText || (loading && isLast ? '…' : '')}
                   </div>
+                  {!isUser && displayText && !(loading && isLast) && (
+                    <ListenButton
+                      isPlaying={playingIndex === i}
+                      isLoading={loadingIndex === i}
+                      onClick={() => handleToggleListen(i, displayText)}
+                      language={language as any}
+                    />
+                  )}
                 </div>
               </div>
             );
@@ -576,6 +736,18 @@ export default function Learn() {
 
       <div className="border-t border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-3">
+          {podcastMode && (
+            <PodcastControls
+              isPlaying={playingIndex !== null && !!playerRef.current && !playerRef.current.audio.paused}
+              topicLabel={labelFor(topic, topicKind!)}
+              speed={podcastSpeed}
+              hasActive={playerRef.current !== null}
+              onPlayPause={handlePodcastPlayPause}
+              onStop={handlePodcastStop}
+              onSpeedChange={setPodcastSpeed}
+              language={language as any}
+            />
+          )}
           <div className="flex gap-2 items-end">
             <Textarea
               value={input}
