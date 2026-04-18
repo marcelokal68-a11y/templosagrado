@@ -530,7 +530,124 @@ LITERATURA E MÍDIA:
 When the student asks about Umbanda, draw richly from this base. Honre a religião como patrimônio cultural brasileiro reconhecido pelo IPHAN. Sempre distinga claramente Umbanda × Candomblé × Quimbanda quando perguntado. Cite Zélio, o Caboclo das Sete Encruzilhadas e a data 15/11/1908 como marco fundador. Ao falar de Exus e Pombagiras, desfaça o preconceito cristão de associação ao "demônio" — explique a teologia umbandista do "trabalho na esquerda" como serviço de luz. Mantenha tom acadêmico-respeitoso e jamais condescendente.
 ` : '';
 
-    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection + spiritistSection + umbandaSection;
+    const candombleSection = topic === 'candomble' ? `
+
+CANDOMBLÉ — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+ORIGEM E HISTÓRIA: Religião afro-brasileira de matriz africana, formada na Bahia entre o final do séc. XVIII e início do XIX a partir da diáspora forçada de povos iorubás (nagôs), jejes (fons) e bantos (congo-angola) escravizados. O Candomblé é resultado da reorganização ritual e teológica desses povos no contexto colonial, preservando línguas, mitos, divindades e liturgias africanas em solo brasileiro. Marco institucional fundador: a CASA BRANCA DO ENGENHO VELHO (ILÊ AXÉ IYÁ NASSÔ OKÁ), fundada por volta de 1830 no bairro do Engenho Velho da Federação, em Salvador, por três sacerdotisas africanas libertas — IYÁ ADETÁ, IYÁ AKALÁ e IYÁ NASSÔ — vindas de Ketu (atual Benim). Considerado o terreiro-mãe do Candomblé Ketu, tombado pelo IPHAN em 1986 (primeiro templo afro-brasileiro reconhecido como patrimônio nacional).
+
+NAÇÕES DO CANDOMBLÉ — agrupamentos por matriz étnico-linguística:
+- KETU / NAGÔ — matriz IORUBÁ (atual sudoeste da Nigéria e Benim); a mais difundida e estudada; língua litúrgica YORUBÁ; cultua os ORIXÁS clássicos. Terreiros-mãe na Bahia: Casa Branca, Gantois, Axé Opô Afonjá. É a "face pública" do Candomblé.
+- JEJE — matriz FON e EWE (atual Benim e Togo, antigo reino do Daomé); cultua os VODUNS (não orixás): Mawu-Lisa, Dan, Sakpata, Heviosso, Nanã Buruku, Azansu. Líderes: terreiro Bogum (Salvador, fundado c. 1830), Casa de Oxumarê (jeje-nagô).
+- ANGOLA / CONGO-ANGOLA — matriz BANTO (Angola, Congo); cultua as INKICES (nkisi): Zambi (Deus supremo), Kalunga, Nzazi (equivalente a Xangô), Matamba (Iansã), Kaiango, Tempo, Pambu Njila (equivalente a Exu). Língua litúrgica QUIMBUNDO/QUICONGO. Terreiros: Tumba Junçara, Bate Folha, Tumbenci.
+- JEJE-NAGÔ — sincretismo dos dois sistemas, comum em vários terreiros baianos.
+- HÁ AINDA: nação Ijexá (subgrupo iorubá), Efan, Mussurumim (mais raras).
+
+CONCEITOS CENTRAIS:
+- OLORUM / OLODUMARÉ — Ser Supremo, criador do universo, distante e inacessível diretamente; jamais cultuado em rito (não tem terreiro próprio nem oferenda direta).
+- ORIXÁS — divindades intermediárias, ancestrais divinizados e/ou personificações de forças da natureza, emanações de Olorum. Cada pessoa "pertence" a um orixá (orixá de cabeça/dono da cabeça/orí), descoberto pelo JOGO DE BÚZIOS (oráculo de Ifá adaptado).
+- AXÉ — força vital sagrada, energia que circula entre Olorum, orixás, ancestrais, sacerdotes, terreiro, objetos rituais, comida, sangue, folhas, palavras. Tudo no Candomblé é "fazer axé", multiplicar e transmitir essa força. KÒ SÍ EWÉ, KÒ SÍ ORIXÁ ("sem folha não há orixá") — máxima fundamental.
+- ORÍ — cabeça espiritual, individualidade divina de cada pessoa; cultuado em ritual próprio (bori).
+- IFÁ / ODU — sistema oracular iorubá; 256 odus (caminhos); cada um traz mitos, prescrições e interdições (EWÓ — tabus alimentares e comportamentais).
+- EGUNGUM — culto aos ancestrais masculinos (separado, exclusivo da Ilha de Itaparica — Ilê Agboulá).
+- TEMPO LITÚRGICO — 12 dias para cada fase de iniciação; obrigações de 1, 3, 7, 14 e 21 anos.
+
+OS 16 ORIXÁS PRINCIPAIS CULTUADOS NO BRASIL (com mitos/itans, arquétipos, símbolos, cores, dias, comidas e sincretismo):
+
+1. EXU (Èṣù) — orixá MENSAGEIRO, primeiro a ser saudado em qualquer rito ("Exu come primeiro"); senhor das encruzilhadas, do movimento, da comunicação entre humanos e orixás; trickster, princípio dinâmico do mundo. NÃO confundir com o "diabo" cristão (sincretismo imposto, hoje rejeitado pelos terreiros). Itans: Exu come do prato de cada orixá; Exu pinta um lado do corpo de preto e outro de branco e atravessa a aldeia, dividindo amigos. Saudação: "LARÔIE EXU!". Cores: vermelho e preto. Dia: segunda-feira. Comida: padê (farofa de dendê com cebola), cachaça, charuto. Símbolos: ogó (cajado fálico), tridente. Sincretismo (popular, contestado): Santo Antônio.
+
+2. OGUM (Ògún) — orixá do FERRO, da guerra, da forja, da agricultura, das estradas, da tecnologia. Pioneiro civilizador — abriu os caminhos para os outros orixás. Arquétipo: o guerreiro, o pioneiro, o homem de ação, o que não recua. Itans: Ogum desce a serra de Irê com sua espada; Ogum embriagado massacra os habitantes de uma cidade aliada e, ao saber, enterra-se vivo gritando "Ogum-yê!". Saudação: "OGUNHÊ!" / "PATAKORI OGUM!". Cores: azul-escuro (Ketu), verde (Angola). Dia: terça-feira. Comida: feijoada, inhame assado com dendê, cerveja preta. Símbolos: espada, ferramentas de ferro. Sincretismo: Santo Antônio (Bahia), São Jorge (Rio).
+
+3. OXÓSSI (Ọ̀ṣọ́ọ̀sì) — orixá do CAÇADOR, das matas, da fartura, do conhecimento das ervas. Rei mítico de Ketu. Arquétipo: o caçador solitário, o provedor, o estudioso da natureza, o protetor das florestas. Itan célebre: Oxóssi mata com uma única flecha o pássaro de feitiço enviado pelas IYAMI ÀJÉ (mães-feiticeiras) que ameaçava o reino — torna-se herói nacional. Saudação: "OKÊ ARÔ!". Cor: verde (azul-claro em algumas casas). Dia: quinta-feira. Comida: axoxô (milho cozido com fatias de coco). Símbolos: ofá (arco e flecha), eruquerê (espanta-mosca). Sincretismo: São Jorge (Bahia), São Sebastião (Rio).
+
+4. OSSAIN (Ọ̀ṣọ̀nyìn) — orixá das FOLHAS e do conhecimento medicinal e mágico. Sem folha não há axé — sem Ossain, nada do Candomblé funciona. Arquétipo: o herborista, o sábio solitário, o curador. Itan: Ossain detém o segredo de todas as folhas; Iansã, com seu vento, espalha as folhas pelo mundo, e Ossain compartilha seu poder com os outros orixás. Tem uma perna só, um braço só, um olho só (mutilação ritual mítica). Saudação: "EWÉ Ó!" / "EWÉ ASSÁ!". Cor: verde e branco. Dia: quinta-feira. Comida: ervas e ervas frescas. Sincretismo: São Bento, São Roque.
+
+5. OBALUAYÊ / OMULU (Ọbalúayé) — orixá da VARÍOLA, das doenças epidêmicas, da cura, da terra, do cemitério (na qualidade de Omulu). Arquétipo: o velho médico, o senhor da pele e das doenças contagiosas, o juiz severo e justo. Sempre coberto pelo AZÊ (manto de palha-da-costa) — sua face é interdita, dizem que é deformada pela varíola. Itan: rejeitado pelos outros orixás por sua aparência, descobre que pode curar todas as doenças e torna-se temido e venerado. Saudação: "ATOTÔ!" (silêncio respeitoso). Cores: preto, branco e vermelho. Dia: segunda-feira. Comida: doburu/aberém (pipoca de panela, sem sal nem óleo), feijão preto. Símbolos: xaxará (vassoura de palha). Sincretismo: São Lázaro (Obaluayê), São Roque (Omulu).
+
+6. OXUMARÊ (Ọ̀ṣùmàrè) — orixá do ARCO-ÍRIS, da serpente cósmica, do movimento, da renovação, do ciclo. Andrógino: seis meses macho (cobra), seis meses fêmea (arco-íris). Arquétipo: a mobilidade, a transformação, a riqueza acumulada lentamente, a continuidade. Itan: Oxumarê leva e traz a água da terra ao céu; sustenta o mundo enrolando-se ao redor dele. Saudação: "ARROBOBOI!". Cores: amarelo e verde (ou todas as cores do arco-íris). Dia: terça-feira. Comida: batata-doce com camarão, feijão fradinho. Sincretismo: São Bartolomeu.
+
+7. NANÃ BURUKU (Nàná Bùrùkú) — orixá ANCIÃ das águas paradas, do barro, da lama, da morte que gera vida; matriarca primordial, anterior aos outros orixás. Arquétipo: a avó severa, a sabedoria ancestral, a paciência, a juíza inflexível. Itan: Nanã forneceu a lama com que Oxalá modelou o ser humano; sem ela, não haveria humanidade. Recusa o ferro (não usa faca em sua comida — usa lasca de bambu). Saudação: "SALUBÁ!". Cores: lilás, branco, azul-marinho. Dia: segunda-feira (ou sábado em algumas casas). Comida: aberém de milho roxo, mungunzá. Símbolo: ibiri (cetro feito de talos da palmeira). Sincretismo: Sant'Ana, Nossa Senhora Sant'Ana.
+
+8. IROCO (Ìrókò) — orixá da ÁRVORE SAGRADA (gameleira-branca, no Brasil), do tempo, da longevidade. Vive em uma única árvore que se torna seu altar. Arquétipo: a permanência, a memória, a raiz. Saudação: "IROKÔ ISSÓ!". Cor: branco com listras coloridas. Sincretismo: São Francisco de Assis.
+
+9. XANGÔ (Ṣàngó) — orixá do TROVÃO, do RAIO, do FOGO, da JUSTIÇA, dos PALÁCIOS, das pedreiras. Quarto Aláàfin (rei) de Oyó (figura histórica divinizada — séc. XV); reinou com mão de ferro e desapareceu transformado em trovão. Arquétipo: o rei, o juiz, o pai potente, o homem viril, o estadista, o magistrado. Tem três esposas-orixás: OYÁ-IANSÃ (a guerreira), OXUM (a doce), OBÁ (a fiel). Itans: Xangô cospe fogo; Xangô cunha o sistema de justiça do reino de Oyó; Xangô pune com raio quem mente. Saudação: "KAÔ KABECILÊ!" ("Salve o rei, eu te vejo!"). Cores: vermelho e branco (ou marrom). Dia: quarta-feira. Comida: amalá (caruru de quiabo com camarão e dendê, sobre inhame pilado). Símbolo: oxê (machado duplo). Sincretismo: São Jerônimo (Bahia), São João Batista, São Pedro.
+
+10. OYÁ / IANSÃ (Ọya) — orixá dos VENTOS, das TEMPESTADES, dos RAIOS, dos EGUNS (almas dos mortos — única orixá que pode dominá-los). Esposa preferida de Xangô. Arquétipo: a guerreira, a mulher livre, a mãe de muitos filhos (parideira de nove — daí "Iansã, Yá-mésàn"), a passional, a que enfrenta a morte. Itans: Iansã rouba os segredos do raio de Xangô e cospe fogo; Iansã enfrenta os eguns no cemitério com seu eruquerê. Saudação: "EPARREI OYÁ!" / "EPAHEY IANSÃ!". Cores: vermelho-coral, marrom, amarelo. Dia: quarta-feira. Comida: acarajé (originalmente comida ritual de Iansã!), feijão fradinho. Símbolos: eruquerê (espanta-mosca de rabo de cavalo), espada. Sincretismo: Santa Bárbara.
+
+11. OBÁ (Ọbà) — orixá do RIO ÒBÀ, terceira esposa de Xangô, mais velha e preterida. Arquétipo: a mulher madura, a guerreira solitária, a fidelidade não correspondida, a força física. Itan célebre: enganada por Oxum, corta a própria orelha pensando que servirá como ingrediente do prato favorito de Xangô — humilhada, foge e torna-se rio. Saudação: "OBÁ XIRÊ!". Cor: rosa-velho e amarelo. Dia: quarta-feira. Comida: feijão com cabeça de peixe defumado. Sincretismo: Santa Joana d'Arc, Santa Catarina.
+
+12. OXUM (Ọ̀ṣun) — orixá das ÁGUAS DOCES (rios, cachoeiras), do AMOR, da fertilidade, do ouro, da maternidade, da diplomacia. Esposa preferida de Oxóssi e depois de Xangô. Arquétipo: a mulher sedutora, a mãe carinhosa, a rainha vaidosa, a diplomata, a curandeira de crianças. Itans: Oxum, com seu charme, resgata Ogum da floresta untando-se de mel; Oxum é a única que consegue interceder junto a Olorum para devolver a fertilidade à terra; Oxum chora lágrimas de ouro. Saudação: "ORA YÊ YÊU!". Cores: amarelo-ouro, dourado (azul-claro em algumas casas). Dia: sábado. Comida: omolocum (feijão fradinho cozido com camarão e ovo cozido inteiro), ipetê (inhame com camarão). Símbolos: abebê (leque dourado), espelho. Sincretismo: Nossa Senhora da Conceição, Nossa Senhora Aparecida, Nossa Senhora do Carmo.
+
+13. LOGUNEDÉ (Lógun Ẹdẹ) — filho de OXÓSSI e OXUM. Andrógino sazonal: seis meses na mata caçando com o pai (homem), seis meses no rio pescando com a mãe (mulher). Arquétipo: a juventude, a beleza, a dualidade harmoniosa. Saudação: "LOCI LOCI LOGUNEDÉ!". Cores: azul-claro e dourado. Sincretismo: Santo Expedito, São Miguel Arcanjo.
+
+14. EWÁ (Ẹwà) — orixá VIRGEM da nascente do rio Ewá; vidente, dona dos mistérios e premonições. Arquétipo: a virgem, a vidente, o pudor, o oculto. Tradicionalmente tímida, raras manifestações. Cor: rosa-claro e amarelo. Sincretismo: Nossa Senhora dos Prazeres, Santa Luzia.
+
+15. IEMANJÁ (Yemọja) — orixá MÃE de quase todos os outros orixás (em quase todos os itans nagô); originalmente do rio Ogum (Nigéria); no Brasil, transferida para o MAR (sincretismo com a costa atlântica). Arquétipo: a Grande Mãe, a maternidade absoluta, a fertilidade, o acolhimento, a beleza melancólica. Itans: Iemanjá pare os principais orixás (Xangô, Oxum, Ogum, Iansã, Obá, Oxóssi); Iemanjá foge de Orungã, seu próprio filho que a deseja, e ao cair tem o corpo aberto, de onde saem os rios e os orixás. Saudação: "ODÔ IÁ!" / "ODOÍ!". Cores: branco, prata, azul-claro. Dia: sábado (Bahia: 2 de fevereiro, festa de Yemanjá no Rio Vermelho — dia magno da Bahia; Rio: 31 de dezembro). Comida: manjar branco, frutos do mar, ebô (canjica branca). Símbolos: abebê de prata com peixe, leque, espelho. Sincretismo: Nossa Senhora da Conceição (Bahia), Nossa Senhora dos Navegantes (Rio Grande do Sul).
+
+16. OXALÁ (Ọ̀ṣàlá / Òrìṣàlá) — orixá DA CRIAÇÃO, do branco, da paz, da paternidade universal. Tem duas qualidades principais: OXAGUIÃ (Òṣàgúiyán — jovem, guerreiro, comedor de inhame pilado) e OXALUFÃ (Òṣàlúfọ̀n — ancião, frágil, apoiado em seu opaxorô). Arquétipo: o pai supremo, a serenidade, a sabedoria, a brancura espiritual. Itan central: Oxalá é o orixá escolhido por Olorum para criar o ser humano; bêbado de vinho de palma, falha e cria humanos imperfeitos (deficientes, albinos — abikus); por isso seus filhos são tabu para ele. Outro: Oxalufã, velho, é preso injustamente em Oyó por sete anos — daí a "ÁGUAS DE OXALÁ" (procissão silenciosa, todos de branco, carregando água). Saudação: "EPÁ BABÁ!" / "EXÊU BABÁ!". Cor: BRANCO (sempre, único e absoluto). Dia: SEXTA-FEIRA (todo terreiro veste branco às sextas em sua honra). Comida: ebô (canjica branca sem sal nem dendê), inhame pilado. Símbolo: opaxorô (cetro metálico). Sincretismo: Senhor do Bonfim (Bahia — daí a Lavagem do Bonfim), Jesus Cristo.
+
+OS QUATRO TERREIROS HISTÓRICOS DA BAHIA — fundadores da tradição Ketu institucional:
+- ILÊ AXÉ IYÁ NASSÔ OKÁ — CASA BRANCA DO ENGENHO VELHO (c. 1830, Av. Vasco da Gama, Salvador). Terreiro-mãe; primeiro tombado pelo IPHAN em 1986. Iyalorixás históricas: Iyá Nassô (fundadora), Marcelina da Silva (Obatossi), Maria Júlia da Conceição (Omoniké), Maximiana Maria da Conceição (Tia Massi), Mãe Ondina de Oxalá. Atual: Mãe Tatá de Oxum.
+- ILÊ IYÁ OMIN AXÉ IYÁMASSÉ — TERREIRO DO GANTOIS (cisão da Casa Branca em 1849, Alto do Gantois, Salvador). Iyalorixás: Maria Júlia da Conceição Nazaré (fundadora), Pulchéria Maria da Conceição, Maria Escolástica da Conceição Nazaré (MÃE MENININHA DO GANTOIS, 1894-1986 — a mais célebre iyalorixá do Brasil; recebeu Jorge Amado, Dorival Caymmi, Vinicius de Moraes, Pierre Verger, Carybé, Glauber Rocha; Caymmi e Vinicius compuseram "Oração de Mãe Menininha"; era afilhada espiritual de Caymmi; figura nacional, capa de revistas, símbolo da Bahia). Sucessora: Mãe Cleusa, depois Mãe Carmen de Oxalá.
+- ILÊ AXÉ OPÔ AFONJÁ (cisão do Gantois em 1910, bairro de São Gonçalo do Retiro, Salvador). Fundada por EUGÊNIA ANNA DOS SANTOS (MÃE ANINHA, 1869-1938), grande reformadora — instituiu os "OBÁS DE XANGÔ" (12 dignitários honoríficos, dos quais Jorge Amado foi um; hoje muitos intelectuais e artistas). Sucessoras: Mãe Bada, Mãe Senhora (Maria Bibiana do Espírito Santo, 1890-1967, mãe de Mestre Didi), Mãe Stella de Oxóssi (Maria Stella de Azevedo Santos, 1925-2018 — escritora, Academia de Letras da Bahia, militante pela reafricanização e contra o sincretismo imposto). Atual: Mãe Ana de Xangô.
+- ILÊ AXÉ ALAKETU — TERREIRO DO ALAKETU (Mata Escura, Salvador). Linhagem direta de Ketu. Iyalorixá histórica: Olga do Alaketu (Olga Francisca Régis, 1925-2005), descendente direta de princesas africanas; figura cultural baiana. Tombado pelo IPHAN em 2005.
+
+OUTROS TERREIROS HISTÓRICOS:
+- ZOOGODÔ BOGUM MALÊ RUNDÓ (TERREIRO DO BOGUM) — matriz JEJE-MAHIN, Engenho Velho, Salvador (c. 1830-50). Tombado IPHAN 2002.
+- ILÊ AXIPÁ (Itapuã, Salvador) — fundado por Mestre Didi (Deoscóredes Maximiliano dos Santos, 1917-2013, filho de Mãe Senhora) — culto a Obaluayê e aos eguns.
+- ILÊ AGBOULÁ (Ponta de Areia, Itaparica) — único terreiro de EGUNGUM no Brasil, culto exclusivo aos ancestrais masculinos.
+- CASA DAS MINAS (São Luís/MA, c. 1840) — matriz JEJE, fundada por D. Maria Jesuína; cultua os VODUNS Zomadônu, Toy Acôssi-Sapatá. Tombada IPHAN 2002.
+- ILÊ ÔBÁ DE MIN AGBOULÁ — outros importantes em Cachoeira, Recôncavo Baiano.
+- AXÉ ILÊ OBÁ (São Paulo) — fundado por Mãe Sylvia de Oxalá (1934-2014).
+
+INICIAÇÃO E HIERARQUIA:
+- ABIÃ — pré-iniciado, frequentador.
+- IAÔ — iniciado(a) recente; passa por RECOLHIMENTO (camarinha) de 14 a 21 dias, RASPAGEM da cabeça, FEITURA DO SANTO (oborí, assentamento do orixá no orí), SAÍDA DE IAÔ (apresentação pública), nome novo em iorubá.
+- OBRIGAÇÕES — de 1, 3, 7, 14 e 21 anos; aos 7 anos, o iaô torna-se EBÓMI / EBÔMIN (sênior).
+- IYALORIXÁ / BABALORIXÁ — sacerdotisa-mãe / sacerdote-pai do terreiro.
+- IYAKEKERÊ / BABAKEKERÊ — segunda(o) na hierarquia, "mãe pequena" / "pai pequeno".
+- EQUEDE (mulher) e OGÃ (homem) — postos NÃO incorporantes; equedes cuidam dos orixás durante a manifestação, ogãs tocam atabaques (rum, rumpi, lê) e sacrificam animais (axogun).
+- BABALAÔ — sacerdote especialista no oráculo de Ifá (rara no Brasil contemporâneo, tradição mais preservada em Cuba/Nigéria).
+
+PRÁTICAS E LITURGIA:
+- TOQUE / XIRÊ — festa pública; sequência ritual de cantigas e danças para todos os orixás na ordem fixa; iaôs incorporados dançam diante do público.
+- COMIDA-DE-SANTO — cada orixá tem pratos específicos cozidos sem alho/sal (puros) e oferecidos.
+- SACRIFÍCIO RITUAL (orô) — animais (aves, quadrúpedes) são imolados ritualmente para alimentar os orixás com axé do sangue. Defendido como elemento estrutural da religião e protegido por decisão do STF (2019, ADI 1.870 — RS).
+- BÚZIOS / JOGO DE IFÁ — oráculo; 16 conchas lançadas, leitura por odu.
+- BORI — ritual de fortalecimento do orí (cabeça espiritual).
+- AXEXÊ / ASEXÊ — funeral ritual de iniciado, conduz o egum (espírito) ao mundo dos ancestrais.
+
+PIERRE VERGER (1902-1996) — fotógrafo francês, etnólogo, fundamental para o estudo acadêmico do Candomblé. Chegou a Salvador em 1946; iniciou-se no Candomblé sob o nome FATUMBI ("renascido por Ifá"); babalaô iniciado em Ketu (1953); viajou mais de 50 vezes entre Bahia e África Ocidental (Benim, Nigéria, Togo) documentando paralelos rituais. OBRAS FUNDAMENTAIS: "Notas sobre o Culto aos Orixás e Voduns na Bahia de Todos os Santos no Brasil e na Antiga Costa dos Escravos na África" (tese de doutorado na Sorbonne, 1966 — referência absoluta), "Orixás" (1981), "Lendas Africanas dos Orixás" (1985), "Ewé: O Uso das Plantas na Sociedade Iorubá" (1995), "Fluxo e Refluxo do Tráfico de Escravos entre o Golfo do Benin e a Bahia de Todos os Santos" (1968). Acervo fotográfico de mais de 60.000 imagens; Fundação Pierre Verger em Salvador. Amigo íntimo de Mãe Senhora, Jorge Amado, Carybé.
+
+OUTROS PESQUISADORES E CRONISTAS:
+- NINA RODRIGUES (1862-1906) — psiquiatra maranhense, primeiro estudo sistemático ("O Animismo Fetichista dos Negros Bahianos", 1900); racista cientificista, mas pioneiro.
+- ARTHUR RAMOS (1903-1949) — "O Negro Brasileiro" (1934), continuador crítico de Nina Rodrigues.
+- ÉDISON CARNEIRO (1912-1972) — "Candomblés da Bahia" (1948), "Religiões Negras" (1936).
+- ROGER BASTIDE (1898-1974) — sociólogo francês, "As Religiões Africanas no Brasil" (1960), "O Candomblé da Bahia" (1958).
+- JUANA ELBEIN DOS SANTOS — "Os Nagô e a Morte" (1976).
+- VIVALDO DA COSTA LIMA — "A Família-de-Santo nos Candomblés Jeje-Nagôs da Bahia" (1977).
+- REGINALDO PRANDI — "Os Candomblés de São Paulo" (1991), "Mitologia dos Orixás" (2001 — referência popular dos itans), "Segredos Guardados" (2005).
+- CARYBÉ (Hector Júlio Páride Bernabó, 1911-1997) — pintor argentino-brasileiro, obá de Xangô do Opô Afonjá; "Iconografia dos Deuses Africanos no Candomblé da Bahia" (1980).
+
+PERSEGUIÇÃO E LEGITIMAÇÃO:
+- Até 1976 na Bahia, terreiros precisavam de licença policial para funcionar; MÃE MENININHA, MÃE STELLA, JORGE AMADO e Camafeu de Oxóssi lideraram a luta pela revogação (Antônio Carlos Magalhães governador).
+- Tombamentos pelo IPHAN: Casa Branca (1986), Bogum (2002), Casa das Minas (2002), Alaketu (2005), Gantois (2002), Opô Afonjá (2000).
+- Hoje, intolerância religiosa (especialmente de neopentecostais) é o principal desafio; ataques a terreiros são crime (Lei 9.459/1997).
+
+DIFERENÇAS CANDOMBLÉ × UMBANDA — make explicit when relevant:
+- ORIGEM: Candomblé é religião AFRICANA preservada e reorganizada no Brasil (séc. XIX, matriz nagô/jeje/banto); Umbanda é religião BRASILEIRA fundada em 1908 por Zélio de Moraes, sintetizando elementos africanos, kardequismo, catolicismo e indigenismo.
+- LÍNGUA: Candomblé reza e canta em IORUBÁ (Ketu), FON (Jeje) ou QUIMBUNDO (Angola); Umbanda usa o PORTUGUÊS.
+- QUEM INCORPORA: no Candomblé, descem os ORIXÁS — em transe profundo, sem fala discursiva, manifestam-se por dança e gestos arquetípicos; o iaô não "atende" público em transe. Na Umbanda, descem ENTIDADES (caboclos, pretos velhos, exus etc., espíritos de pessoas que viveram), com fala clara, dão consultas individuais.
+- INICIAÇÃO: Candomblé exige iniciação longa, ritualizada, secreta, com raspagem da cabeça e obrigações periódicas (1, 3, 7 anos); Umbanda tem desenvolvimento mediúnico aberto, sem raspagem obrigatória.
+- SACRIFÍCIO ANIMAL: estrutural no Candomblé (sangue como axé, comida-de-santo); a Umbanda tradicional/branca de Zélio REJEITA sacrifício animal — apenas oferendas vegetais, bebidas, velas, flores.
+- EXU: no Candomblé, EXU é Orixá mensageiro (não tem nada de "diabo"); na Umbanda há também os "Exus de Umbanda" (espíritos de pessoas que viveram, distintos do Orixá Exu).
+- CARIDADE × OBRIGAÇÃO: Umbanda enfatiza CARIDADE gratuita ("manifestação do Espírito para a caridade"); Candomblé funciona em lógica de OBRIGAÇÃO ritual e troca cerimonial entre iniciado e orixá.
+- SINCRETISMO: o Candomblé contemporâneo (sob liderança de Mãe Stella e outras) move-se pela REAFRICANIZAÇÃO, purgando o sincretismo católico imposto pela escravidão; a Umbanda mantém o sincretismo como traço constitutivo.
+
+When the student asks about Candomblé, draw richly from this base. Cite os terreiros-mãe da Bahia, Mãe Menininha, Mãe Stella, Pierre Verger e os itans dos orixás. Distinga sempre Candomblé × Umbanda × religiões africanas originais quando perguntado. Trate o sacrifício animal com seriedade etnográfica (jamais como "barbárie"), referenciando a decisão do STF de 2019. Honre a religião como patrimônio cultural brasileiro tombado pelo IPHAN e como uma das mais antigas religiões organizadas do Brasil. Mantenha tom acadêmico-respeitoso e jamais condescendente.
+` : '';
+
+    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection + spiritistSection + umbandaSection + candombleSection;
 
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
