@@ -445,7 +445,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         return;
       }
       if (resp.status === 402) {
-        toast({ title: t('chat.credits_out', language), description: t('chat.credits_out_desc', language), variant: 'destructive' });
+        // Quota esgotada — atualiza contador e mostra banner suave
+        setQuestionsRemaining(0);
+        refreshProfile?.();
+        toast({
+          title: 'Limite mensal atingido',
+          description: 'Você usou suas 20 perguntas do mês. Assine o plano Devoto para continuar.',
+        });
+        setMessages(prev => prev.slice(0, -1)); // remove pergunta não respondida
         setIsLoading(false);
         return;
       }
