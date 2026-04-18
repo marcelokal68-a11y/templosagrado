@@ -475,6 +475,11 @@ export default function Learn() {
             <IslamBranchesComparison compact />
           )}
 
+          {/* Jewish branches comparison inside Jewish study session */}
+          {topic === 'jewish' && (
+            <JewishBranchesComparison compact />
+          )}
+
           {/* Christian branches comparison inside Christian study sessions */}
           {(topic === 'christian' || topic === 'catholic' || topic === 'protestant') && (
             <ChristianBranchesComparison compact />
