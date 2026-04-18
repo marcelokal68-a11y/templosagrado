@@ -1,76 +1,41 @@
 
 
-## Plano — Upgrade Devoto → Iluminado (com proração) e Downgrade sem reembolso
+## Problema identificado
 
-### Como funciona hoje
-- `create-checkout` **bloqueia** com erro 409 se o usuário já tem assinatura ativa.
-- Não há fluxo de troca de plano dentro do app — só "Gerenciar assinatura" que abre o portal Stripe.
-- Resultado: usuário Devoto não consegue migrar para Iluminado pelo app.
+A pergunta "Quem foi Charles Spurgeon?" não está aparecendo do nada — ela vem de um sistema de **sugestões automáticas** que obriga a IA a adicionar 3 perguntas-resposta clicáveis ao final de cada mensagem. Visualmente, esses chips em cor primária parecem que a IA está perguntando por conta própria.
 
-### Como vai funcionar
+Existem **dois locais** com esse comportamento forçado:
 
-**Upgrade (Devoto → Iluminado):**
-- Stripe atualiza a assinatura existente trocando o item de preço.
-- Usa `proration_behavior: 'always_invoice'` → o Stripe **calcula automaticamente a diferença proporcional** dos dias restantes do mês/ano atual e cobra **imediatamente** no cartão do cliente.
-- A partir da próxima renovação, cobra o valor cheio do plano Iluminado.
-- Acesso ao Iluminado é liberado na hora.
+1. **`supabase/functions/sacred-chat/index.ts`** (chat principal `/`): instrui o modelo com "SUGESTÕES OBRIGATÓRIAS: Ao final de CADA resposta, adicione `[SUGGESTIONS]q1|q2|q3[/SUGGESTIONS]`".
+2. **`supabase/functions/learn-chat/index.ts`** (chat `/learn`): instrui com "After EVERY response, you MUST end with `---SUGGESTIONS---[...]`".
 
-**Downgrade (Iluminado → Devoto):**
-- Stripe agenda a troca para o **fim do período já pago** (`proration_behavior: 'none'` + agendamento via Subscription Schedule, ou troca imediata sem crédito).
-- **Sem reembolso, sem cashback.** Usuário continua Iluminado até o fim do ciclo pago, depois vira Devoto.
-- Aviso claro na UI antes de confirmar.
+O frontend (`ChatArea.tsx` e `Learn.tsx`) renderiza esses blocos como botões grandes e visíveis, criando a impressão de que a IA pergunta espontaneamente sobre figuras como Charles Spurgeon (que aparece no contexto Protestante).
 
-**Mudança de ciclo (Mensal ↔ Anual no mesmo plano):** mesma lógica — upgrade (mensal→anual) com proração imediata; downgrade (anual→mensal) só vale na renovação.
+## Solução
 
----
+**Remover completamente** as sugestões geradas pela IA em ambos os chats. O `/learn` continuará tendo os `StarterQuestionChips` curados (5 perguntas estáticas trilíngues por tradição) que aparecem **apenas antes da primeira pergunta do usuário** — esses são intencionais e curados, não espontâneos.
 
-### Arquivos a criar / modificar
+### Mudanças
 
-**1. Nova edge function `supabase/functions/change-subscription/index.ts`**
-- Recebe `{ newPriceId, mode: 'upgrade' | 'downgrade' }`.
-- Busca a assinatura ativa do usuário no Stripe.
-- Calcula se é upgrade ou downgrade comparando o valor do preço atual vs o novo.
-- **Upgrade**: chama `stripe.subscriptions.update()` com:
-  ```ts
-  items: [{ id: currentItemId, price: newPriceId }],
-  proration_behavior: 'always_invoice'  // cobra a diferença na hora
-  ```
-- **Downgrade**: chama `stripe.subscriptions.update()` com:
-  ```ts
-  items: [{ id: currentItemId, price: newPriceId }],
-  proration_behavior: 'none',  // sem crédito/cobrança
-  billing_cycle_anchor: 'unchanged',
-  // agenda para mudar só no próximo ciclo via Subscription Schedule
-  ```
-  Para garantir que o downgrade só vire ativo no fim do período, usa `stripe.subscriptionSchedules.create()` ancorado no `current_period_end`.
-- Retorna `{ success, type: 'upgrade'|'downgrade', effective_date, prorated_amount }`.
+**1. `supabase/functions/sacred-chat/index.ts`**
+- Remover o bloco "SUGESTÕES OBRIGATÓRIAS" (instrução para gerar `[SUGGESTIONS]...[/SUGGESTIONS]`).
+- Remover as menções correlatas no system prompt (linhas que dizem "As [SUGGESTIONS] abaixo já oferecem caminhos…", "NÃO inclua [SUGGESTIONS] quando…").
 
-**2. Atualizar `src/pages/Pricing.tsx`**
-- Detectar quando o usuário **já é assinante** e está clicando em outro plano.
-- Em vez de chamar `handleSubscribe` (checkout novo), chamar novo handler `handleChangePlan(planKey)`.
-- Mostrar **AlertDialog de confirmação** diferente para cada caso:
-  - **Upgrade** (Devoto→Iluminado, ou Mensal→Anual): "Você pagará a diferença proporcional dos dias restantes (~R$ X) agora. A partir de [data], será cobrado R$ Y/mês."
-  - **Downgrade** (Iluminado→Devoto, ou Anual→Mensal): "Sua assinatura atual continua ativa até [data fim do ciclo]. Não há reembolso. Após essa data, você passa ao plano [novo] por R$ Y."
-- Botões dos cards de planos passam a habilitar para troca quando já assinante (em vez do `disabled`).
+**2. `supabase/functions/learn-chat/index.ts`**
+- Remover o bloco "SUGGESTION FORMAT" (instrução `---SUGGESTIONS---[...]`).
 
-**3. Pequeno ajuste em `create-checkout/index.ts`**
-- Manter o bloqueio 409 (continua sendo a porta de "nova assinatura"), mas a UI agora roteia upgrades pelo `change-subscription` antes de cair aqui.
+**3. `src/components/ChatArea.tsx`**
+- Manter `parseSuggestions` apenas como guarda defensiva (caso o modelo escape e ainda emita o bloco, ele é removido do texto exibido), mas **não renderizar mais os botões de sugestão**.
+- Remover o JSX dos chips de sugestão (`{!isUser && isLast && suggestions.length > 0 && …}`) e o "visitor locked suggestions hint".
 
----
+**4. `src/pages/Learn.tsx`**
+- Manter `parseSuggestions` como guarda defensiva (limpa o texto se o modelo emitir o bloco).
+- Remover a renderização dos botões de sugestões da IA.
+- Manter `StarterQuestionChips` (perguntas curadas iniciais) — esses são os bons.
 
-### Mensagens de UI (português)
+### Resultado esperado
 
-**Upgrade:**
-> "Você está fazendo upgrade para Iluminado. Cobraremos hoje apenas a diferença proporcional dos dias restantes do seu ciclo atual. A partir da próxima renovação, o valor será R$ 39,90/mês. Confirmar?"
-
-**Downgrade:**
-> "Sua assinatura Iluminado já paga continuará ativa até [DD/MM/AAAA]. Não há reembolso ou crédito pelo período não usado. Após essa data, sua conta passará automaticamente para o plano Devoto (R$ 19,90/mês). Confirmar?"
-
----
-
-### Resumo técnico
-- **1 nova edge function** (`change-subscription`)
-- **1 página atualizada** (`Pricing.tsx`) com novo handler + dois diálogos de confirmação
-- Stripe faz todo o trabalho pesado de cálculo proporcional via `proration_behavior`
-- Banco de dados: nenhuma migration necessária — `check-subscription` já sincroniza o `product_id` correto após a troca
+- A IA responde e **para**. Não anexa mais perguntas próprias.
+- Em `/learn`, o usuário ainda vê 5 perguntas sugeridas curadas (do `starterQuestions.ts`) **antes** de fazer sua primeira pergunta — depois disso, conversa livre sem chips automáticos.
+- Conversa fica controlada pelo usuário, sem a sensação de "chat fazendo perguntas sozinho".
 
