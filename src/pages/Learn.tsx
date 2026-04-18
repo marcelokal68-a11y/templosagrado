@@ -471,9 +471,12 @@ export default function Learn() {
             <HinduDarshanasComparison compact />
           )}
 
-          {/* Buddhist schools comparison inside Buddhist study session */}
+          {/* Buddhist glossary + schools comparison inside Buddhist study session */}
           {topic === 'buddhist' && (
-            <BuddhistSchoolsComparison compact />
+            <>
+              <BuddhistGlossary compact />
+              <BuddhistSchoolsComparison compact />
+            </>
           )}
 
           {/* Islam branches comparison inside Islam study session */}
