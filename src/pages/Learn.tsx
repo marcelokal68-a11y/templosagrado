@@ -514,6 +514,16 @@ export default function Learn() {
             <CandombleGlossary compact />
           )}
 
+          {/* Starter question chips — shown until user sends their first message */}
+          {topic && topicKind && !messages.some(m => m.role === 'user' && m.content !== messages[0]?.content) && (
+            <StarterQuestionChips
+              topic={topic}
+              topicLabel={labelFor(topic, topicKind)}
+              disabled={loading}
+              onPick={(q) => sendMessage(q)}
+            />
+          )}
+
           {messages.length === 0 && loading && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
