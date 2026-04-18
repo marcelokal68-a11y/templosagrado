@@ -128,6 +128,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setHasPendingUndo(false);
   }, [previousMessages]);
 
+  // Permanently change preferred faith and wipe chat history (DB + local).
+  // Used by Profile, Learn faith dialog, and ContextPanel switch.
+  const changeFaithWithCleanup = useCallback(async (newReligion: string | null) => {
+    if (!user) return;
+    // 1. Update preferred religion
+    await supabase
+      .from('profiles')
+      .update({ preferred_religion: newReligion } as any)
+      .eq('user_id', user.id);
+    // 2. Wipe persisted chat history (so the AI mentor doesn't carry over prior tradition)
+    await supabase.from('chat_messages').delete().eq('user_id', user.id);
+    // 3. Clear in-memory chat & undo buffer (no undo for faith switch)
+    if (undoTimerRef.current) { clearTimeout(undoTimerRef.current); undoTimerRef.current = null; }
+    setMessages([]);
+    setPreviousMessages([]);
+    setHasPendingUndo(false);
+    setChatInput('');
+    // 4. Sync local context + profile cache
+    setChatContext(prev => ({
+      ...prev,
+      religion: newReligion ?? '',
+      philosophy: newReligion ? '' : prev.philosophy,
+      topic: '',
+    }));
+    setPreferredReligion(newReligion);
+    hasPreferredReligionRef.current = newReligion !== null;
+  }, [user]);
+
   useEffect(() => {
     return () => { if (undoTimerRef.current) clearTimeout(undoTimerRef.current); };
   }, []);
