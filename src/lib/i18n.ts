@@ -4,6 +4,11 @@ const translations: Record<Language, Record<string, string>> = {
   'pt-BR': {
     // Nav
     'nav.chat': 'Chat',
+    'nav.journey': 'Minha Memória',
+    'journey.title': 'Minha Jornada no Templo',
+    'journey.empty': 'Sua jornada começa aqui.',
+    'chat.save_memory': 'Guardar na Memória',
+    'chat.saved_memory': 'Guardado na sua jornada',
     'nav.pricing': 'Preços',
     'nav.prayers': 'Enviar Orações',
     'nav.verse': 'Versículo do Dia',
@@ -670,6 +675,11 @@ const translations: Record<Language, Record<string, string>> = {
   },
   'en': {
     'nav.chat': 'Chat',
+    'nav.journey': 'My Journey',
+    'journey.title': 'My Journey in the Temple',
+    'journey.empty': 'Your journey begins here.',
+    'chat.save_memory': 'Save to Memory',
+    'chat.saved_memory': 'Saved to your journey',
     'nav.pricing': 'Pricing',
     'nav.prayers': 'Send Prayers',
     'nav.verse': 'Verse of the Day',
@@ -1305,6 +1315,11 @@ const translations: Record<Language, Record<string, string>> = {
   },
   'es': {
     'nav.chat': 'Chat',
+    'nav.journey': 'Mi Memoria',
+    'journey.title': 'Mi Camino en el Templo',
+    'journey.empty': 'Tu camino comienza aquí.',
+    'chat.save_memory': 'Guardar en Memoria',
+    'chat.saved_memory': 'Guardado en tu camino',
     'nav.pricing': 'Precios',
     'nav.prayers': 'Enviar Oraciones',
     'nav.verse': 'Versículo del Día',

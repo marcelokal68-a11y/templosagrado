@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, BookOpen, X, ScrollText, Gift, GraduationCap, MessageCircle } from 'lucide-react';
+import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, BookOpen, X, ScrollText, Gift, GraduationCap, MessageCircle, Brain } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,7 @@ export default function Header() {
     { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
     { label: 'Mural', icon: ScrollText, action: () => navigate('/mural') },
+    { label: t('nav.journey', language), icon: Brain, action: () => navigate('/journey') },
     { label: 'Convidar Amigos', icon: Gift, action: () => navigate('/invite-friends') },
     ...(!isSubscriber ? [{ label: 'Plano Pro ⭐', icon: Gem, action: () => navigate('/pricing') }] : []),
   ];
@@ -46,6 +47,7 @@ export default function Header() {
     { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
     { label: 'Mural', icon: ScrollText, action: () => navigate('/mural') },
+    { label: t('nav.journey', language), icon: Brain, action: () => navigate('/journey') },
     { label: 'Ver Planos', icon: Gem, action: () => navigate('/pricing') },
   ];
 
