@@ -295,14 +295,14 @@ export default function Pricing() {
         {isOnboarding && user && (
           <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-center">
             <p className="text-sm text-foreground/90 leading-relaxed">
-              ✨ <strong>Bem-vindo ao Templo Sagrado!</strong> Para acessar essa funcionalidade, escolha um plano abaixo ou continue com seus <strong>7 dias grátis</strong>.
+              ✨ <strong>Bem-vindo ao Templo Sagrado!</strong> Você tem <strong>20 mensagens grátis por mês</strong> no chat. Para acesso completo e mensagens ilimitadas, escolha um plano abaixo.
             </p>
             <Button
               onClick={handleContinueTrial}
               variant="outline"
               className="mt-3 w-full border-primary/40 text-primary hover:bg-primary/10"
             >
-              Continuar com 7 dias grátis
+              Continuar no plano gratuito
             </Button>
           </div>
         )}
