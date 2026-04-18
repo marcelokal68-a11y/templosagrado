@@ -31,7 +31,7 @@ const traditions = [
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, changeFaithWithCleanup } = useApp();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -125,6 +125,7 @@ export default function Profile() {
   const [nameValue, setNameValue] = useState('');
   const [editingReligion, setEditingReligion] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pendingFaithChange, setPendingFaithChange] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (!user) return;
@@ -160,6 +161,13 @@ export default function Profile() {
 
   const saveReligion = async (value: string | null) => {
     if (!user || !profile) return;
+    // If user already has a faith and it's changing → confirm + wipe history
+    const current = profile.preferred_religion;
+    if (current && current !== value) {
+      setPendingFaithChange(value);
+      return;
+    }
+    // First-time pick (no prior faith) — no history to clear, just save
     setSaving(true);
     const { error } = await supabase
       .from('profiles')
@@ -171,6 +179,20 @@ export default function Profile() {
       setEditingReligion(false);
       toast({ title: 'Tradição atualizada!' });
     }
+  };
+
+  const confirmFaithChange = async () => {
+    if (!profile || pendingFaithChange === undefined) return;
+    setSaving(true);
+    await changeFaithWithCleanup(pendingFaithChange);
+    setProfile({ ...profile, preferred_religion: pendingFaithChange });
+    setEditingReligion(false);
+    setPendingFaithChange(undefined);
+    setSaving(false);
+    toast({
+      title: pendingFaithChange ? 'Fé atualizada — histórico limpo' : 'Fé removida — histórico limpo',
+      description: 'Iniciamos uma conversa nova para esta tradição.',
+    });
   };
 
   if (!user || !profile) return null;
@@ -538,6 +560,35 @@ export default function Profile() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Sim, cancelar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm faith change → wipes chat history */}
+      <AlertDialog
+        open={pendingFaithChange !== undefined}
+        onOpenChange={(open) => { if (!open) setPendingFaithChange(undefined); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingFaithChange
+                ? `Trocar para ${t(`religion.${pendingFaithChange}`, language) || pendingFaithChange}?`
+                : 'Remover sua tradição?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Ao mudar de fé, seu histórico de conversas será apagado para que o Mentor Espiritual recomece dentro da nova tradição. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmFaithChange}
+              disabled={saving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, mudar e apagar histórico
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
