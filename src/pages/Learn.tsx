@@ -110,7 +110,6 @@ export default function Learn() {
   const [showFaithPrompt, setShowFaithPrompt] = useState(false);
   const [trendingShuffle, setTrendingShuffle] = useState(0);
   const [faithPromptShown, setFaithPromptShown] = useState(false);
-  const [userHasAsked, setUserHasAsked] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
@@ -136,7 +135,6 @@ export default function Learn() {
     setTopicKind(kind);
     setMessages([]);
     setFaithPromptShown(false);
-    setUserHasAsked(false);
     // Track exploration: if user has a different preferred faith, mark this as "exploring"
     if (kind === 'religion' && preferredReligion && preferredReligion !== key) {
       try { sessionStorage.setItem('exploring_faith', key); } catch {}
@@ -249,7 +247,6 @@ export default function Learn() {
   const handleSubmit = () => {
     const text = input.trim();
     if (!text || loading) return;
-    setUserHasAsked(true);
     sendMessage(text);
   };
 
@@ -471,8 +468,8 @@ export default function Learn() {
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-          {/* Sanskrit glossary inside Hindu/Buddhist study sessions */}
-          {(topic === 'hindu' || topic === 'buddhist') && (
+          {/* Sanskrit glossary inside Hindu study session (Buddhist has its own glossary) */}
+          {topic === 'hindu' && (
             <SanskritGlossary compact />
           )}
 
@@ -517,13 +514,13 @@ export default function Learn() {
             <CandombleGlossary compact />
           )}
 
-          {/* Starter question chips — shown until the user asks their first question */}
-          {topic && topicKind && !userHasAsked && (
+          {/* Starter question chips — visible until user types their first manual question */}
+          {topic && topicKind && messages.filter(m => m.role === 'user').length <= 1 && (
             <StarterQuestionChips
               topic={topic}
               topicLabel={labelFor(topic, topicKind)}
               disabled={loading}
-              onPick={(q) => { setUserHasAsked(true); sendMessage(q); }}
+              onPick={(q) => sendMessage(q)}
             />
           )}
 
@@ -565,7 +562,7 @@ export default function Learn() {
                       {suggestions.map((s, si) => (
                         <button
                           key={si}
-                          onClick={() => { setUserHasAsked(true); sendMessage(s); }}
+                          onClick={() => sendMessage(s)}
                           className="text-left text-sm px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 text-foreground/90 hover:text-primary transition-colors"
                         >
                           {s}

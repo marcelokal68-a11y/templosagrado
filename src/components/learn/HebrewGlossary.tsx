@@ -9,7 +9,7 @@ import { BookOpen, Sparkles } from 'lucide-react';
 
 type Term = {
   hebrew: string;
-  script: string; // Hebraico
+  script: string;
   pt: string;
   en: string;
   es: string;
@@ -21,97 +21,97 @@ const TERMS: Term[] = [
     hebrew: 'Torá',
     script: 'תּוֹרָה',
     emoji: '📜',
-    pt: '"Instrução, Lei". Os 5 livros de Moisés (Pentateuco): Bereshit, Shemot, Vayikrá, Bamidbar, Devarim. No sentido amplo, inclui Torá Escrita + Torá Oral (Talmud). Coração da revelação judaica.',
-    en: '"Instruction, Law". The 5 books of Moses (Pentateuch): Bereshit, Shemot, Vayikra, Bamidbar, Devarim. In the broad sense, includes Written Torah + Oral Torah (Talmud). Heart of Jewish revelation.',
-    es: '"Instrucción, Ley". Los 5 libros de Moisés (Pentateuco): Bereshit, Shemot, Vayikrá, Bamidbar, Devarim. En sentido amplio, incluye Torá Escrita + Torá Oral (Talmud). Corazón de la revelación judía.',
+    pt: 'Os cinco livros de Moisés (Pentateuco) — fundamento da fé judaica. "Ensinamento" ou "instrução". Lida semanalmente em sinagogas, contém 613 mitsvot (mandamentos).',
+    en: 'The Five Books of Moses (Pentateuch) — foundation of Jewish faith. Means "teaching" or "instruction". Read weekly in synagogues, contains 613 mitzvot (commandments).',
+    es: 'Los cinco libros de Moisés (Pentateuco) — fundamento de la fe judía. Significa "enseñanza" o "instrucción". Se lee semanalmente en sinagogas, contiene 613 mitzvot (mandamientos).',
   },
   {
     hebrew: 'Talmud',
     script: 'תַּלְמוּד',
     emoji: '📚',
-    pt: '"Estudo, aprendizado". Compilação monumental da Torá Oral: Mishná (séc. III) + Guemará (séc. V–VI). Existem duas versões: Babilônico (mais autoritativo) e Jerusalmita. Discussões rabínicas sobre lei, ética e história.',
-    en: '"Study, learning". Monumental compilation of the Oral Torah: Mishnah (3rd c.) + Gemara (5th–6th c.). Two versions exist: Babylonian (more authoritative) and Jerusalem. Rabbinic discussions on law, ethics, and history.',
-    es: '"Estudio, aprendizaje". Compilación monumental de la Torá Oral: Mishná (s. III) + Guemará (s. V–VI). Existen dos versiones: Babilónico (más autoritativo) y Jerosolimitano. Discusiones rabínicas sobre ley, ética e historia.',
+    pt: 'A Lei Oral compilada — vasto comentário rabínico sobre a Torá. Composto pela Mishná (200 EC) e Guemará (500 EC). Base da jurisprudência (Halachá) e do pensamento judaico.',
+    en: 'The compiled Oral Law — vast rabbinic commentary on the Torah. Composed of Mishnah (200 CE) and Gemara (500 CE). Foundation of Jewish jurisprudence (Halakha) and thought.',
+    es: 'La Ley Oral compilada — vasto comentario rabínico sobre la Torá. Compuesto por Mishná (200 EC) y Guemará (500 EC). Base de la jurisprudencia (Halajá) y pensamiento judío.',
   },
   {
     hebrew: 'Mitsvá',
     script: 'מִצְוָה',
-    emoji: '✡️',
-    pt: '"Mandamento". A tradição enumera 613 mitsvot na Torá: 248 positivas ("farás") e 365 negativas ("não farás"). Cumprir uma mitsvá santifica o cotidiano e conecta o judeu à Aliança.',
-    en: '"Commandment". Tradition enumerates 613 mitzvot in the Torah: 248 positive ("you shall do") and 365 negative ("you shall not"). Fulfilling a mitzvah sanctifies daily life and connects the Jew to the Covenant.',
-    es: '"Mandamiento". La tradición enumera 613 mitzvot en la Torá: 248 positivas ("harás") y 365 negativas ("no harás"). Cumplir una mitzvá santifica lo cotidiano y conecta al judío con la Alianza.',
+    emoji: '✨',
+    pt: 'Mandamento divino ou boa ação. Há 613 mitsvot na Torá (248 positivas, 365 negativas). Cumprir uma mitsvá é santificar o cotidiano e aproximar-se de D-us.',
+    en: 'Divine commandment or good deed. There are 613 mitzvot in the Torah (248 positive, 365 negative). Fulfilling a mitzvah sanctifies daily life and brings one closer to G-d.',
+    es: 'Mandamiento divino o buena acción. Hay 613 mitzvot en la Torá (248 positivas, 365 negativas). Cumplir una mitzvá santifica lo cotidiano y acerca a D-os.',
   },
   {
     hebrew: 'Tikun Olam',
     script: 'תִּקּוּן עוֹלָם',
     emoji: '🌍',
-    pt: '"Reparo do mundo". Originalmente conceito cabalístico (Isaac Luria, séc. XVI): reunir as faíscas divinas dispersas. Hoje, tornou-se central no judaísmo Reformista e Conservador como justiça social ativa.',
-    en: '"Repair of the world". Originally a Kabbalistic concept (Isaac Luria, 16th c.): gathering the scattered divine sparks. Today, it has become central in Reform and Conservative Judaism as active social justice.',
-    es: '"Reparación del mundo". Originalmente concepto cabalístico (Isaac Luria, s. XVI): reunir las chispas divinas dispersas. Hoy se ha vuelto central en el judaísmo Reformista y Conservador como justicia social activa.',
+    pt: '"Reparo do mundo". Conceito central: cada ato ético contribui para consertar o mundo quebrado. Inspira justiça social, ecologia e responsabilidade humana coletiva.',
+    en: '"Repair of the world". Central concept: each ethical act contributes to mending the broken world. Inspires social justice, ecology, and collective human responsibility.',
+    es: '"Reparación del mundo". Concepto central: cada acto ético contribuye a reparar el mundo roto. Inspira justicia social, ecología y responsabilidad humana colectiva.',
   },
   {
     hebrew: 'Shabat',
     script: 'שַׁבָּת',
     emoji: '🕯️',
-    pt: '"Repouso". Sétimo dia (sexta ao pôr do sol até sábado à noite). Imitação do descanso divino na Criação. Acendem-se velas, recita-se Kidush, e abstém-se de 39 categorias de trabalho. "Mais que Israel guardou o Shabat, o Shabat guardou Israel" (Ahad Ha\'am).',
-    en: '"Rest". Seventh day (Friday at sunset to Saturday night). Imitation of divine rest in Creation. Candles are lit, Kiddush recited, and 39 categories of work avoided. "More than Israel has kept the Sabbath, the Sabbath has kept Israel" (Ahad Ha\'am).',
-    es: '"Descanso". Séptimo día (viernes al atardecer hasta sábado por la noche). Imitación del descanso divino en la Creación. Se encienden velas, se recita Kidush, y se evitan 39 categorías de trabajo. "Más que Israel guardó el Shabat, el Shabat guardó a Israel" (Ahad Ha\'am).',
+    pt: 'O dia sagrado de descanso, do pôr do sol de sexta ao sábado à noite. Imitação do descanso divino na Criação. Acende-se velas, recita Kidush, evita-se trabalho criativo (39 melachot).',
+    en: 'The sacred day of rest, from Friday sunset to Saturday night. Imitation of divine rest in Creation. Candles are lit, Kiddush recited, creative work (39 melakhot) avoided.',
+    es: 'El día sagrado de descanso, del atardecer del viernes a la noche del sábado. Imitación del descanso divino en la Creación. Se encienden velas, se recita Kidush, se evita trabajo creativo (39 melajot).',
   },
   {
     hebrew: 'Kashrut',
     script: 'כַּשְׁרוּת',
-    emoji: '🍽️',
-    pt: '"Adequação". Leis dietéticas: o que é kasher (apto). Não misturar carne e leite, animais permitidos (sem porco, frutos do mar etc.), abate ritual (shechita). Disciplina espiritual cotidiana.',
-    en: '"Fitness". Dietary laws: what is kosher (fit). No mixing meat and milk, only permitted animals (no pork, shellfish, etc.), ritual slaughter (shechita). Daily spiritual discipline.',
-    es: '"Aptitud". Leyes dietéticas: lo que es kasher (apto). No mezclar carne y leche, animales permitidos (sin cerdo, mariscos, etc.), sacrificio ritual (shejitá). Disciplina espiritual cotidiana.',
+    emoji: '🍇',
+    pt: 'Leis dietéticas judaicas. Define o que é "kasher" (apto): separação de carne e leite, animais permitidos (sem porco/marisco), abate ritual (shechitá). Disciplina que santifica o ato de comer.',
+    en: 'Jewish dietary laws. Defines what is "kosher" (fit): separation of meat and dairy, permitted animals (no pork/shellfish), ritual slaughter (shechita). A discipline that sanctifies eating.',
+    es: 'Leyes dietéticas judías. Define lo "kasher" (apto): separación de carne y leche, animales permitidos (sin cerdo/mariscos), sacrificio ritual (shejitá). Disciplina que santifica el comer.',
   },
   {
     hebrew: 'Tzedaká',
     script: 'צְדָקָה',
     emoji: '🤲',
-    pt: '"Justiça" (não "caridade"). Doar não é favor, é obrigação. Maimônides classificou 8 níveis: o mais alto é dar emprego/parceria para que o pobre se sustente. 10% da renda é referência tradicional.',
-    en: '"Justice" (not "charity"). Giving is not a favor, it is an obligation. Maimonides classified 8 levels: the highest is giving employment/partnership so the poor sustain themselves. 10% of income is the traditional reference.',
-    es: '"Justicia" (no "caridad"). Dar no es un favor, es una obligación. Maimónides clasificó 8 niveles: el más alto es dar empleo/sociedad para que el pobre se sostenga. El 10% de los ingresos es la referencia tradicional.',
+    pt: 'Justiça social através da caridade. Não é "esmola" — é dever (da raiz "tzedek", justiça). Maimônides definiu 8 níveis, sendo o mais alto ajudar alguém a se sustentar sozinho.',
+    en: 'Social justice through charity. Not "alms" — it is duty (from root "tzedek", justice). Maimonides defined 8 levels, the highest being helping someone become self-sufficient.',
+    es: 'Justicia social a través de la caridad. No es "limosna" — es deber (de la raíz "tzedek", justicia). Maimónides definió 8 niveles, siendo el más alto ayudar a alguien a sostenerse solo.',
   },
   {
     hebrew: 'Bar/Bat Mitsvá',
-    script: 'בַּר/בַּת מִצְוָה',
-    emoji: '🎓',
-    pt: '"Filho/Filha do Mandamento". Maioridade religiosa: 13 anos (meninos) e 12 (meninas, em ramos não-ortodoxos celebrado aos 13). A partir daí, o jovem é responsável por suas próprias mitsvot. Marca-se com leitura pública da Torá.',
-    en: '"Son/Daughter of the Commandment". Religious adulthood: 13 (boys) and 12 (girls, in non-Orthodox branches celebrated at 13). From then on, the youth is responsible for their own mitzvot. Marked by public Torah reading.',
-    es: '"Hijo/Hija del Mandamiento". Mayoría de edad religiosa: 13 (niños) y 12 (niñas, en ramas no ortodoxas celebrado a los 13). A partir de ahí, el joven es responsable de sus propias mitzvot. Se marca con lectura pública de la Torá.',
+    script: 'בַּר מִצְוָה',
+    emoji: '📖',
+    pt: 'Maioridade religiosa: meninos aos 13, meninas aos 12 (ortodoxo) ou 13 (reformista). Tornam-se responsáveis pelas mitsvot. Marca-se com leitura pública da Torá e celebração comunitária.',
+    en: 'Religious coming of age: boys at 13, girls at 12 (Orthodox) or 13 (Reform). They become responsible for the mitzvot. Marked by public Torah reading and community celebration.',
+    es: 'Mayoría religiosa: varones a los 13, niñas a los 12 (ortodoxo) o 13 (reformista). Se vuelven responsables de las mitzvot. Se marca con lectura pública de la Torá y celebración comunitaria.',
   },
   {
     hebrew: 'Tefilá',
     script: 'תְּפִלָּה',
     emoji: '🙏',
-    pt: '"Oração" (raiz: julgar-se a si mesmo). Três serviços diários: Shacharit (manhã), Mincha (tarde), Maariv (noite). Coração: a Amidá ("Em pé"), 18 bênçãos. Idealmente em minyan (10 adultos).',
-    en: '"Prayer" (root: to judge oneself). Three daily services: Shacharit (morning), Mincha (afternoon), Maariv (evening). Heart: the Amidah ("Standing"), 18 blessings. Ideally in minyan (10 adults).',
-    es: '"Oración" (raíz: juzgarse a sí mismo). Tres servicios diarios: Shajarit (mañana), Minjá (tarde), Maariv (noche). Corazón: la Amidá ("De pie"), 18 bendiciones. Idealmente en minyán (10 adultos).',
+    pt: 'Oração — "auto-julgamento" (raiz hebraica). Três rezas diárias: Shacharit (manhã), Mincha (tarde), Maariv (noite). A Amidá ("oração em pé") é o coração de cada serviço.',
+    en: 'Prayer — "self-judgment" (Hebrew root). Three daily prayers: Shacharit (morning), Mincha (afternoon), Maariv (evening). The Amidah ("standing prayer") is the heart of each service.',
+    es: 'Oración — "autojuicio" (raíz hebrea). Tres rezos diarios: Shajarit (mañana), Minjá (tarde), Maariv (noche). La Amidá ("oración de pie") es el corazón de cada servicio.',
   },
   {
     hebrew: 'Kavaná',
     script: 'כַּוָּנָה',
-    emoji: '💭',
-    pt: '"Intenção, direção da mente". Qualidade essencial da oração e da prática: não basta cumprir o ritual, é preciso estar presente de coração. Para os místicos hassídicos, sem kavaná, a mitsvá é corpo sem alma.',
-    en: '"Intention, direction of mind". Essential quality of prayer and practice: it is not enough to perform the ritual, one must be wholeheartedly present. For Hasidic mystics, without kavanah, the mitzvah is a body without soul.',
-    es: '"Intención, dirección de la mente". Cualidad esencial de la oración y la práctica: no basta con cumplir el ritual, hay que estar presente de corazón. Para los místicos jasídicos, sin kavaná, la mitzvá es cuerpo sin alma.',
+    emoji: '💗',
+    pt: 'Intenção e consciência espiritual. Sem kavaná, a oração é mecânica. É a presença plena do coração no momento sagrado — o oposto da rotina automática.',
+    en: 'Intention and spiritual awareness. Without kavanah, prayer is mechanical. It is full presence of the heart in the sacred moment — the opposite of automatic routine.',
+    es: 'Intención y conciencia espiritual. Sin kavaná, la oración es mecánica. Es la presencia plena del corazón en el momento sagrado — lo opuesto a la rutina automática.',
   },
   {
     hebrew: 'Shechiná',
     script: 'שְׁכִינָה',
-    emoji: '🕊️',
-    pt: '"Presença Divina (que habita)". Aspecto imanente de Deus que habita o mundo, o Templo, a comunidade orante. Na Cabala, é o aspecto feminino do divino, em exílio com Israel até a redenção messiânica.',
-    en: '"Divine Presence (that dwells)". Immanent aspect of God that dwells in the world, the Temple, the praying community. In Kabbalah, it is the feminine aspect of the divine, in exile with Israel until messianic redemption.',
-    es: '"Presencia Divina (que habita)". Aspecto inmanente de Dios que habita el mundo, el Templo, la comunidad orante. En la Cábala, es el aspecto femenino de lo divino, en exilio con Israel hasta la redención mesiánica.',
+    emoji: '🔥',
+    pt: 'A Presença divina que habita entre o povo. Aspecto feminino e imanente de D-us. Diz-se que a Shechiná repousa onde há estudo, oração ou justiça praticada com amor.',
+    en: 'The divine Presence that dwells among the people. Feminine and immanent aspect of G-d. The Shekhinah is said to rest where study, prayer, or justice is practiced with love.',
+    es: 'La Presencia divina que habita entre el pueblo. Aspecto femenino e inmanente de D-os. Se dice que la Shejiná reposa donde hay estudio, oración o justicia practicada con amor.',
   },
   {
     hebrew: 'Olam Habá',
     script: 'עוֹלָם הַבָּא',
-    emoji: '✨',
-    pt: '"Mundo Vindouro". Visão judaica do "depois": pode significar a era messiânica na terra, a vida da alma após a morte, ou a ressurreição. O Judaísmo enfatiza muito mais o Olam HaZé (este mundo) que o "céu".',
-    en: '"World to Come". Jewish vision of the "afterwards": can mean the messianic era on earth, the soul\'s life after death, or resurrection. Judaism emphasizes much more Olam HaZeh (this world) than "heaven".',
-    es: '"Mundo Venidero". Visión judía del "después": puede significar la era mesiánica en la tierra, la vida del alma tras la muerte, o la resurrección. El Judaísmo enfatiza mucho más el Olam HaZé (este mundo) que el "cielo".',
+    emoji: '🌅',
+    pt: '"O Mundo Vindouro". A vida após esta — pode significar a era messiânica, a ressurreição dos mortos, ou o paraíso espiritual das almas. Foco menor que no cristianismo: o judaísmo enfatiza este mundo.',
+    en: '"The World to Come". The afterlife — may mean the messianic age, resurrection of the dead, or the spiritual paradise of souls. Less emphasis than in Christianity: Judaism focuses on this world.',
+    es: '"El Mundo Venidero". La vida después de esta — puede significar la era mesiánica, resurrección de los muertos, o el paraíso espiritual de las almas. Menos énfasis que en el cristianismo: el judaísmo se centra en este mundo.',
   },
 ];
 
@@ -120,11 +120,7 @@ export default function HebrewGlossary({ compact = false }: { compact?: boolean 
   const lang = (language as 'pt' | 'en' | 'es') || 'pt';
 
   const headerLabel =
-    lang === 'en'
-      ? 'Key Jewish terms'
-      : lang === 'es'
-        ? 'Términos judíos clave'
-        : 'Termos judaicos essenciais';
+    lang === 'en' ? 'Key Hebrew terms' : lang === 'es' ? 'Términos clave en hebreo' : 'Termos hebraicos essenciais';
 
   const subLabel =
     lang === 'en'
@@ -169,7 +165,10 @@ export default function HebrewGlossary({ compact = false }: { compact?: boolean 
                       <span className="block text-xs font-semibold text-foreground group-hover:text-primary leading-tight truncate">
                         {term.hebrew}
                       </span>
-                      <span className="block text-[10px] text-muted-foreground font-serif leading-tight truncate" dir="rtl">
+                      <span
+                        className="block text-[10px] text-muted-foreground font-serif leading-tight truncate"
+                        dir="rtl"
+                      >
                         {term.script}
                       </span>
                     </span>
