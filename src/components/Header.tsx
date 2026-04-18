@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, BookOpen, X, ScrollText, Gift, GraduationCap } from 'lucide-react';
+import { LogIn, LogOut, Gem, ArrowLeft, Menu, User, BookOpen, X, ScrollText, Gift, GraduationCap, MessageCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,7 @@ export default function Header() {
 
   // Drawer items for logged-in users
   const loggedInItems = [
+    { label: t('nav.chat', language), icon: MessageCircle, action: () => navigate('/') },
     { label: 'Meu Perfil', icon: User, action: () => navigate('/profile') },
     { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
@@ -40,6 +41,7 @@ export default function Header() {
 
   // Drawer items for visitors (not logged in) — show all features; gating happens at route
   const visitorItems = [
+    { label: t('nav.chat', language), icon: MessageCircle, action: () => navigate('/') },
     { label: 'Entrar', icon: LogIn, action: () => navigate('/auth') },
     { label: t('nav.learn', language), icon: GraduationCap, action: () => navigate('/learn') },
     { label: t('nav.verse', language), icon: BookOpen, action: () => navigate('/verse') },
