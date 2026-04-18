@@ -176,6 +176,24 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
           </div>
         )}
 
+        {/* Follow-up suggestion chips — only on last assistant message */}
+        {!isUser && suggestions.length > 0 && isLast && (
+          <div className="mt-2.5 w-full flex flex-col gap-1.5 animate-fade-in">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 ml-1">
+              Continue a conversa
+            </p>
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onSuggestionClick?.(s)}
+                className="text-left text-xs px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all text-foreground/85 leading-snug"
+              >
+                <span className="text-primary mr-1">✨</span>{s}
+              </button>
+            ))}
+          </div>
+        )}
+
       </div>
     </div>
   );
@@ -1078,6 +1096,24 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         Assinar Devoto →
                       </Link>
                     )}
+                  </div>
+                )}
+                {/* Persistent action bar — Consolidate conversation always visible */}
+                {messages.length > 0 && !sessionClosed && (
+                  <div className="flex items-center gap-2 mx-3 mb-1.5 px-2 py-1 rounded-lg border border-border/50 bg-muted/30">
+                    <Button
+                      onClick={generateSummary}
+                      disabled={isGeneratingSummary}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs gap-1.5 text-foreground/80 hover:text-primary hover:bg-primary/5 px-2"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      {isGeneratingSummary ? 'Consolidando...' : 'Consolidar conversa'}
+                    </Button>
+                    <span className="text-[10px] text-muted-foreground ml-auto hidden sm:inline">
+                      Resumo • PDF • Copiar
+                    </span>
                   </div>
                 )}
                 {/* Input row */}
