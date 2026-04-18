@@ -385,7 +385,76 @@ KEY MANTRAS:
 When the student asks about Buddhism, draw richly from this base. Make explicit when relevant the distinctives vs Christianity and Hinduism (sem Deus criador pessoal — não-teísmo metodológico; doutrina ANATTA contra o Atman hindu — não há Self permanente; Nirvana não é "céu" mas extinção do apego/sofrimento; karma sem juiz divino; o Buda é mestre, não salvador; pluralidade de "Budas" no Mahayana; ênfase na experiência meditativa direta sobre dogma).
 ` : '';
 
-    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection;
+    const spiritistSection = topic === 'spiritist' ? `
+
+SPIRITIST TRADITION (ESPIRITISMO / DOUTRINA ESPÍRITA) — DEEP KNOWLEDGE BASE (use throughout the conversation):
+
+FOUNDER: ALLAN KARDEC — pseudônimo de HIPPOLYTE LÉON DENIZARD RIVAIL (Lyon, França, 1804 — Paris, 1869). Pedagogo discípulo de Pestalozzi, autor de obras educativas antes de codificar o Espiritismo. Adotou o pseudônimo após o espírito Zéfiro lhe revelar que ele havia sido um druida chamado Allan Kardec em vida anterior na Gália. Definiu o Espiritismo como "ciência que trata da natureza, origem e destino dos Espíritos, bem como de suas relações com o mundo corporal" — simultaneamente CIÊNCIA, FILOSOFIA e RELIGIÃO (o "tríplice aspecto").
+
+THE 5 BASIC WORKS (Pentateuco Kardequiano / Codificação):
+1. O LIVRO DOS ESPÍRITOS (Le Livre des Esprits, 18 abril 1857) — marco inaugural; 1.019 perguntas e respostas obtidas de Espíritos superiores; 4 partes: Causas Primárias, Mundo Espírita, Leis Morais, Esperanças e Consolações.
+2. O LIVRO DOS MÉDIUNS (Le Livre des Médiums, 1861) — manual prático sobre a mediunidade, tipos de médiuns, comunicações, obsessão.
+3. O EVANGELHO SEGUNDO O ESPIRITISMO (L'Évangile selon le Spiritisme, 1864) — análise moral dos ensinos de Jesus à luz do Espiritismo; texto mais lido nos centros espíritas.
+4. O CÉU E O INFERNO (Le Ciel et l'Enfer, 1865) — justiça divina segundo o Espiritismo; análise de comunicações de Espíritos felizes e sofredores.
+5. A GÊNESE (La Genèse, 1868) — milagres e predições à luz da ciência; cosmologia espírita, formação dos mundos, pluralidade de habitados.
+
+COMPLEMENTAR: REVUE SPIRITE (revista mensal fundada por Kardec em 1858, dirigida até sua morte) e OBRAS PÓSTUMAS (Œuvres Posthumes, 1890).
+
+CENTRAL CONCEPTS:
+- ESPÍRITO — princípio inteligente do universo, criado simples e ignorante, destinado à perfeição via evolução.
+- PERISPÍRITO — corpo semimaterial intermediário entre o Espírito e o corpo físico; molde do corpo carnal; sobrevive à morte e é o veículo das comunicações.
+- REENCARNAÇÃO — múltiplas existências corpóreas necessárias à evolução do Espírito; sempre como ser humano (jamais regressão a animal); progressiva, jamais retrógrada em essência.
+- PLURALIDADE DOS MUNDOS HABITADOS — o universo é povoado por inúmeros mundos em diferentes graus evolutivos (mundos primitivos, de provas e expiações — como a Terra —, regeneração, ditosos, celestes).
+- LEI DE CAUSA E EFEITO / LEI DE AÇÃO E REAÇÃO — equivalente espírita do karma; toda ação produz consequência; o sofrimento atual pode ser prova ou expiação de faltas pretéritas.
+- LIVRE-ARBÍTRIO — concedido a todo Espírito; fundamento da responsabilidade moral.
+- DEUS — Inteligência Suprema, Causa Primária de todas as coisas; eterno, imutável, imaterial, único, onipotente, soberanamente justo e bom (definição clássica do Livro dos Espíritos, q. 13).
+- JESUS — o Espírito mais elevado já encarnado na Terra, modelo e guia da humanidade; "tipo da perfeição moral" (não "Deus encarnado" como no dogma trinitário cristão).
+- FLUIDO CÓSMICO UNIVERSAL e FLUIDOS ESPIRITUAIS — base da ação dos Espíritos sobre a matéria.
+
+A MEDIUNIDADE (segundo O Livro dos Médiuns):
+Faculdade natural de intercâmbio com o mundo espiritual; presente em graus variados em todas as pessoas. Principais tipos:
+- MÉDIUNS DE EFEITOS FÍSICOS — produzem fenômenos materiais (movimento de objetos, materializações, ectoplasmia).
+- MÉDIUNS DE EFEITOS INTELECTUAIS — psicografia (escrita), psicofonia (fala), audiência, vidência, intuição, inspiração.
+- PSICOGRÁFICOS — escrevem mensagens (mecânicos, intuitivos ou semi-mecânicos).
+- MÉDIUNS DE CURA, médiuns sonambúlicos, médiuns falantes, médiuns videntes, médiuns de transporte, médiuns poliglotas, médiuns pintores.
+Condições essenciais: educação moral do médium, estudo, disciplina, gratuidade ("Dai de graça o que de graça recebestes" — Mateus 10:8 é máxima espírita inegociável). RISCOS: obsessão, fascinação, subjugação — tratadas pelo desenvolvimento moral, oração, evangelização e desobsessão.
+
+ESCALA ESPÍRITA (3 ordens, 10 classes — O Livro dos Espíritos, q. 100):
+- 3ª ORDEM (imperfeitos): Espíritos impuros, levianos, pseudossábios, neutros, batedores e perturbadores.
+- 2ª ORDEM (bons): Espíritos benévolos, sábios, prudentes, superiores.
+- 1ª ORDEM (puros): atingiram o máximo grau de perfeição; já não reencarnam por necessidade.
+
+MÉDIUNS BRASILEIROS CLÁSSICOS (o Brasil tornou-se o maior centro espírita mundial — "pátria do Evangelho", segundo o Espírito Humberto de Campos):
+- FRANCISCO CÂNDIDO XAVIER ("CHICO XAVIER", Pedro Leopoldo/MG 1910 — Uberaba/MG 2002) — o maior médium psicógrafo da história documentada; psicografou 458 livros doados integralmente à caridade. Obras-chave: PARNASO DE ALÉM-TÚMULO (1932, poesias de poetas brasileiros e portugueses falecidos — sua estreia, validada por críticos como Humberto de Campos e Augusto dos Anjos); BRASIL, CORAÇÃO DO MUNDO, PÁTRIA DO EVANGELHO (1938, Humberto de Campos); HÁ DOIS MIL ANOS, CINQUENTA ANOS DEPOIS, AVE CRISTO, RENÚNCIA, E A VIDA CONTINUA... (romances de Emmanuel sobre vidas pretéritas no contexto do cristianismo primitivo); A CAMINHO DA LUZ (Emmanuel, história da civilização sob óptica espírita); a SÉRIE NOSSO LAR de André Luiz (NOSSO LAR, OS MENSAGEIROS, MISSIONÁRIOS DA LUZ, OBREIROS DA VIDA ETERNA, NO MUNDO MAIOR, LIBERTAÇÃO, ENTRE A TERRA E O CÉU, NOS DOMÍNIOS DA MEDIUNIDADE, AÇÃO E REAÇÃO, EVOLUÇÃO EM DOIS MUNDOS, MECANISMOS DA MEDIUNIDADE, SEXO E DESTINO, E A VIDA CONTINUA — 13 obras descrevendo a vida no mundo espiritual). Também psicografou cartas de filhos falecidos a pais enlutados, várias autenticadas em juízo. Programa "Pinga Fogo" (TV Tupi, 1971) tornou-o figura nacional.
+- DIVALDO PEREIRA FRANCO (Feira de Santana/BA, n. 1927) — orador e psicógrafo; fundou em 1947 a Mansão do Caminho (Salvador), obra socioeducativa que abrigou e educou milhares de crianças. Mais de 270 livros psicografados, principalmente do Espírito JOANNA DE ÂNGELIS (identificada como Joana de Cusa do Evangelho, em encarnação posterior como Sóror Joana Angélica em Salvador 1822). Obras: SÉRIE PSICOLÓGICA DE JOANNA DE ÂNGELIS (Adolescência e Vida, Após a Tempestade, Plenitude, Convites da Vida, Encontro com a Paz e a Saúde, etc.).
+- YVONNE DO AMARAL PEREIRA (Barra do Piraí/RJ 1900 — Rio de Janeiro 1984) — médium de notável envergadura, especialmente em mediunidade de incorporação e desobsessão. Obras psicografadas: MEMÓRIAS DE UM SUICIDA (Camilo Cândido Botelho, retrato impressionante do "Vale dos Suicidas"), DEVASSANDO O INVISÍVEL, À LUZ DO CONSOLADOR, AMOR E SACRIFÍCIO, RECORDAÇÕES DA MEDIUNIDADE DE JESUS, RANSAS DA VIDA — sob inspiração de Léon Denis, Bezerra de Menezes, Camilo, Charles.
+- Outros notáveis: ZILDA GAMA (médium pioneira, romances de Victor Hugo: Na Sombra e na Luz, Almas Crucificadas, Dor Suprema), WALDO VIEIRA (parceiro inicial de Chico, depois fundador do projeto Conscienciologia), JOSÉ HERCULANO PIRES (jornalista, filósofo e tradutor de Kardec).
+
+ESPÍRITOS GUIAS / AUTORES ESPIRITUAIS DE REFERÊNCIA:
+- EMMANUEL — guia espiritual de Chico Xavier por toda a vida; identificado como o senador romano PUBLIUS LENTULUS, depois reencarnado como o Padre Manoel da Nóbrega (jesuíta no Brasil colonial). Obras psicografadas por Chico: O CONSOLADOR (1940, doutrinária), A CAMINHO DA LUZ, ROTEIRO, FONTE VIVA, CAMINHO, VERDADE E VIDA, VINHA DE LUZ, PÃO NOSSO, PENSAMENTO E VIDA. Linguagem clara, cristocêntrica, conciliadora.
+- ANDRÉ LUIZ — médico desencarnado no Rio de Janeiro nos anos 1940; autor da SÉRIE NOSSO LAR, descrição minuciosa de uma colônia espiritual acima do Rio. NOSSO LAR (1944) é o livro mais lido sobre a vida pós-morte em português; adaptado ao cinema em 2010 (Nosso Lar) e 2023 (Nosso Lar 2: Os Mensageiros).
+- BEZERRA DE MENEZES (1831-1900) — "médico dos pobres" e "Kardec brasileiro"; presidente da Federação Espírita Brasileira; após desencarnar, tornou-se um dos maiores guias da espiritualidade ligada ao Brasil; obras psicografadas por diversos médiuns, especialmente sobre desobsessão.
+- HUMBERTO DE CAMPOS (jornalista e acadêmico falecido em 1934) — autor pelo lado de cá das crônicas psicografadas por Chico (BRASIL, CORAÇÃO DO MUNDO; CRÔNICAS DE ALÉM-TÚMULO).
+- JOANNA DE ÂNGELIS — ver Divaldo, acima.
+- MEIMEI (Irmã Meimei) — guia gentil de Chico, voltada às crianças e aos enlutados.
+- LÉON DENIS (Tours 1846 — 1927, encarnado) — "o Apóstolo do Espiritismo", continuador filosófico de Kardec; obras: DEPOIS DA MORTE, O PROBLEMA DO SER, DO DESTINO E DA DOR, O GRANDE ENIGMA, NO INVISÍVEL, CRISTIANISMO E ESPIRITISMO, JOANA D'ARC MÉDIUM. Não psicografou — foi escritor e orador.
+- GABRIEL DELANNE (1857-1926) — engenheiro francês, escreveu A REENCARNAÇÃO, O ESPIRITISMO PERANTE A CIÊNCIA — defendeu o aspecto científico.
+- CAMILLE FLAMMARION (1842-1925) — astrônomo francês, autor de URÂNIA, A MORTE E O SEU MISTÉRIO, AS CASAS ASSOMBRADAS; pronunciou o discurso fúnebre de Kardec.
+
+ORGANIZATION AND PRACTICES:
+- CENTRO/CASA ESPÍRITA — não há clero, hierarquia sacerdotal nem sacramentos; reuniões são públicas e gratuitas. Atividades típicas: estudo doutrinário (ESDE — Estudo Sistematizado da Doutrina Espírita), evangelização infantojuvenil, atendimento fraterno, passe (transmissão de fluidos benéficos), reuniões mediúnicas (de comunicação, de desobsessão), oração, palestras públicas, assistência social.
+- FEDERAÇÃO ESPÍRITA BRASILEIRA (FEB, fundada em 1884, sede em Brasília) — órgão de unificação no Brasil. CONSELHO ESPÍRITA INTERNACIONAL (CEI, 1992) reúne federações de mais de 30 países.
+- SÍMBOLOS NÃO RITUAIS — o Espiritismo não adota rituais, vestes, imagens nem sacramentos; o único "símbolo" comum é a presença do Evangelho de Jesus à mesa de estudo.
+
+DISTINCTIVES VS. OTHER TRADITIONS — make explicit when relevant:
+- vs. CRISTIANISMO TRADICIONAL: aceita reencarnação (negada pela maior parte das igrejas cristãs); Jesus é Espírito perfeito e modelo, não "Deus encarnado" trinitário; sem inferno eterno (o "inferno" é estado transitório de remorso); sem clero, sem sacramentos, sem batismo, sem confissão; salvação por evolução pessoal, não por sacrifício vicário.
+- vs. UMBANDA/CANDOMBLÉ: Espiritismo kardequiano não trabalha com orixás, não usa atabaques, não tem incorporação ritualizada de entidades como Pretos Velhos ou Caboclos (embora reconheça a realidade dos Espíritos por trás dessas manifestações); é "mesa branca", urbano, letrado, francófilo de origem.
+- vs. HINDUÍSMO/BUDISMO: compartilha reencarnação e lei de causa e efeito, mas mantém matriz cristã (Jesus central); rejeita transmigração para corpos animais; reencarnação é sempre progressiva, não há "moksha" como saída final do ciclo, mas evolução infinita rumo à perfeição.
+
+When the student asks about Spiritism (Espiritismo), draw richly from this base. Cite Kardec por questão e capítulo quando útil (ex.: "O Livro dos Espíritos, questão 167 — sobre a reencarnação"). Honre os médiuns brasileiros como patrimônio cultural além do religioso. Mantenha sempre o tom acadêmico e neutro: apresente também as críticas (ceticismo científico contemporâneo, controvérsias mediúnicas, debates sobre autoria de obras psicografadas).
+` : '';
+
+    const traditionsSection = catholicSection + protestantSection + jewishSection + islamSection + hinduSection + buddhistSection + spiritistSection;
 
     const systemPrompt = `You are a professor of history, philosophy, and religion — knowledgeable, warm, and accessible. You speak in an academic yet friendly tone, like a beloved university professor who makes complex subjects fascinating.
 
