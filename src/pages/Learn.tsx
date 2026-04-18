@@ -27,6 +27,7 @@ import HinduDarshanasComparison from '@/components/learn/HinduDarshanasCompariso
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import UmbandaDayGuide from '@/components/learn/UmbandaDayGuide';
+import CandombleDayGuide from '@/components/learn/CandombleDayGuide';
 import StoicPrimer from '@/components/learn/StoicPrimer';
 
 const RELIGIONS = [
@@ -357,6 +358,11 @@ export default function Learn() {
             <UmbandaDayGuide />
           </section>
 
+          {/* Candomblé day-rulership guide — visual primer */}
+          <section className="mb-10">
+            <CandombleDayGuide />
+          </section>
+
           {/* Stoicism primer — visual primer */}
           <section className="mb-10">
             <StoicPrimer />
@@ -500,6 +506,11 @@ export default function Learn() {
           {/* Umbanda day-rulership guide inside Umbanda study session */}
           {topic === 'umbanda' && (
             <UmbandaDayGuide compact />
+          )}
+
+          {/* Candomblé day-rulership guide inside Candomblé study session */}
+          {topic === 'candomble' && (
+            <CandombleDayGuide compact />
           )}
 
           {/* Stoicism primer inside Stoicism study session */}
