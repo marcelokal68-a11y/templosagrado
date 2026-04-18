@@ -136,6 +136,7 @@ export default function Learn() {
     setTopicKind(kind);
     setMessages([]);
     setFaithPromptShown(false);
+    setUserHasAsked(false);
     // Track exploration: if user has a different preferred faith, mark this as "exploring"
     if (kind === 'religion' && preferredReligion && preferredReligion !== key) {
       try { sessionStorage.setItem('exploring_faith', key); } catch {}
