@@ -95,7 +95,7 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
 }
 
 export default function Learn() {
-  const { language, user, setChatContext, preferredReligion } = useApp();
+  const { language, user, setChatContext, preferredReligion, changeFaithWithCleanup } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const [topic, setTopic] = useState<string | null>(null);
   const [topicKind, setTopicKind] = useState<'religion' | 'philosophy' | null>(null);
