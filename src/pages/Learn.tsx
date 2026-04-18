@@ -436,6 +436,11 @@ export default function Learn() {
             <SanskritGlossary compact />
           )}
 
+          {/* Hindu Darshanas comparison inside Hindu study session */}
+          {topic === 'hindu' && (
+            <HinduDarshanasComparison compact />
+          )}
+
           {/* Buddhist schools comparison inside Buddhist study session */}
           {topic === 'buddhist' && (
             <BuddhistSchoolsComparison compact />
