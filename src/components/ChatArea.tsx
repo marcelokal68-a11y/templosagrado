@@ -1018,6 +1018,35 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               </div>
             ) : (
               <>
+                {/* Free quota exhausted banner — soft */}
+                {user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0 && (
+                  <div className="mx-3 mb-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Lock className="h-4 w-4 text-amber-600 shrink-0" />
+                      <p className="text-sm font-medium text-foreground">
+                        Você usou suas 20 perguntas do mês
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Assine o plano Devoto para continuar conversando com o Mentor.
+                    </p>
+                    <Link
+                      to="/pricing"
+                      className="inline-block text-xs font-medium text-primary hover:underline"
+                    >
+                      Ver planos →
+                    </Link>
+                  </div>
+                )}
+                {/* Free quota low warning */}
+                {user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0 && questionsRemaining <= 3 && (
+                  <div className="mx-3 mb-1 px-1">
+                    <p className="text-xs text-muted-foreground">
+                      Restam <span className="font-semibold text-amber-600">{questionsRemaining}</span> {questionsRemaining === 1 ? 'pergunta' : 'perguntas'} este mês.{' '}
+                      <Link to="/pricing" className="text-primary hover:underline">Assinar Devoto</Link>
+                    </p>
+                  </div>
+                )}
                 {/* Input row */}
                 <div className="flex items-end gap-2 px-3 pb-2 md:pb-3 pt-1"
                      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}>
@@ -1025,14 +1054,19 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Sua mensagem..."
-                    className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30"
+                    placeholder={
+                      user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0
+                        ? 'Limite mensal atingido — assine para continuar'
+                        : 'Sua mensagem...'
+                    }
+                    disabled={user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0}
+                    className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30 disabled:opacity-50"
                     rows={1}
                   />
                   {user ? (
                     <Button
                       onClick={toggleRecording}
-                      disabled={isTranscribing}
+                      disabled={isTranscribing || (!inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0)}
                       size="icon"
                       variant={isRecording ? "destructive" : "ghost"}
                       className={cn("shrink-0 h-10 w-10 rounded-full", isRecording && "animate-pulse")}
@@ -1052,7 +1086,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                   )}
                   <Button
                     onClick={sendMessage}
-                    disabled={isLoading || !chatInput.trim()}
+                    disabled={isLoading || !chatInput.trim() || (!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0)}
                     size="icon"
                     className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
                   >
