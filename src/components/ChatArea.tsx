@@ -641,15 +641,44 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     }
   };
 
+  const cleanSummary = (text: string) =>
+    text
+      .replace(/\[SUGGESTIONS\][\s\S]*?\[\/SUGGESTIONS\]/g, '')
+      .replace(/[*#`_~]/g, '')
+      .trim();
+
   const downloadSummaryPdf = async () => {
     const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(`${t('chat.summary_title', language)} — Templo Sagrado`, 20, 20);
-    doc.setFontSize(11);
-    const lines = doc.splitTextToSize(summaryText, 170);
-    doc.text(lines, 20, 35);
-    doc.save('resumo-templo-sagrado.pdf');
+    const { renderJourneyPdf } = await import('@/pages/Journey');
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    renderJourneyPdf(doc, {
+      title: `${t('chat.summary_title', language)} — ${chatContext.religion ? t(`religion.${chatContext.religion}`, language) : 'Jornada'}`,
+      content: cleanSummary(summaryText),
+      created_at: new Date().toISOString(),
+    });
+    const dateStr = new Date().toISOString().split('T')[0];
+    doc.save(`templo-sagrado-${dateStr}.pdf`);
+  };
+
+  const saveToMemory = async () => {
+    if (!user) {
+      toast({ title: 'Faça login para guardar na sua memória', variant: 'destructive' });
+      return;
+    }
+    const cleaned = cleanSummary(summaryText);
+    const today = new Date().toLocaleDateString('pt-BR');
+    const { error } = await supabase.from('activity_history').insert({
+      user_id: user.id,
+      type: 'summary',
+      title: `Resumo — ${today}`,
+      content: cleaned,
+      metadata: { religion: chatContext.religion, philosophy: chatContext.philosophy },
+    });
+    if (error) {
+      toast({ title: 'Não foi possível guardar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: t('chat.saved_memory', language) });
   };
 
   const sendMessage = () => doSendMessage(chatInput);
@@ -1243,14 +1272,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
             <DialogDescription>{t('chat.summary_desc', language)}</DialogDescription>
           </DialogHeader>
           <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-            {summaryText}
+            {cleanSummary(summaryText)}
           </div>
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button
               variant="outline"
               className="flex-1 gap-1.5"
               onClick={() => {
-                navigator.clipboard.writeText(summaryText);
+                navigator.clipboard.writeText(cleanSummary(summaryText));
                 toast({ title: t('chat.summary_copied', language) });
               }}
             >
@@ -1258,11 +1287,19 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               {t('chat.summary_copy', language)}
             </Button>
             <Button
+              variant="outline"
               className="flex-1 gap-1.5"
               onClick={downloadSummaryPdf}
             >
               <Download className="h-4 w-4" />
               {t('chat.summary_pdf', language)}
+            </Button>
+            <Button
+              className="flex-1 gap-1.5"
+              onClick={saveToMemory}
+            >
+              <Brain className="h-4 w-4" />
+              {t('chat.save_memory', language)}
             </Button>
           </div>
         </DialogContent>

@@ -4,6 +4,11 @@ const translations: Record<Language, Record<string, string>> = {
   'pt-BR': {
     // Nav
     'nav.chat': 'Chat',
+    'nav.journey': 'Minha Memória',
+    'journey.title': 'Minha Jornada no Templo',
+    'journey.empty': 'Sua jornada começa aqui.',
+    'chat.save_memory': 'Guardar na Memória',
+    'chat.saved_memory': 'Guardado na sua jornada',
     'nav.pricing': 'Preços',
     'nav.prayers': 'Enviar Orações',
     'nav.verse': 'Versículo do Dia',

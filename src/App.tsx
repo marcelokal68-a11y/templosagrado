@@ -22,6 +22,7 @@ import Learn from "./pages/Learn";
 import Landing from "./pages/Landing";
 import Install from "./pages/Install";
 import Privacy from "./pages/Privacy";
+import Journey from "./pages/Journey";
 import NotFound from "./pages/NotFound";
 import QuickTutorial from "./components/QuickTutorial";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -54,6 +55,7 @@ const App = () => (
                     <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
                     <Route path="/admin/knowledge" element={<ProtectedRoute><AdminKnowledge /></ProtectedRoute>} />
                     <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
+                    <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
                     <Route path="/install" element={<Install />} />
                     <Route path="/privacy" element={<Privacy />} />
