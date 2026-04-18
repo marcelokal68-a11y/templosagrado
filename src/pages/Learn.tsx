@@ -110,6 +110,7 @@ export default function Learn() {
   const [showFaithPrompt, setShowFaithPrompt] = useState(false);
   const [trendingShuffle, setTrendingShuffle] = useState(0);
   const [faithPromptShown, setFaithPromptShown] = useState(false);
+  const [userHasAsked, setUserHasAsked] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
