@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import {
   Tooltip,
@@ -5,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen, Sparkles, X } from 'lucide-react';
 
 type Term = {
   sanskrit: string;
