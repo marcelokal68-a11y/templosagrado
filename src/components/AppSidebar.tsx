@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, BookOpen, ScrollText, Shield, GraduationCap } from 'lucide-react';
+import { MessageCircle, BookOpen, ScrollText, Shield, GraduationCap, Brain } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
