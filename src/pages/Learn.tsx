@@ -247,10 +247,22 @@ export default function Learn() {
 
   const handleConfirmFaith = async () => {
     if (!user || !topic) return;
-    await supabase.from('profiles').update({ preferred_religion: topic } as any).eq('user_id', user.id);
-    setChatContext(prev => ({ ...prev, religion: topic, philosophy: '' }));
+    // Only religions can be saved as preferred faith
+    if (topicKind !== 'religion') return;
+    // If user already had a different faith → wipe history; otherwise just set it
+    if (preferredReligion && preferredReligion !== topic) {
+      await changeFaithWithCleanup(topic);
+      toast.success(
+        language === 'en' ? 'Faith updated — chat history cleared'
+          : language === 'es' ? 'Fe actualizada — historial borrado'
+            : 'Fé atualizada — histórico apagado'
+      );
+    } else {
+      await supabase.from('profiles').update({ preferred_religion: topic } as any).eq('user_id', user.id);
+      setChatContext(prev => ({ ...prev, religion: topic, philosophy: '' }));
+      toast.success(language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada');
+    }
     try { sessionStorage.removeItem('exploring_faith'); } catch {}
-    toast.success(language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada');
     setShowFaithPrompt(false);
   };
 
