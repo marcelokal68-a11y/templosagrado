@@ -26,9 +26,7 @@ import ChristianBranchesComparison from '@/components/learn/ChristianBranchesCom
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
-import UmbandaDayGuide from '@/components/learn/UmbandaDayGuide';
-import CandombleDayGuide from '@/components/learn/CandombleDayGuide';
-import StoicPrimer from '@/components/learn/StoicPrimer';
+import UmbandaGlossary from '@/components/learn/UmbandaGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -353,19 +351,9 @@ export default function Learn() {
             <ChristianBranchesComparison />
           </section>
 
-          {/* Umbanda day-rulership guide — visual primer */}
+          {/* Umbanda glossary — visual primer */}
           <section className="mb-10">
-            <UmbandaDayGuide />
-          </section>
-
-          {/* Candomblé day-rulership guide — visual primer */}
-          <section className="mb-10">
-            <CandombleDayGuide />
-          </section>
-
-          {/* Stoicism primer — visual primer */}
-          <section className="mb-10">
-            <StoicPrimer />
+            <UmbandaGlossary />
           </section>
 
           <section>
@@ -503,19 +491,9 @@ export default function Learn() {
             <SpiritistGlossary compact />
           )}
 
-          {/* Umbanda day-rulership guide inside Umbanda study session */}
+          {/* Umbanda glossary inside Umbanda study session */}
           {topic === 'umbanda' && (
-            <UmbandaDayGuide compact />
-          )}
-
-          {/* Candomblé day-rulership guide inside Candomblé study session */}
-          {topic === 'candomble' && (
-            <CandombleDayGuide compact />
-          )}
-
-          {/* Stoicism primer inside Stoicism study session */}
-          {topic === 'stoicism' && (
-            <StoicPrimer compact />
+            <UmbandaGlossary compact />
           )}
 
           {messages.length === 0 && loading && (
