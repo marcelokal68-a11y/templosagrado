@@ -486,9 +486,12 @@ export default function Learn() {
             <IslamBranchesComparison compact />
           )}
 
-          {/* Jewish branches comparison inside Jewish study session */}
+          {/* Hebrew glossary + Jewish branches comparison inside Jewish study session */}
           {topic === 'jewish' && (
-            <JewishBranchesComparison compact />
+            <>
+              <HebrewGlossary compact />
+              <JewishBranchesComparison compact />
+            </>
           )}
 
           {/* Christian branches comparison inside Christian study sessions */}
@@ -504,6 +507,16 @@ export default function Learn() {
           {/* Candomblé glossary inside Candomblé study session */}
           {topic === 'candomble' && (
             <CandombleGlossary compact />
+          )}
+
+          {/* Starter question chips — visible until user types their first manual question */}
+          {topic && topicKind && messages.filter(m => m.role === 'user').length <= 1 && (
+            <StarterQuestionChips
+              topic={topic}
+              topicLabel={labelFor(topic, topicKind)}
+              disabled={loading}
+              onPick={(q) => sendMessage(q)}
+            />
           )}
 
           {messages.length === 0 && loading && (
