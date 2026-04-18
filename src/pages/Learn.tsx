@@ -30,6 +30,7 @@ import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
 import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
 import HebrewGlossary from '@/components/learn/HebrewGlossary';
+import StarterQuestionChips from '@/components/learn/StarterQuestionChips';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -109,6 +110,7 @@ export default function Learn() {
   const [showFaithPrompt, setShowFaithPrompt] = useState(false);
   const [trendingShuffle, setTrendingShuffle] = useState(0);
   const [faithPromptShown, setFaithPromptShown] = useState(false);
+  const [userHasAsked, setUserHasAsked] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Handle ?topic=key&kind=religion|philosophy from ContextPanel explore
@@ -134,6 +136,7 @@ export default function Learn() {
     setTopicKind(kind);
     setMessages([]);
     setFaithPromptShown(false);
+    setUserHasAsked(false);
     // Track exploration: if user has a different preferred faith, mark this as "exploring"
     if (kind === 'religion' && preferredReligion && preferredReligion !== key) {
       try { sessionStorage.setItem('exploring_faith', key); } catch {}
@@ -246,6 +249,7 @@ export default function Learn() {
   const handleSubmit = () => {
     const text = input.trim();
     if (!text || loading) return;
+    setUserHasAsked(true);
     sendMessage(text);
   };
 
@@ -513,6 +517,16 @@ export default function Learn() {
             <CandombleGlossary compact />
           )}
 
+          {/* Starter question chips — shown until the user asks their first question */}
+          {topic && topicKind && !userHasAsked && (
+            <StarterQuestionChips
+              topic={topic}
+              topicLabel={labelFor(topic, topicKind)}
+              disabled={loading}
+              onPick={(q) => { setUserHasAsked(true); sendMessage(q); }}
+            />
+          )}
+
           {messages.length === 0 && loading && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -551,7 +565,7 @@ export default function Learn() {
                       {suggestions.map((s, si) => (
                         <button
                           key={si}
-                          onClick={() => sendMessage(s)}
+                          onClick={() => { setUserHasAsked(true); sendMessage(s); }}
                           className="text-left text-sm px-3 py-2 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 text-foreground/90 hover:text-primary transition-colors"
                         >
                           {s}
