@@ -14,6 +14,7 @@ import Pricing from "./pages/Pricing";
 import Verse from "./pages/Verse";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminKnowledge from "./pages/AdminKnowledge";
 import InviteRedeem from "./pages/InviteRedeem";
 import Invite from "./pages/Invite";
 import Mural from "./pages/Mural";
@@ -51,6 +52,7 @@ const App = () => (
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
+                    <Route path="/admin/knowledge" element={<ProtectedRoute><AdminKnowledge /></ProtectedRoute>} />
                     <Route path="/invite-friends" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
                     <Route path="/invite/:code" element={<InviteRedeem />} />
                     <Route path="/install" element={<Install />} />
