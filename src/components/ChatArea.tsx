@@ -1038,13 +1038,23 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     </Link>
                   </div>
                 )}
-                {/* Free quota low warning */}
-                {user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0 && questionsRemaining <= 3 && (
-                  <div className="mx-3 mb-1 px-1">
+                {/* Free quota indicator — always visible for free users */}
+                {user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0 && (
+                  <div className="mx-3 mb-1 px-1 flex items-center justify-between gap-2">
                     <p className="text-xs text-muted-foreground">
-                      Restam <span className="font-semibold text-amber-600">{questionsRemaining}</span> {questionsRemaining === 1 ? 'pergunta' : 'perguntas'} este mês.{' '}
-                      <Link to="/pricing" className="text-primary hover:underline">Assinar Devoto</Link>
+                      <span className={cn(
+                        "font-semibold",
+                        questionsRemaining <= 3 ? "text-amber-600" : "text-foreground/70"
+                      )}>
+                        {questionsRemaining}/20
+                      </span>{' '}
+                      {questionsRemaining === 1 ? 'mensagem restante este mês' : 'mensagens restantes este mês'}
                     </p>
+                    {questionsRemaining <= 5 && (
+                      <Link to="/pricing" className="text-xs font-medium text-primary hover:underline whitespace-nowrap">
+                        Assinar Devoto →
+                      </Link>
+                    )}
                   </div>
                 )}
                 {/* Input row */}
