@@ -26,7 +26,7 @@ import ChristianBranchesComparison from '@/components/learn/ChristianBranchesCom
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
 import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
-import UmbandaGlossary from '@/components/learn/UmbandaGlossary';
+import CandombleGlossary from '@/components/learn/CandombleGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -96,7 +96,7 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
 }
 
 export default function Learn() {
-  const { language, user, setChatContext, preferredReligion, changeFaithWithCleanup } = useApp();
+  const { language, user, setChatContext, preferredReligion } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const [topic, setTopic] = useState<string | null>(null);
   const [topicKind, setTopicKind] = useState<'religion' | 'philosophy' | null>(null);
@@ -248,22 +248,10 @@ export default function Learn() {
 
   const handleConfirmFaith = async () => {
     if (!user || !topic) return;
-    // Only religions can be saved as preferred faith
-    if (topicKind !== 'religion') return;
-    // If user already had a different faith → wipe history; otherwise just set it
-    if (preferredReligion && preferredReligion !== topic) {
-      await changeFaithWithCleanup(topic);
-      toast.success(
-        language === 'en' ? 'Faith updated — chat history cleared'
-          : language === 'es' ? 'Fe actualizada — historial borrado'
-            : 'Fé atualizada — histórico apagado'
-      );
-    } else {
-      await supabase.from('profiles').update({ preferred_religion: topic } as any).eq('user_id', user.id);
-      setChatContext(prev => ({ ...prev, religion: topic, philosophy: '' }));
-      toast.success(language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada');
-    }
+    await supabase.from('profiles').update({ preferred_religion: topic } as any).eq('user_id', user.id);
+    setChatContext(prev => ({ ...prev, religion: topic, philosophy: '' }));
     try { sessionStorage.removeItem('exploring_faith'); } catch {}
+    toast.success(language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada');
     setShowFaithPrompt(false);
   };
 
@@ -351,9 +339,9 @@ export default function Learn() {
             <ChristianBranchesComparison />
           </section>
 
-          {/* Umbanda glossary — visual primer */}
+          {/* Candomblé glossary — visual primer */}
           <section className="mb-10">
-            <UmbandaGlossary />
+            <CandombleGlossary />
           </section>
 
           <section>
@@ -491,9 +479,9 @@ export default function Learn() {
             <SpiritistGlossary compact />
           )}
 
-          {/* Umbanda glossary inside Umbanda study session */}
-          {topic === 'umbanda' && (
-            <UmbandaGlossary compact />
+          {/* Candomblé glossary inside Candomblé study session */}
+          {topic === 'candomble' && (
+            <CandombleGlossary compact />
           )}
 
           {messages.length === 0 && loading && (
@@ -596,17 +584,11 @@ export default function Learn() {
               {t('learn.ask_faith', language).replace('{religion}', topic ? labelFor(topic, 'religion') : '')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {preferredReligion && preferredReligion !== topic
-                ? (language === 'en'
-                    ? 'This will set this tradition as your default AND permanently erase your current chat history so the Mentor starts fresh.'
-                    : language === 'es'
-                      ? 'Esto establecerá esta tradición como tu predeterminada Y borrará permanentemente tu historial de chat para que el Mentor comience de nuevo.'
-                      : 'Isso definirá esta tradição como sua padrão E apagará permanentemente seu histórico de conversas para que o Mentor recomece.')
-                : (language === 'en'
-                    ? 'This will set this tradition as your default in chat and other features.'
-                    : language === 'es'
-                      ? 'Esto establecerá esta tradición como tu predeterminada en el chat y otras funciones.'
-                      : 'Isso definirá esta tradição como sua padrão no chat e outras funções.')}
+              {language === 'en'
+                ? 'This will set this tradition as your default in chat and other features.'
+                : language === 'es'
+                  ? 'Esto establecerá esta tradición como tu predeterminada en el chat y otras funciones.'
+                  : 'Isso definirá esta tradição como sua padrão no chat e outras funções.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -203,7 +203,7 @@ function ChipGroup({ label, items, prefix, selected, onSelect, specificItems }: 
 }
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
-  const { language, chatContext, setChatContext, clearChatWithUndo, preferredReligion, user, refreshProfile, changeFaithWithCleanup } = useApp();
+  const { language, chatContext, setChatContext, clearChatWithUndo, preferredReligion, user, refreshProfile } = useApp();
   const navigate = useNavigate();
   const [exploreIntent, setExploreIntent] = useState<typeof FAITH_OPTIONS[0] | null>(null);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
@@ -262,22 +262,21 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     setPendingOption(null);
   };
 
-  // From the 3-option dialog: actually change the preferred faith (wipes history)
+  // From the 3-option dialog: actually change the preferred faith
   const handleChangeFaith = async () => {
     if (!exploreIntent || !user) return;
     const option = exploreIntent;
-    const newReligion = option.mode === 'religion' ? option.key : null;
-    await changeFaithWithCleanup(newReligion);
-    if (option.mode === 'philosophy') {
-      // Switching to a philosophy: also set the philosophy slot
-      setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
+    if (option.mode === 'religion') {
+      await supabase.from('profiles').update({ preferred_religion: option.key } as any).eq('user_id', user.id);
+    } else {
+      // switching to philosophy clears preferred religion
+      await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
     }
     await refreshProfile();
+    applyOption(option);
     setExploreIntent(null);
     toast.success(
-      language === 'en' ? 'Faith updated — chat history cleared'
-        : language === 'es' ? 'Fe actualizada — historial borrado'
-          : 'Fé atualizada — histórico apagado'
+      language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada'
     );
   };
 
@@ -572,15 +571,15 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
             </AlertDialogTitle>
             <AlertDialogDescription>
               {language === 'en'
-                ? 'Changing your faith will permanently erase your chat history so the Mentor starts fresh in the new tradition. Or just explore it in the Learn section without changing your profile.'
+                ? 'You can change your faith, or just explore this tradition in the Learn section without changing your profile.'
                 : language === 'es'
-                  ? 'Cambiar tu fe borrará permanentemente tu historial de chat para que el Mentor comience de nuevo en la nueva tradición. O solo explórala en la sección Aprende sin cambiar tu perfil.'
-                  : 'Mudar de fé apagará permanentemente seu histórico de conversas para que o Mentor recomece dentro da nova tradição. Ou apenas explore na aba Aprenda sem alterar seu perfil.'}
+                  ? 'Puedes cambiar tu fe, o solo explorar esta tradición en la sección Aprende sin cambiar tu perfil.'
+                  : 'Você pode mudar sua fé, ou apenas explorar esta tradição na aba Aprenda sem alterar seu perfil.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-2 mt-2">
-            <Button onClick={handleChangeFaith} className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {language === 'en' ? 'Yes, change & erase history' : language === 'es' ? 'Sí, cambiar y borrar historial' : 'Sim, mudar e apagar histórico'}
+            <Button onClick={handleChangeFaith} className="w-full">
+              {language === 'en' ? 'Yes, change my faith' : language === 'es' ? 'Sí, cambiar mi fe' : 'Sim, mudar minha fé'}
             </Button>
             <Button onClick={handleExploreOnly} variant="outline" className="w-full">
               {language === 'en' ? 'Just explore (Learn)' : language === 'es' ? 'Solo explorar (Aprende)' : 'Só explorar (Aprenda)'}
