@@ -54,7 +54,7 @@ const FREE_LIMITATIONS = [
 ];
 
 const PRO_FEATURES = [
-  '60 mensagens por dia',
+  'Mensagens ilimitadas',
   'Versículo do Dia exclusivo com áudio',
   'Publicar no Mural Sagrado',
   'Áudio em todas as respostas',
