@@ -29,6 +29,7 @@ import JewishBranchesComparison from '@/components/learn/JewishBranchesCompariso
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
 import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
+import HebrewGlossary from '@/components/learn/HebrewGlossary';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -341,6 +342,11 @@ export default function Learn() {
             <IslamBranchesComparison />
           </section>
 
+          {/* Hebrew glossary — visual primer */}
+          <section className="mb-10">
+            <HebrewGlossary />
+          </section>
+
           {/* Jewish branches comparison — visual primer */}
           <section className="mb-10">
             <JewishBranchesComparison />
@@ -484,9 +490,12 @@ export default function Learn() {
             <IslamBranchesComparison compact />
           )}
 
-          {/* Jewish branches comparison inside Jewish study session */}
+          {/* Hebrew glossary + Jewish branches comparison inside Jewish study session */}
           {topic === 'jewish' && (
-            <JewishBranchesComparison compact />
+            <>
+              <HebrewGlossary compact />
+              <JewishBranchesComparison compact />
+            </>
           )}
 
           {/* Christian branches comparison inside Christian study sessions */}
