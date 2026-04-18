@@ -161,6 +161,13 @@ export default function Profile() {
 
   const saveReligion = async (value: string | null) => {
     if (!user || !profile) return;
+    // If user already has a faith and it's changing → confirm + wipe history
+    const current = profile.preferred_religion;
+    if (current && current !== value) {
+      setPendingFaithChange(value);
+      return;
+    }
+    // First-time pick (no prior faith) — no history to clear, just save
     setSaving(true);
     const { error } = await supabase
       .from('profiles')
@@ -172,6 +179,20 @@ export default function Profile() {
       setEditingReligion(false);
       toast({ title: 'Tradição atualizada!' });
     }
+  };
+
+  const confirmFaithChange = async () => {
+    if (!profile || pendingFaithChange === undefined) return;
+    setSaving(true);
+    await changeFaithWithCleanup(pendingFaithChange);
+    setProfile({ ...profile, preferred_religion: pendingFaithChange });
+    setEditingReligion(false);
+    setPendingFaithChange(undefined);
+    setSaving(false);
+    toast({
+      title: pendingFaithChange ? 'Fé atualizada — histórico limpo' : 'Fé removida — histórico limpo',
+      description: 'Iniciamos uma conversa nova para esta tradição.',
+    });
   };
 
   if (!user || !profile) return null;
