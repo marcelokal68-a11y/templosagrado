@@ -499,7 +499,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         }
       }
 
-      // Question counting removed — chat is unlimited
+      // Free tier: decrement local counter (server already incremented)
+      if (accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0) {
+        setQuestionsRemaining(questionsRemaining - 1);
+      }
 
       if (user && assistantSoFar.length > 0 && !confessionalMode) {
         const ctx = {
