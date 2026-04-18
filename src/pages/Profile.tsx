@@ -564,6 +564,35 @@ export default function Profile() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Confirm faith change → wipes chat history */}
+      <AlertDialog
+        open={pendingFaithChange !== undefined}
+        onOpenChange={(open) => { if (!open) setPendingFaithChange(undefined); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingFaithChange
+                ? `Trocar para ${t(`religion.${pendingFaithChange}`, language) || pendingFaithChange}?`
+                : 'Remover sua tradição?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Ao mudar de fé, seu histórico de conversas será apagado para que o Mentor Espiritual recomece dentro da nova tradição. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmFaithChange}
+              disabled={saving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, mudar e apagar histórico
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
