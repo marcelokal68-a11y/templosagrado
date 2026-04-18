@@ -497,9 +497,12 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         }
       }
 
-      // Free tier: decrement local counter (server already incremented)
-      if (accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0) {
-        setQuestionsRemaining(questionsRemaining - 1);
+      // Free/trial tier: decrement local counter (server already incremented) and warn near the limit
+      const isMetered = accessStatus !== 'subscriber' && accessStatus !== 'admin';
+      let newRemaining = questionsRemaining;
+      if (isMetered && questionsRemaining > 0) {
+        newRemaining = questionsRemaining - 1;
+        setQuestionsRemaining(newRemaining);
       }
 
       if (user && assistantSoFar.length > 0 && !confessionalMode) {
@@ -530,9 +533,28 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         preloadAudio(assistantSoFar, assistantIndex);
       }
 
-      // Close session after 6th user message
-      if (isClosing) {
-        setSessionClosed(true);
+      // Quota-based warnings/closing — never close arbitrarily by message count
+      if (isMetered) {
+        if (newRemaining === 0) {
+          // Quota exhausted — gently close the session and offer upgrade
+          setSessionClosed(true);
+          setShowUpgradeModal(true);
+        } else if (newRemaining > 0 && newRemaining <= LOW_QUOTA_WARNING_THRESHOLD) {
+          const titleByLang: Record<string, string> = {
+            'pt-BR': `Restam ${newRemaining} pergunta${newRemaining === 1 ? '' : 's'}`,
+            en: `${newRemaining} question${newRemaining === 1 ? '' : 's'} left`,
+            es: `Quedan ${newRemaining} pregunta${newRemaining === 1 ? '' : 's'}`,
+          };
+          const descByLang: Record<string, string> = {
+            'pt-BR': 'Faça upgrade para continuar conversando sem limites.',
+            en: 'Upgrade your plan to keep chatting without limits.',
+            es: 'Mejora tu plan para seguir conversando sin límites.',
+          };
+          toast({
+            title: titleByLang[language] || titleByLang['pt-BR'],
+            description: descByLang[language] || descByLang['pt-BR'],
+          });
+        }
       }
     } catch (e) {
       console.error(e);
