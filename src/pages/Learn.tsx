@@ -461,8 +461,8 @@ export default function Learn() {
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-          {/* Sanskrit glossary inside Hindu/Buddhist study sessions */}
-          {(topic === 'hindu' || topic === 'buddhist') && (
+          {/* Sanskrit glossary inside Hindu study session (Buddhist has its own glossary) */}
+          {topic === 'hindu' && (
             <SanskritGlossary compact />
           )}
 
