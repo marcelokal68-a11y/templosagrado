@@ -22,6 +22,7 @@ const navItems = [
   { to: '/learn', labelKey: 'nav.learn', icon: GraduationCap },
   { to: '/verse', labelKey: 'nav.verse', icon: BookOpen },
   { to: '/mural', labelKey: 'nav.mural', icon: ScrollText },
+  { to: '/journey', labelKey: 'nav.journey', icon: Brain },
 ];
 
 export default function AppSidebar() {
