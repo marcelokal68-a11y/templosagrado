@@ -1059,7 +1059,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                         ? 'Limite mensal atingido — assine para continuar'
                         : 'Sua mensagem...'
                     }
-                    disabled={user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0}
+                    disabled={!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0}
                     className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30 disabled:opacity-50"
                     rows={1}
                   />
