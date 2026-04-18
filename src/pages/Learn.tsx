@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
 import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsComparison';
 import HinduDarshanasComparison from '@/components/learn/HinduDarshanasComparison';
+import IslamBranchesComparison from '@/components/learn/IslamBranchesComparison';
 import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 
 const RELIGIONS = [
