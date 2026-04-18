@@ -30,6 +30,7 @@ import SpiritistGlossary from '@/components/learn/SpiritistGlossary';
 import CandombleGlossary from '@/components/learn/CandombleGlossary';
 import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
 import HebrewGlossary from '@/components/learn/HebrewGlossary';
+import StarterQuestionChips from '@/components/learn/StarterQuestionChips';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
