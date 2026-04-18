@@ -321,6 +321,11 @@ export default function Learn() {
             <SanskritGlossary />
           </section>
 
+          {/* Buddhist glossary — visual primer */}
+          <section className="mb-10">
+            <BuddhistGlossary />
+          </section>
+
           {/* Buddhist schools comparison — visual primer */}
           <section className="mb-10">
             <BuddhistSchoolsComparison />
