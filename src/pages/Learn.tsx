@@ -589,7 +589,7 @@ export default function Learn() {
               {language === 'en' ? 'Change topic' : language === 'es' ? 'Cambiar tema' : 'Trocar tópico'}
             </span>
           </Button>
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {topicKind === 'religion' ? (
               <ReligionIcon religion={topic} />
             ) : (
@@ -599,6 +599,22 @@ export default function Learn() {
               {labelFor(topic, topicKind!)}
             </h1>
           </div>
+          <Button
+            variant={podcastMode ? 'default' : 'ghost'}
+            size="sm"
+            onClick={togglePodcastMode}
+            className={cn(
+              'gap-1.5 h-9 px-2.5 shrink-0',
+              podcastMode ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'text-muted-foreground hover:text-foreground'
+            )}
+            aria-label={podcastMode
+              ? (language === 'en' ? 'Disable podcast mode' : language === 'es' ? 'Desactivar modo podcast' : 'Desativar modo podcast')
+              : (language === 'en' ? 'Enable podcast mode' : language === 'es' ? 'Activar modo podcast' : 'Ativar modo podcast')}
+            title={language === 'en' ? 'Podcast mode: auto-narrate replies' : language === 'es' ? 'Modo podcast: narrar respuestas' : 'Modo Podcast: narrar respostas automaticamente'}
+          >
+            {podcastMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+            <span className="hidden sm:inline text-xs font-medium">Podcast</span>
+          </Button>
         </div>
       </div>
 
