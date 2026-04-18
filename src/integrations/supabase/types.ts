@@ -460,6 +460,7 @@ export type Database = {
           preferred_language: string
           preferred_religion: string | null
           questions_limit: number
+          questions_period_start: string
           questions_used: number
           subscription_id: string | null
           trial_ends_at: string | null
@@ -480,6 +481,7 @@ export type Database = {
           preferred_language?: string
           preferred_religion?: string | null
           questions_limit?: number
+          questions_period_start?: string
           questions_used?: number
           subscription_id?: string | null
           trial_ends_at?: string | null
@@ -500,6 +502,7 @@ export type Database = {
           preferred_language?: string
           preferred_religion?: string | null
           questions_limit?: number
+          questions_period_start?: string
           questions_used?: number
           subscription_id?: string | null
           trial_ends_at?: string | null
@@ -593,6 +596,10 @@ export type Database = {
         Returns: boolean
       }
       is_subscriber: { Args: { _user_id: string }; Returns: boolean }
+      reset_questions_if_period_elapsed: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       sync_free_access_profiles: { Args: never; Returns: undefined }
     }
     Enums: {
