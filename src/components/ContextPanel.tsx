@@ -262,21 +262,22 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     setPendingOption(null);
   };
 
-  // From the 3-option dialog: actually change the preferred faith
+  // From the 3-option dialog: actually change the preferred faith (wipes history)
   const handleChangeFaith = async () => {
     if (!exploreIntent || !user) return;
     const option = exploreIntent;
-    if (option.mode === 'religion') {
-      await supabase.from('profiles').update({ preferred_religion: option.key } as any).eq('user_id', user.id);
-    } else {
-      // switching to philosophy clears preferred religion
-      await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
+    const newReligion = option.mode === 'religion' ? option.key : null;
+    await changeFaithWithCleanup(newReligion);
+    if (option.mode === 'philosophy') {
+      // Switching to a philosophy: also set the philosophy slot
+      setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
     }
     await refreshProfile();
-    applyOption(option);
     setExploreIntent(null);
     toast.success(
-      language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada'
+      language === 'en' ? 'Faith updated — chat history cleared'
+        : language === 'es' ? 'Fe actualizada — historial borrado'
+          : 'Fé atualizada — histórico apagado'
     );
   };
 
