@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ALTER COLUMN questions_limit SET DEFAULT 20;
