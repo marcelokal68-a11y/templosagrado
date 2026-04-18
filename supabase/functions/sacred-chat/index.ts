@@ -285,8 +285,41 @@ serve(async (req) => {
     let memorySection = '';
     let chatTone: 'concise' | 'reflective' = (clientChatTone === 'concise' || clientChatTone === 'reflective') ? clientChatTone : 'reflective';
     if (userId) {
-      // Check if user has memory enabled and fetch their preferred chat tone
+      // Check if user has memory enabled and fetch their preferred chat tone + quota
       const sb = await getSupabaseClient();
+
+      // === QUOTA GATE (free tier: 20 questions / 30 days rolling) ===
+      // Skip for the summary endpoint — only count real user turns.
+      if (!generateSummary) {
+        // Reset rolling period if 30 days elapsed
+        await sb.rpc('reset_questions_if_period_elapsed', { _user_id: userId });
+
+        const { data: quotaProfile } = await sb
+          .from('profiles')
+          .select('is_subscriber, is_pro, questions_limit, questions_used')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (quotaProfile && !quotaProfile.is_subscriber && !quotaProfile.is_pro) {
+          const used = quotaProfile.questions_used ?? 0;
+          const limit = quotaProfile.questions_limit ?? 20;
+          if (used >= limit) {
+            return new Response(JSON.stringify({
+              error: 'quota_exceeded',
+              message: 'Você atingiu o limite de perguntas mensais. Assine o plano Devoto para continuar.',
+            }), {
+              status: 402,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+          // Increment counter (best-effort, fire before responding)
+          await sb
+            .from('profiles')
+            .update({ questions_used: used + 1 })
+            .eq('user_id', userId);
+        }
+      }
+
       const { data: profileData } = await sb
         .from('profiles')
         .select('memory_enabled, chat_tone')
