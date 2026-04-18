@@ -53,7 +53,16 @@ const FREE_LIMITATIONS = [
   'Sem memória personalizada',
 ];
 
-const PRO_FEATURES = [
+const DEVOTO_FEATURES = [
+  '60 mensagens por mês',
+  'Versículo do Dia exclusivo com áudio',
+  'Publicar no Mural Sagrado',
+  'Áudio em todas as respostas',
+  'Memória personalizada (o mentor lembra de você)',
+  'Histórico completo',
+];
+
+const TOP_FEATURES = [
   'Mensagens ilimitadas',
   'Versículo do Dia exclusivo com áudio',
   'Publicar no Mural Sagrado',
