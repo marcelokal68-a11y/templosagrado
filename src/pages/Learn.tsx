@@ -16,10 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle } from 'lucide-react';
+import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle, Mic, MicOff } from 'lucide-react';
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { playTTS, TTSCapReachedError, type PlayTTSResult } from '@/lib/ttsPlayer';
+import ListenButton from '@/components/learn/ListenButton';
+import PodcastControls from '@/components/learn/PodcastControls';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
 import BuddhistSchoolsComparison from '@/components/learn/BuddhistSchoolsComparison';
 import ChristianBranchesComparison from '@/components/learn/ChristianBranchesComparison';
