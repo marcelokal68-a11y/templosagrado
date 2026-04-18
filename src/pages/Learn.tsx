@@ -720,6 +720,19 @@ export default function Learn() {
                       : 'bg-card border border-border text-foreground rounded-bl-sm'
                   )}>
                     {displayText || (loading && isLast ? '…' : '')}
+                    {!isUser && msg.sources && msg.sources.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-border/60">
+                        <p className="text-[11px] font-medium text-muted-foreground mb-1">📚 Fontes</p>
+                        <ul className="space-y-0.5">
+                          {msg.sources.map((s, idx) => (
+                            <li key={s.id} className="text-[11px] text-muted-foreground">
+                              [{idx + 1}] <span className="text-foreground/80">{s.title}</span>
+                              {s.author && <span className="text-muted-foreground"> — {s.author}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   {!isUser && displayText && !(loading && isLast) && (
                     <ListenButton
