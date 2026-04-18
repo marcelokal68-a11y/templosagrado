@@ -585,11 +585,17 @@ export default function Learn() {
               {t('learn.ask_faith', language).replace('{religion}', topic ? labelFor(topic, 'religion') : '')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {language === 'en'
-                ? 'This will set this tradition as your default in chat and other features.'
-                : language === 'es'
-                  ? 'Esto establecerá esta tradición como tu predeterminada en el chat y otras funciones.'
-                  : 'Isso definirá esta tradição como sua padrão no chat e outras funções.'}
+              {preferredReligion && preferredReligion !== topic
+                ? (language === 'en'
+                    ? 'This will set this tradition as your default AND permanently erase your current chat history so the Mentor starts fresh.'
+                    : language === 'es'
+                      ? 'Esto establecerá esta tradición como tu predeterminada Y borrará permanentemente tu historial de chat para que el Mentor comience de nuevo.'
+                      : 'Isso definirá esta tradição como sua padrão E apagará permanentemente seu histórico de conversas para que o Mentor recomece.')
+                : (language === 'en'
+                    ? 'This will set this tradition as your default in chat and other features.'
+                    : language === 'es'
+                      ? 'Esto establecerá esta tradición como tu predeterminada en el chat y otras funciones.'
+                      : 'Isso definirá esta tradição como sua padrão no chat e outras funções.')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
