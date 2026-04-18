@@ -688,23 +688,42 @@ export type Database = {
         Returns: boolean
       }
       is_subscriber: { Args: { _user_id: string }; Returns: boolean }
-      match_knowledge: {
-        Args: {
-          filter_religion?: string
-          match_count?: number
-          query_embedding: string
-          similarity_threshold?: number
-        }
-        Returns: {
-          chunk_id: string
-          content: string
-          similarity: number
-          source_author: string
-          source_id: string
-          source_religion: string
-          source_title: string
-        }[]
-      }
+      match_knowledge:
+        | {
+            Args: {
+              filter_religion?: string
+              match_count?: number
+              query_embedding: string
+              similarity_threshold?: number
+            }
+            Returns: {
+              chunk_id: string
+              content: string
+              similarity: number
+              source_author: string
+              source_id: string
+              source_religion: string
+              source_title: string
+            }[]
+          }
+        | {
+            Args: {
+              filter_religion?: string
+              match_count?: number
+              query_embedding: string
+              similarity_threshold?: number
+              strict_match?: boolean
+            }
+            Returns: {
+              chunk_id: string
+              content: string
+              similarity: number
+              source_author: string
+              source_id: string
+              source_religion: string
+              source_title: string
+            }[]
+          }
       reset_questions_if_period_elapsed: {
         Args: { _user_id: string }
         Returns: undefined

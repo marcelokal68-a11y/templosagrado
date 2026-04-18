@@ -52,6 +52,7 @@ export async function retrieveRagContext(
   filterReligion: string | null,
   apiKey: string,
   matchCount = 5,
+  options: { strict?: boolean } = {},
 ): Promise<RagResult> {
   const empty: RagResult = { chunks: [], sources: [], promptSection: "" };
   if (!userQuery || userQuery.trim().length < 4) return empty;
@@ -69,6 +70,7 @@ export async function retrieveRagContext(
       match_count: matchCount,
       filter_religion: filterReligion || null,
       similarity_threshold: 0.65,
+      strict_match: options.strict === true,
     });
 
     if (error) {
