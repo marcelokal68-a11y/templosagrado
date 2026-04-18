@@ -26,6 +26,7 @@ import Journey from "./pages/Journey";
 import NotFound from "./pages/NotFound";
 import QuickTutorial from "./components/QuickTutorial";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BackToChatFab from "./components/BackToChatFab";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
                 </main>
               </div>
               <QuickTutorial />
+              <BackToChatFab />
             </div>
           </SidebarProvider>
         </AppProvider>
