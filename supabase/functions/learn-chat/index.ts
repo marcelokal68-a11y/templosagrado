@@ -656,7 +656,7 @@ When the student asks about Candomblé, draw richly from this base. Cite os terr
     try {
       const lastUserMsg = messages?.filter((m: { role: string }) => m.role === "user").pop();
       if (lastUserMsg?.content) {
-        const rag = await retrieveRagContext(lastUserMsg.content, topic || null, LOVABLE_API_KEY, 5);
+        const rag = await retrieveRagContext(lastUserMsg.content, topic || null, LOVABLE_API_KEY, 5, { strict: true });
         ragSection = rag.promptSection;
         ragSources = rag.sources;
       }

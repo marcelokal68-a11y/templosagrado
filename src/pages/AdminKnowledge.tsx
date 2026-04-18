@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Loader2, Plus, Upload, FileText, Trash2, RefreshCw, BookOpen, ArrowLeft, AlertCircle, CheckCircle2, Clock
+  Loader2, Plus, Upload, FileText, Trash2, RefreshCw, BookOpen, ArrowLeft,
+  AlertCircle, CheckCircle2, Clock, Link2, Eye,
 } from 'lucide-react';
 
 interface KnowledgeSource {
@@ -23,6 +24,7 @@ interface KnowledgeSource {
   religion: string | null;
   language: string;
   file_path: string | null;
+  original_url?: string | null;
   status: 'pending' | 'processing' | 'ready' | 'failed';
   error_message: string | null;
   chunk_count: number;
@@ -50,6 +52,8 @@ const SOURCE_TYPES = [
   { value: 'other', label: 'Outro' },
 ];
 
+type Mode = 'file' | 'text' | 'url';
+
 export default function AdminKnowledge() {
   const { user } = useApp();
   const { toast } = useToast();
@@ -59,7 +63,7 @@ export default function AdminKnowledge() {
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state
+  // Form state (shared)
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [sourceType, setSourceType] = useState('book');
@@ -67,7 +71,12 @@ export default function AdminKnowledge() {
   const [language, setLanguage] = useState('pt-BR');
   const [file, setFile] = useState<File | null>(null);
   const [inlineText, setInlineText] = useState('');
-  const [mode, setMode] = useState<'file' | 'text'>('file');
+  const [mode, setMode] = useState<Mode>('file');
+
+  // URL mode state
+  const [urls, setUrls] = useState('');
+  const [previewing, setPreviewing] = useState(false);
+  const [preview, setPreview] = useState<{ title: string; markdown: string; sourceURL: string } | null>(null);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -76,20 +85,21 @@ export default function AdminKnowledge() {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id);
-      const admin = roles?.some((r: any) => r.role === 'admin') ?? false;
+      const admin = roles?.some((r: { role: string }) => r.role === 'admin') ?? false;
       if (!admin) { navigate('/'); return; }
       setIsAdmin(true);
       await loadSources();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const loadSources = async () => {
     const { data } = await supabase
-      .from('knowledge_sources' as any)
+      .from('knowledge_sources')
       .select('*')
       .order('created_at', { ascending: false });
-    setSources((data as any) || []);
+    setSources((data as KnowledgeSource[]) || []);
   };
 
   // Auto-refresh sources that are processing
@@ -104,9 +114,12 @@ export default function AdminKnowledge() {
     setTitle(''); setAuthor(''); setSourceType('book');
     setReligion('general'); setLanguage('pt-BR');
     setFile(null); setInlineText('');
+    setUrls(''); setPreview(null);
   };
 
   const handleSubmit = async () => {
+    if (mode === 'url') return handleSubmitUrls();
+
     if (!title.trim()) { toast({ title: 'Título obrigatório', variant: 'destructive' }); return; }
     if (mode === 'file' && !file) { toast({ title: 'Selecione um arquivo', variant: 'destructive' }); return; }
     if (mode === 'text' && inlineText.trim().length < 100) { toast({ title: 'Cole pelo menos 100 caracteres', variant: 'destructive' }); return; }
@@ -128,7 +141,7 @@ export default function AdminKnowledge() {
       }
 
       const { data: inserted, error: insErr } = await supabase
-        .from('knowledge_sources' as any)
+        .from('knowledge_sources')
         .insert({
           title: title.trim(),
           author: author.trim() || null,
@@ -138,30 +151,132 @@ export default function AdminKnowledge() {
           file_path: filePath,
           status: 'pending',
           created_by: user!.id,
-        } as any)
+        })
         .select()
         .single();
       if (insErr) throw insErr;
 
-      // Trigger ingestion
       const { data: { session } } = await supabase.auth.getSession();
       const resp = await supabase.functions.invoke('ingest-knowledge', {
         body: {
-          source_id: (inserted as any).id,
+          source_id: (inserted as { id: string }).id,
           inline_text: mode === 'text' ? inlineText : undefined,
         },
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
       if (resp.error) {
-        // Source row exists but failed — show error but keep row
         toast({ title: 'Falha na ingestão', description: resp.error.message, variant: 'destructive' });
       } else {
         toast({ title: 'Fonte adicionada!', description: 'Processamento iniciado.' });
       }
       reset();
       await loadSources();
-    } catch (e: any) {
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+    } catch (e) {
+      toast({ title: 'Erro', description: e instanceof Error ? e.message : 'erro desconhecido', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const previewUrl = async () => {
+    const list = urls.split('\n').map(u => u.trim()).filter(Boolean);
+    const first = list[0];
+    if (!first || !/^https?:\/\/.+/i.test(first)) {
+      toast({ title: 'Cole pelo menos uma URL válida (http/https)', variant: 'destructive' });
+      return;
+    }
+    setPreviewing(true);
+    setPreview(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const resp = await supabase.functions.invoke('scrape-article', {
+        body: { url: first },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (resp.error) throw new Error(resp.error.message);
+      const d = resp.data as { title: string; markdown: string; sourceURL: string; author?: string | null };
+      setPreview({ title: d.title, markdown: d.markdown, sourceURL: d.sourceURL });
+      if (!title.trim() && d.title) setTitle(d.title);
+      if (!author.trim() && d.author) setAuthor(d.author);
+      if (sourceType === 'book') setSourceType('article');
+      toast({ title: 'Pré-visualização pronta', description: `${d.markdown.length.toLocaleString()} caracteres extraídos.` });
+    } catch (e) {
+      toast({
+        title: 'Erro ao buscar artigo',
+        description: e instanceof Error ? e.message : 'falha desconhecida',
+        variant: 'destructive',
+      });
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
+  const handleSubmitUrls = async () => {
+    const list = urls.split('\n').map(u => u.trim()).filter(Boolean);
+    const valid = list.filter(u => /^https?:\/\/.+/i.test(u));
+    if (valid.length === 0) {
+      toast({ title: 'Nenhuma URL válida', variant: 'destructive' });
+      return;
+    }
+    if (valid.length > 1 && !title.trim()) {
+      // múltiplas URLs: usa título extraído por URL automaticamente
+    } else if (!title.trim() && !preview?.title) {
+      toast({ title: 'Defina um título ou faça pré-visualização primeiro', variant: 'destructive' });
+      return;
+    }
+
+    setSubmitting(true);
+    let ok = 0; let fail = 0;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = { Authorization: `Bearer ${session?.access_token}` };
+
+      for (const url of valid) {
+        try {
+          // 1) scrape
+          const scrapeResp = await supabase.functions.invoke('scrape-article', { body: { url }, headers });
+          if (scrapeResp.error) throw new Error(scrapeResp.error.message);
+          const d = scrapeResp.data as { title: string; markdown: string; sourceURL: string; author?: string | null };
+
+          // 2) create source row
+          const useTitle = (valid.length === 1 ? title.trim() : '') || d.title || url;
+          const useAuthor = (valid.length === 1 ? author.trim() : '') || d.author || null;
+
+          const { data: inserted, error: insErr } = await supabase
+            .from('knowledge_sources')
+            .insert({
+              title: useTitle.slice(0, 300),
+              author: useAuthor,
+              source_type: 'article',
+              religion: religion === 'general' ? 'general' : religion,
+              language,
+              original_url: d.sourceURL || url,
+              status: 'pending',
+              created_by: user!.id,
+            })
+            .select()
+            .single();
+          if (insErr) throw insErr;
+
+          // 3) ingest with inline_text
+          const ingResp = await supabase.functions.invoke('ingest-knowledge', {
+            body: { source_id: (inserted as { id: string }).id, inline_text: d.markdown },
+            headers,
+          });
+          if (ingResp.error) throw new Error(ingResp.error.message);
+          ok++;
+        } catch (urlErr) {
+          console.error('URL falhou:', url, urlErr);
+          fail++;
+        }
+      }
+      toast({
+        title: `${ok} fonte(s) processada(s)`,
+        description: fail > 0 ? `${fail} falharam — confira o status na lista.` : 'Indexação iniciada.',
+        variant: fail > 0 && ok === 0 ? 'destructive' : 'default',
+      });
+      reset();
+      await loadSources();
     } finally {
       setSubmitting(false);
     }
@@ -186,7 +301,7 @@ export default function AdminKnowledge() {
     if (s.file_path) {
       await supabase.storage.from('knowledge-files').remove([s.file_path]);
     }
-    await supabase.from('knowledge_sources' as any).delete().eq('id', s.id);
+    await supabase.from('knowledge_sources').delete().eq('id', s.id);
     await loadSources();
   };
 
@@ -204,7 +319,7 @@ export default function AdminKnowledge() {
     const Icon = cfg.icon;
     return (
       <Badge className={cfg.cls + ' gap-1'}>
-        <Icon className={`h-3 w-3 ${(cfg as any).spin ? 'animate-spin' : ''}`} />
+        <Icon className={`h-3 w-3 ${'spin' in cfg && cfg.spin ? 'animate-spin' : ''}`} />
         {cfg.label}
       </Badge>
     );
@@ -240,8 +355,12 @@ export default function AdminKnowledge() {
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <Label>Título *</Label>
-              <Input placeholder="Ex: Antissemitismo Estrutural" value={title} onChange={e => setTitle(e.target.value)} />
+              <Label>Título {mode !== 'url' && '*'}</Label>
+              <Input
+                placeholder={mode === 'url' ? 'Auto (extraído da página, opcional)' : 'Ex: Antissemitismo Estrutural'}
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+              />
             </div>
             <div>
               <Label>Autor</Label>
@@ -249,10 +368,11 @@ export default function AdminKnowledge() {
             </div>
             <div>
               <Label>Tipo</Label>
-              <Select value={sourceType} onValueChange={setSourceType}>
+              <Select value={sourceType} onValueChange={setSourceType} disabled={mode === 'url'}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{SOURCE_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
               </Select>
+              {mode === 'url' && <p className="text-xs text-muted-foreground mt-1">URLs entram como "Artigo".</p>}
             </div>
             <div>
               <Label>Tradição</Label>
@@ -276,10 +396,11 @@ export default function AdminKnowledge() {
             </div>
           </div>
 
-          <Tabs value={mode} onValueChange={(v) => setMode(v as 'file' | 'text')}>
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="file"><Upload className="h-4 w-4 mr-2" /> Upload PDF/TXT</TabsTrigger>
-              <TabsTrigger value="text"><FileText className="h-4 w-4 mr-2" /> Colar texto</TabsTrigger>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="file"><Upload className="h-4 w-4 mr-2" /> Upload</TabsTrigger>
+              <TabsTrigger value="text"><FileText className="h-4 w-4 mr-2" /> Texto</TabsTrigger>
+              <TabsTrigger value="url"><Link2 className="h-4 w-4 mr-2" /> URL</TabsTrigger>
             </TabsList>
             <TabsContent value="file" className="pt-3">
               <Input
@@ -298,11 +419,38 @@ export default function AdminKnowledge() {
               />
               <p className="text-xs text-muted-foreground mt-2">{inlineText.length} caracteres</p>
             </TabsContent>
+            <TabsContent value="url" className="pt-3 space-y-3">
+              <Textarea
+                placeholder="Cole uma URL por linha&#10;https://exemplo.com/artigo-1&#10;https://exemplo.com/artigo-2"
+                value={urls}
+                onChange={e => setUrls(e.target.value)}
+                rows={4}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={previewUrl} disabled={previewing || !urls.trim()}>
+                  {previewing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eye className="h-4 w-4 mr-2" />}
+                  Pré-visualizar 1ª URL
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Conteúdo extraído com Firecrawl (limpo, sem nav/ads). Para múltiplas URLs, o título de cada artigo é detectado automaticamente.
+                </p>
+              </div>
+              {preview && (
+                <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                  <p className="text-xs font-medium">Título detectado:</p>
+                  <p className="text-sm">{preview.title || '(sem título)'}</p>
+                  <p className="text-xs font-medium mt-2">Trecho ({preview.markdown.length.toLocaleString()} caracteres total):</p>
+                  <pre className="text-xs whitespace-pre-wrap font-sans text-muted-foreground max-h-40 overflow-y-auto">
+                    {preview.markdown.slice(0, 500)}{preview.markdown.length > 500 ? '…' : ''}
+                  </pre>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
 
           <Button onClick={handleSubmit} disabled={submitting} className="w-full sm:w-auto">
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-            Adicionar e processar
+            {mode === 'url' ? 'Buscar e processar URL(s)' : 'Adicionar e processar'}
           </Button>
         </CardContent>
       </Card>
@@ -325,11 +473,12 @@ export default function AdminKnowledge() {
                       <p className="text-xs text-muted-foreground truncate">
                         {s.author && `${s.author} · `}
                         {RELIGIONS.find(r => r.value === s.religion)?.label || s.religion} · {s.language}
+                        {s.original_url && ' · 🔗 web'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <StatusBadge s={s} />
-                      <Button size="icon" variant="ghost" onClick={() => reprocess(s)} title="Reprocessar" disabled={s.status === 'processing'}>
+                      <Button size="icon" variant="ghost" onClick={() => reprocess(s)} title="Reprocessar" disabled={s.status === 'processing' || (!s.file_path && !s.original_url)}>
                         <RefreshCw className="h-4 w-4" />
                       </Button>
                       <Button size="icon" variant="ghost" onClick={() => deleteSource(s)} title="Excluir">
