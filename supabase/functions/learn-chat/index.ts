@@ -693,6 +693,9 @@ CRITICAL RULES:
           ...messages,
         ],
         stream: true,
+        // Lessons can include long historical context, citations and rich tradition
+        // sections. Give enough room so the answer never gets cut mid-sentence.
+        max_tokens: 2000,
       }),
     });
 

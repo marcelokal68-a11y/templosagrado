@@ -96,6 +96,9 @@ At the very end, add a brief source reference on a new line starting with "—" 
           { role: "user", content: userMessage },
         ],
         stream: false,
+        // Up to 20 lines of poetic prose + source line. 1500 is plenty and prevents
+        // the AI gateway default from cutting the prayer mid-verse.
+        max_tokens: 1500,
       }),
     });
 
