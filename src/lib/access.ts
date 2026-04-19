@@ -11,18 +11,16 @@ export interface AccessProfile {
   questions_used?: number | null;
 }
 
-// Detects Lovable preview/sandbox environment — grants full access automatically there.
-// Broad on purpose: any lovable.* host, any lovableproject host, or localhost.
+// Dev-only bypass: grants full access ONLY on local dev machines.
+// Production (including templosagrado.lovable.app) must never match — the paywall
+// was leaking to all 10k+ users because this used to match "lovable.app".
+// A sandbox opt-in remains via VITE_ENABLE_PREVIEW_BYPASS=true in dev env files.
 export function isPreviewEnvironment(): boolean {
   if (typeof window === 'undefined') return false;
   const host = window.location.hostname;
-  return (
-    host.includes('lovable.app') ||
-    host.includes('lovableproject.com') ||
-    host.includes('lovable.dev') ||
-    host === 'localhost' ||
-    host === '127.0.0.1'
-  );
+  if (host === 'localhost' || host === '127.0.0.1') return true;
+  // Keep an explicit opt-in for non-production sandboxes; default false.
+  return import.meta.env.VITE_ENABLE_PREVIEW_BYPASS === 'true';
 }
 
 export function computeAccess(
