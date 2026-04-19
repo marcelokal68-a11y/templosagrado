@@ -120,6 +120,16 @@ export default function Verse() {
       return;
     }
     if (!content) return;
+
+    // Guard against truncated/broken AI content before sending to TTS
+    const expl = (content.explanation || '').trim();
+    const looksBroken = expl.length < 30 || expl.startsWith('{') || expl.startsWith('"title"');
+    if (looksBroken) {
+      toast({ title: t('verse.loading', language), description: 'Conteúdo incompleto, recarregando…' });
+      fetchVerse();
+      return;
+    }
+
     const text = `${content.title}. ${content.explanation}. ${content.reflection}`;
     setLoadingAudio(true);
     try {
@@ -176,15 +186,15 @@ export default function Verse() {
         ) : content ? (
           <Card className="glass sacred-border">
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  {toStr(content.title) || t('verse.title', language)}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-lg flex items-center gap-2 min-w-0">
+                  <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                  <span className="truncate">{toStr(content.title) || t('verse.title', language)}</span>
                 </CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button variant="outline" size="sm" onClick={handleNarrate} disabled={loadingAudio} className="flex items-center gap-1.5">
                     {loadingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                    <span className="text-xs">{isPlaying ? t('practice.stop', language) : t('practice.listen', language)}</span>
+                    <span className="text-xs hidden sm:inline">{isPlaying ? t('practice.stop', language) : t('practice.listen', language)}</span>
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => fetchVerse()} className="gap-1.5">
                     <RefreshCw className="h-4 w-4" />
