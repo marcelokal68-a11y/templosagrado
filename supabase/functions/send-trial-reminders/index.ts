@@ -11,6 +11,23 @@ const log = (s: string, d?: any) => console.log(`[TRIAL-REMINDERS] ${s}${d ? ' '
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
+  // TS-002f: agora restrito a chamadas de cron/admin. Sem esse gate, qualquer um
+  // disparava emails em massa para todos os trials ativos.
+  const expectedSecret = Deno.env.get('CRON_SECRET');
+  const gotSecret = req.headers.get('x-cron-secret');
+  if (!expectedSecret) {
+    return new Response(JSON.stringify({ error: 'cron_secret_not_configured' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (gotSecret !== expectedSecret) {
+    // Permitir fallback: admin autenticado também pode disparar manualmente.
+    const { requireAdmin } = await import('../_shared/auth.ts');
+    const adminAuth = await requireAdmin(req);
+    if ('error' in adminAuth) return adminAuth.error;
+  }
+
   try {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY not set');
