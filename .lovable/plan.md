@@ -2,82 +2,56 @@
 
 ## Diagnóstico
 
-Você notou uma inconsistência real entre os dois menus de navegação do app. Vou explicar o que está acontecendo e propor a correção.
+Dois problemas relacionados, ambos confirmados ao ler o código:
 
-### Situação atual
+### 1. Texto do Versículo do Dia gera incompleto (raiz do bug do áudio)
 
-Existem **dois menus de navegação** no app, com **conteúdos diferentes**:
+Em `supabase/functions/verse-of-day/index.ts` (linhas 548-561), a chamada à IA **não define `max_tokens`**. O prompt pede 5-8 linhas de explicação + Patrística/Talmud/Tafsir + reflexão + fontes + nota acadêmica + parágrafo `practical_use` (4-6 linhas). Para tradições eruditas (Judaísmo, Católico com Patrística, Islã com tafsir), isso ultrapassa fácil 1500-2000 tokens. Sem `max_tokens` explícito, o gateway aplica um default baixo, **a resposta é cortada no meio do JSON**, o `JSON.parse` falha e cai no fallback que joga o texto cru no campo `explanation` (sem `practical_use`, sem `reference`, etc.), ou o JSON parcial perde campos.
 
-**1. Sidebar lateral (sempre visível em desktop ≥768px)** — `src/components/AppSidebar.tsx`
-Mostra apenas 4 itens (+ Admin se aplicável):
-- Chat
-- Aprender
-- Versículo
-- Mural
-- (Admin)
+Pior: **o JSON truncado é cacheado** no `daily_verse_cache` (linha 588), então o texto incompleto fica gravado o dia inteiro para todos os usuários daquela tradição/idioma. Isso explica por que parece "travar" em alguns dispositivos — quem caiu no cache truncado vê texto curto e o áudio depende desse texto curto/quebrado (e em alguns casos `content.explanation` vira o JSON cru não-parseado, causando narração estranha ou falha).
 
-**2. Drawer hambúrguer (aba expansível, mobile e desktop)** — `src/components/Header.tsx`
-Mostra 7-8 itens:
-- Chat
-- Meu Perfil
-- Aprender
-- Versículo
-- Mural
-- **Jornada** ← falta na sidebar
-- **Convidar Amigos** ← falta na sidebar
-- **Plano Pro** (se não assinante) ← falta na sidebar
-- Sair (rodapé)
+Não há checagem de `finish_reason` para detectar a truncagem.
 
-### Por que isso é um problema
+### 2. PWA/tela pequena: layout do cabeçalho do card "trava"
 
-- Usuário desktop que usa só a sidebar **nunca vê** Jornada, Convidar Amigos, Pro ou Perfil.
-- Quebra o princípio de "uma fonte de verdade" para navegação.
-- Confunde o público sênior (alvo do app) — eles veem botões diferentes em momentos diferentes.
-
-### Causa
-
-A sidebar foi criada para ser um menu "rápido" das 4 abas principais do MVP (Chat/Aprender/Versículo/Mural), enquanto o drawer hambúrguer evoluiu para incluir features novas (Jornada, Convites, Pro) sem que a sidebar fosse atualizada.
+Em `src/pages/Verse.tsx` linhas 178-194, o `CardHeader` coloca título + 3 botões (Ouvir, Atualizar, Publicar no Mural) na **mesma linha** com `flex items-center justify-between`. Em viewport 402px (PWA mobile), o título `Sparkles + nome da parashá/leitura` empurra os botões e eles quebram de forma ruim, podendo ficar cortados/sobrepostos. Não é o áudio que trava — é o layout que esmaga os controles.
 
 ---
 
-## Proposta de correção
+## Correção
 
-**Opção escolhida: unificar os dois menus para mostrar exatamente os mesmos itens de navegação principal**, mantendo a sidebar enxuta como "atalho rápido" e o drawer como "menu completo com perfil/conta".
+### A. Backend — `supabase/functions/verse-of-day/index.ts`
 
-### O que vou fazer
+1. **Adicionar `max_tokens: 2000`** na chamada do gateway (suficiente para JSON completo das tradições mais densas).
+2. **Detectar truncagem**: ler `finish_reason` da resposta. Se for `length`, logar warning e **NÃO cachear** (assim o próximo request gera de novo em vez de servir resposta quebrada para todos).
+3. **Validar JSON parseado antes de cachear**: só cachear se `parsed.title` E `parsed.explanation` existirem como strings não vazias. Se o parse caiu no fallback (texto cru), pular o cache.
+4. **Fallback de modelo**: se a primeira tentativa truncar (`finish_reason === 'length'`), repetir uma vez com `google/gemini-2.5-pro` (mais robusto para JSON longo) antes de devolver.
 
-**Em `src/components/AppSidebar.tsx`** — adicionar os itens de navegação que faltam:
+### B. Limpeza imediata do cache poluído
 
-Lista final da sidebar (em ordem):
-1. Chat (`/`)
-2. Aprender (`/learn`)
-3. Versículo (`/verse`)
-4. Mural (`/mural`)
-5. **Jornada (`/journey`)** ← novo, ícone `Brain`
-6. (Admin se aplicável)
+Migration SQL para deletar entradas de hoje que foram salvas truncadas (sem `practical_use` ou com `explanation` excessivamente longa contendo `{`):
+```sql
+DELETE FROM daily_verse_cache 
+WHERE cache_date = CURRENT_DATE 
+  AND (verse_data->>'practical_use' IS NULL 
+       OR verse_data->>'practical_use' = ''
+       OR verse_data->>'explanation' LIKE '%{%"title"%');
+```
 
-**O que NÃO entra na sidebar** (fica só no drawer, pois são "conta/ações", não navegação de conteúdo):
-- Meu Perfil → acessível pelo botão de avatar no canto superior direito
-- Convidar Amigos → ação secundária
-- Plano Pro → CTA de monetização
-- Sair → ação de conta
+### C. Frontend — `src/pages/Verse.tsx`
 
-### Justificativa da divisão
+5. **Arrumar layout do header do card no mobile** (linhas 178-198): empilhar título numa linha e botões numa segunda linha em telas pequenas. Trocar o `flex items-center justify-between` por uma estrutura `flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`, e fazer a barra de botões `flex-wrap` para nunca cortar.
+6. **Esconder texto dos botões em telas muito estreitas** (já é assim para Refresh; aplicar a Listen também — manter só ícone < 360px).
+7. **Validação extra no cliente**: antes de chamar `playTTS`, verificar se `content.explanation` tem ≥ 30 caracteres e não começa com `{` (heurística anti-JSON-cru). Se falhar, mostrar toast "Conteúdo incompleto, recarregando…" e chamar `fetchVerse()` automaticamente uma vez.
 
-| Tipo | Onde fica | Por quê |
-|------|-----------|---------|
-| Navegação de conteúdo (Chat, Aprender, Versículo, Mural, Jornada) | Sidebar **e** Drawer | São as 5 áreas principais do app — devem ser igualmente acessíveis |
-| Conta e ações (Perfil, Convites, Pro, Sair) | Apenas Drawer | São ações secundárias / configurações |
+### Arquivos a editar
 
-Isso resolve a inconsistência sem poluir a sidebar lateral, e mantém o drawer como o "menu completo" para mobile e para acessar conta.
-
-### Arquivo a editar
-
-- `src/components/AppSidebar.tsx` — adicionar item "Jornada" ao array `navItems` com ícone `Brain` (mesmo ícone usado no drawer para consistência visual).
+- `supabase/functions/verse-of-day/index.ts` — adicionar `max_tokens`, checar `finish_reason`, validar antes de cachear, retry em Pro.
+- `src/pages/Verse.tsx` — header responsivo + guard anti-conteúdo-quebrado antes da narração.
+- Nova migração SQL — limpar cache poluído de hoje.
 
 ### Fora de escopo
 
-- Não vou mexer no drawer (`Header.tsx`) — ele já está completo e correto.
-- Não vou adicionar Perfil/Convites/Pro na sidebar — seriam ruído visual no atalho rápido.
-- Não vou criar tradução nova: `t('nav.journey', language)` já existe (usado no drawer).
+- Não vou mexer em `elevenlabs-tts` nem em `ttsPlayer.ts` — eles funcionam; o problema é o texto que chega neles.
+- Não vou aumentar `max_tokens` de outras funções (chat, prayers) neste passo — só `verse-of-day`, que é o caso reportado. Posso fazer auditoria similar nas outras numa próxima rodada se quiser.
 
