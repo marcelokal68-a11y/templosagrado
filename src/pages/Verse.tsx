@@ -120,6 +120,16 @@ export default function Verse() {
       return;
     }
     if (!content) return;
+
+    // Guard against truncated/broken AI content before sending to TTS
+    const expl = (content.explanation || '').trim();
+    const looksBroken = expl.length < 30 || expl.startsWith('{') || expl.startsWith('"title"');
+    if (looksBroken) {
+      toast({ title: t('verse.loading', language), description: 'Conteúdo incompleto, recarregando…' });
+      fetchVerse();
+      return;
+    }
+
     const text = `${content.title}. ${content.explanation}. ${content.reflection}`;
     setLoadingAudio(true);
     try {
