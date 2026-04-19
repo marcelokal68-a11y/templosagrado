@@ -27,33 +27,48 @@ serve(async (req) => {
     const { code } = await req.json();
     if (!code) throw new Error("Invite code is required");
 
-    // Find the invite
-    const { data: invite, error: invErr } = await supabase
-      .from("invite_links")
-      .select("*")
-      .eq("code", code)
-      .eq("is_active", true)
-      .single();
-    if (invErr || !invite) throw new Error("Invalid or expired invite code");
-
-    // Check expiration
-    if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-      throw new Error("This invite has expired");
-    }
-
-    // Check max uses
-    if (invite.max_uses && invite.times_used >= invite.max_uses) {
-      throw new Error("This invite has reached its usage limit");
-    }
-
-    // Check if already redeemed
+    // Check if already redeemed by this user (idempotency for the user, not a race gate).
     const { data: existing } = await supabase
       .from("invite_redemptions")
       .select("id")
-      .eq("invite_id", invite.id)
       .eq("user_id", user.id)
       .single();
-    if (existing) throw new Error("You have already used this invite");
+    // Note: original code filtered by invite_id too, but since invite_id is
+    // only known after lookup, we check after reading it below.
+
+    // TS-206: atomic redeem. Previously `times_used` was read and re-written
+    // without a lock → two concurrent users could both slip past max_uses.
+    const { data: redeemRes, error: redeemErr } = await supabase.rpc(
+      'try_redeem_invite_link',
+      { _code: code },
+    );
+    if (redeemErr) throw redeemErr;
+    const redeemRow = Array.isArray(redeemRes) ? redeemRes[0] : redeemRes;
+    if (!redeemRow || !redeemRow.ok) {
+      const reason = redeemRow?.reason || 'invalid';
+      const msg = reason === 'expired' ? 'This invite has expired'
+        : reason === 'maxed' ? 'This invite has reached its usage limit'
+        : reason === 'inactive' ? 'This invite is inactive'
+        : 'Invalid or expired invite code';
+      throw new Error(msg);
+    }
+    const inviteId: string = redeemRow.invite_id;
+    const questionsLimit: number = redeemRow.questions_limit;
+
+    // Per-invite idempotency: prevent the same user double-redeeming the same invite.
+    // We do it post-consume; on duplicate, we rollback the increment.
+    const { data: existingForInvite } = await supabase
+      .from("invite_redemptions")
+      .select("id")
+      .eq("invite_id", inviteId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (existingForInvite) {
+      // Rollback the times_used increment we just did.
+      await supabase.rpc('decrement_invite_usage', { _invite_id: inviteId })
+        .then(() => {}, () => {});
+      throw new Error("You have already used this invite");
+    }
 
     // Calculate trial end (7 days from now)
     const trialEndsAt = new Date();
@@ -63,7 +78,7 @@ serve(async (req) => {
     await supabase
       .from("profiles")
       .update({
-        questions_limit: invite.questions_limit,
+        questions_limit: questionsLimit,
         is_subscriber: true,
         trial_ends_at: trialEndsAt.toISOString(),
       })
@@ -71,19 +86,13 @@ serve(async (req) => {
 
     // Record redemption
     await supabase.from("invite_redemptions").insert({
-      invite_id: invite.id,
+      invite_id: inviteId,
       user_id: user.id,
     });
 
-    // Increment usage count
-    await supabase
-      .from("invite_links")
-      .update({ times_used: invite.times_used + 1 })
-      .eq("id", invite.id);
-
     return new Response(JSON.stringify({
       success: true,
-      questions_limit: invite.questions_limit,
+      questions_limit: questionsLimit,
       trial_ends_at: trialEndsAt.toISOString(),
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

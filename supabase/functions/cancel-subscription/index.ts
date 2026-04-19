@@ -137,8 +137,9 @@ serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // Enviar email de winback (não bloqueia resposta se falhar)
-    await sendWinbackEmail(user.email, profile?.display_name ?? null, periodEndIso);
+    // TS-112: fire-and-forget. Antes era await — Resend lento segurava a UI.
+    sendWinbackEmail(user.email, profile?.display_name ?? null, periodEndIso)
+      .catch((err) => console.error("[cancel-subscription] winback email failed:", err));
 
     return new Response(JSON.stringify({
       success: true,
