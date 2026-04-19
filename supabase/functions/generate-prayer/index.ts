@@ -125,6 +125,10 @@ At the very end, add a brief source reference on a new line starting with "—" 
 
     const data = await response.json();
     const prayer = data.choices?.[0]?.message?.content || "";
+    const finishReason = data.choices?.[0]?.finish_reason;
+    if (finishReason === "length") {
+      console.warn("generate-prayer: response truncated (finish_reason=length). Consider raising max_tokens.");
+    }
 
     return new Response(JSON.stringify({ prayer }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
