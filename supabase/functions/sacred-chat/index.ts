@@ -266,8 +266,19 @@ Use esse contexto para oferecer continuidade e referencias ao historico quando r
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // TS-002a: auth obrigatória. Anteriormente userId vinha do body sem validação,
+  // permitindo drenar quota/memórias de qualquer usuário. Agora o userId é
+  // sempre derivado do JWT verificado.
+  const { requireUser } = await import("../_shared/auth.ts");
+  const auth = await requireUser(req);
+  if ("error" in auth) return auth.error;
+  const authenticatedUserId = auth.user.id;
+
   try {
-    const { messages, context, language, userId, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone } = await req.json();
+    const body = await req.json();
+    const { messages, context, language, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone } = body;
+    // Ignorar qualquer userId enviado pelo cliente; usar sempre o do token.
+    const userId = authenticatedUserId;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -289,35 +300,39 @@ serve(async (req) => {
       // Check if user has memory enabled and fetch their preferred chat tone + quota
       const sb = await getSupabaseClient();
 
-      // === QUOTA GATE (free tier: 20 questions / 30 days rolling) ===
+      // === QUOTA GATE — atomic (TS-004) ===
       // Skip for the summary endpoint — only count real user turns.
       if (!generateSummary) {
-        // Reset rolling period if 30 days elapsed
+        // Reset rolling period if 30 days elapsed (best-effort before decrement)
         await sb.rpc('reset_questions_if_period_elapsed', { _user_id: userId });
 
-        const { data: quotaProfile } = await sb
-          .from('profiles')
-          .select('is_subscriber, is_pro, questions_limit, questions_used')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (quotaProfile && !quotaProfile.is_subscriber && !quotaProfile.is_pro) {
-          const used = quotaProfile.questions_used ?? 0;
-          const limit = quotaProfile.questions_limit ?? 20;
-          if (used >= limit) {
-            return new Response(JSON.stringify({
-              error: 'quota_exceeded',
-              message: 'Você atingiu o limite de perguntas mensais. Assine o plano Devoto para continuar.',
-            }), {
-              status: 402,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          // Increment counter (best-effort, fire before responding)
-          await sb
-            .from('profiles')
-            .update({ questions_used: used + 1 })
-            .eq('user_id', userId);
+        // Single SQL call: checks + decrements inside one locked row.
+        // Subscribers always pass; free-tier users are race-free.
+        const { data: quotaResult, error: quotaErr } = await sb.rpc(
+          'try_consume_question',
+          { _user_id: userId },
+        );
+        if (quotaErr) {
+          console.error('try_consume_question error:', quotaErr);
+          // Fail-closed on RPC error (better to show a retry than to serve free AI).
+          return new Response(JSON.stringify({
+            error: 'quota_unavailable',
+            message: 'Não foi possível verificar sua cota. Tente novamente em instantes.',
+          }), {
+            status: 503,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const quotaRow = Array.isArray(quotaResult) ? quotaResult[0] : quotaResult;
+        if (quotaRow && quotaRow.allowed === false) {
+          return new Response(JSON.stringify({
+            error: 'quota_exceeded',
+            message: 'Você atingiu o limite de perguntas mensais. Assine o plano Devoto para continuar.',
+            quota_limit: quotaRow.quota_limit ?? 0,
+          }), {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
         }
       }
 
