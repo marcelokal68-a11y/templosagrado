@@ -570,6 +570,10 @@ Cada seção deve ter no mínimo 3 frases substantivas. Seja específico — nã
           ...messages,
         ],
         stream: true,
+        // Generous ceiling to avoid truncated responses, especially for the structured
+        // deep summary (Pro) which has multiple long sections. Normal mentor replies
+        // are short anyway, so this only kicks in when needed.
+        max_tokens: generateSummary ? 4000 : 1500,
       }),
     });
 

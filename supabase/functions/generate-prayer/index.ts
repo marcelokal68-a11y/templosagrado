@@ -96,6 +96,9 @@ At the very end, add a brief source reference on a new line starting with "—" 
           { role: "user", content: userMessage },
         ],
         stream: false,
+        // Up to 20 lines of poetic prose + source line. 1500 is plenty and prevents
+        // the AI gateway default from cutting the prayer mid-verse.
+        max_tokens: 1500,
       }),
     });
 
@@ -122,6 +125,10 @@ At the very end, add a brief source reference on a new line starting with "—" 
 
     const data = await response.json();
     const prayer = data.choices?.[0]?.message?.content || "";
+    const finishReason = data.choices?.[0]?.finish_reason;
+    if (finishReason === "length") {
+      console.warn("generate-prayer: response truncated (finish_reason=length). Consider raising max_tokens.");
+    }
 
     return new Response(JSON.stringify({ prayer }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
