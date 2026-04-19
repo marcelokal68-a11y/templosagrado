@@ -680,6 +680,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_invite_usage: {
+        Args: { _invite_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -729,6 +733,23 @@ export type Database = {
         Returns: undefined
       }
       sync_free_access_profiles: { Args: never; Returns: undefined }
+      try_consume_question: {
+        Args: { _user_id: string }
+        Returns: {
+          allowed: boolean
+          quota_limit: number
+          remaining: number
+        }[]
+      }
+      try_redeem_invite_link: {
+        Args: { _code: string }
+        Returns: {
+          invite_id: string
+          ok: boolean
+          questions_limit: number
+          reason: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
