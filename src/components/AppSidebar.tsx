@@ -75,6 +75,7 @@ export default function AppSidebar() {
                   const isAdminItem = item.labelKey === 'Admin';
                   const prevIsAdmin = idx > 0 && allItems[idx - 1].labelKey === 'Admin';
                   const showDivider = isAdminItem && !prevIsAdmin;
+                  const isJourney = item.to === '/journey';
                   const linkEl = (
                     <Link
                       to={item.to}
@@ -86,7 +87,16 @@ export default function AppSidebar() {
                       )}
                     >
                       <item.icon className={cn("shrink-0 h-6 w-6", active && "drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]")} />
-                      {!collapsed && <span className="text-base font-medium">{label}</span>}
+                      {!collapsed && (
+                        <span className="text-base font-medium flex items-center gap-1.5">
+                          {label}
+                          {isJourney && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-primary/15 text-primary border border-primary/30">
+                              Pro
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </Link>
                   );
                   return (
