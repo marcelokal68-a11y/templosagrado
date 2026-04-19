@@ -545,38 +545,72 @@ serve(async (req) => {
     const prompt = getVersePrompt(rel, lang, date);
     const systemContent = prompt.system + (parashaContext || '');
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemContent },
-          { role: "user", content: prompt.user },
-        ],
-      }),
-    });
+    // Helper: call AI gateway with given model and return { raw, finishReason }
+    const callAI = async (model: string) => {
+      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 2000,
+          messages: [
+            { role: "system", content: systemContent },
+            { role: "user", content: prompt.user },
+          ],
+        }),
+      });
+      if (!r.ok) {
+        const tx = await r.text();
+        throw new Error(`AI ${r.status}: ${tx}`);
+      }
+      const j = await r.json();
+      return {
+        raw: j.choices?.[0]?.message?.content || "",
+        finishReason: j.choices?.[0]?.finish_reason || "",
+      };
+    };
 
-    if (!response.ok) {
-      const t = await response.text();
-      console.error("AI error:", response.status, t);
+    // Helper: parse JSON safely from AI response
+    const tryParse = (raw: string) => {
+      try {
+        const jsonStr = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        return JSON.parse(jsonStr);
+      } catch {
+        return null;
+      }
+    };
+
+    let raw = "";
+    let finishReason = "";
+    let parsed: any = null;
+
+    try {
+      ({ raw, finishReason } = await callAI("google/gemini-2.5-flash"));
+      parsed = tryParse(raw);
+
+      // Retry with Pro model if truncated or invalid JSON
+      const needsRetry = finishReason === "length" || !parsed || !parsed.title || !parsed.explanation;
+      if (needsRetry) {
+        console.warn(`First attempt failed (finish=${finishReason}, parsed=${!!parsed}), retrying with Pro model`);
+        ({ raw, finishReason } = await callAI("google/gemini-2.5-pro"));
+        const retryParsed = tryParse(raw);
+        if (retryParsed && retryParsed.title && retryParsed.explanation) {
+          parsed = retryParsed;
+        }
+      }
+    } catch (err) {
+      console.error("AI request failed:", err);
       return new Response(JSON.stringify({ error: "AI request failed" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content || "";
-
-    let parsed;
-    try {
-      const jsonStr = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-      parsed = JSON.parse(jsonStr);
-    } catch {
+    // Final fallback if still no valid parse
+    if (!parsed) {
       console.error("JSON parse error, raw:", raw);
       parsed = {
         title: "", reference: "", explanation: raw,
@@ -584,18 +618,28 @@ serve(async (req) => {
       };
     }
 
-    // Store in cache (fire and forget)
-    sb.from('daily_verse_cache')
-      .upsert({
-        cache_date: date,
-        religion: rel,
-        language: lang,
-        verse_data: parsed,
-      }, { onConflict: 'cache_date,religion,language' })
-      .then(({ error }) => {
-        if (error) console.error("Cache write error:", error);
-        else console.log(`Cached: ${date}/${rel}/${lang}`);
-      });
+    // Validate before caching: only cache if response is complete & well-formed
+    const isComplete =
+      finishReason !== "length" &&
+      typeof parsed.title === "string" && parsed.title.trim().length > 0 &&
+      typeof parsed.explanation === "string" && parsed.explanation.trim().length >= 30 &&
+      !parsed.explanation.trim().startsWith("{");
+
+    if (isComplete) {
+      sb.from('daily_verse_cache')
+        .upsert({
+          cache_date: date,
+          religion: rel,
+          language: lang,
+          verse_data: parsed,
+        }, { onConflict: 'cache_date,religion,language' })
+        .then(({ error }) => {
+          if (error) console.error("Cache write error:", error);
+          else console.log(`Cached: ${date}/${rel}/${lang}`);
+        });
+    } else {
+      console.warn(`Skipping cache write — incomplete response (finish=${finishReason}, title="${parsed.title}", explLen=${parsed.explanation?.length})`);
+    }
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
