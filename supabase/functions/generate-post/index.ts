@@ -8,6 +8,11 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // TS-002c: auth obrigatória (endpoint era público).
+  const { requireUser } = await import("../_shared/auth.ts");
+  const auth = await requireUser(req);
+  if ("error" in auth) return auth.error;
+
   try {
     const { text, networks } = await req.json();
     if (!text || !networks?.length) {

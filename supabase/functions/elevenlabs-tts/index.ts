@@ -33,26 +33,16 @@ serve(async (req) => {
       });
     }
 
-    // ===== Soft cap: 300 narrações/mês para usuários autenticados =====
-    // Isentos: admins e usuários com acesso vitalício (free_access_emails)
+    // ===== Cap mensal: 300 narrações/mês =====
+    // TS-002d: auth agora é OBRIGATÓRIA (antes era opcional — anon podia
+    // drenar ElevenLabs sem limite). Admins e users com acesso vitalício
+    // (free_access_emails) continuam isentos do cap.
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const authHeader = req.headers.get('Authorization') ?? '';
-    let userId: string | null = null;
-
-    if (authHeader && supabaseUrl && serviceKey) {
-      try {
-        const anonClient = createClient(
-          supabaseUrl,
-          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-          { global: { headers: { Authorization: authHeader } } }
-        );
-        const { data: userData } = await anonClient.auth.getUser();
-        userId = userData?.user?.id ?? null;
-      } catch (e) {
-        console.warn('Auth check failed (proceeding as anon):', e);
-      }
-    }
+    const { requireUser } = await import("../_shared/auth.ts");
+    const auth = await requireUser(req);
+    if ("error" in auth) return auth.error;
+    const userId: string = auth.user.id;
 
     if (userId) {
       const admin = createClient(supabaseUrl, serviceKey);

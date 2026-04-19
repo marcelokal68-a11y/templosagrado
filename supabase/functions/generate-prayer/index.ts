@@ -41,6 +41,12 @@ const PHILOSOPHY_TEXTS: Record<string, string> = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // TS-002b: auth obrigatória. Endpoint antes era público — qualquer um
+  // consumia Gemini ilimitadamente.
+  const { requireUser } = await import("../_shared/auth.ts");
+  const auth = await requireUser(req);
+  if ("error" in auth) return auth.error;
+
   try {
     const { intention, religion, philosophy, language, name } = await req.json();
 
