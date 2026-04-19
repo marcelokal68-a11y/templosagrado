@@ -25,10 +25,11 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) throw new Error("No authorization header");
 
+    // TS-003 fix: verify JWT signature via auth.getUser (not unsafe atob of payload).
+    // Previous code decoded sub without verification — anyone could forge a JWT
+    // and impersonate any user to read/write their profile.
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.admin.getUserById(
-      JSON.parse(atob(token.split('.')[1])).sub
-    );
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) throw new Error("User not authenticated");
     if (!user.email) throw new Error("User email not found");
 

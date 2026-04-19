@@ -36,6 +36,11 @@ serve(async (req) => {
 
     const { newPriceId } = await req.json();
     if (!newPriceId) throw new Error("newPriceId is required");
+    // Allowlist enforcement (TS-008): prevent arbitrary Stripe priceIds.
+    const { isValidPriceId } = await import("../_shared/plans.ts");
+    if (!isValidPriceId(newPriceId)) {
+      throw new Error("invalid_price_id");
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
