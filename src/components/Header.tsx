@@ -116,6 +116,8 @@ export default function Header() {
                         : itemPath && location.pathname.startsWith(itemPath);
                       const isPro = item.label.includes('Pro');
 
+                      const isJourney = item.label === t('nav.journey', language);
+
                       return (
                         <button
                           key={item.label}
@@ -140,6 +142,11 @@ export default function Header() {
                             isActive || isPro ? "text-primary" : "text-primary/70"
                           )} />
                           <span className="text-base font-medium">{item.label}</span>
+                          {isJourney && (
+                            <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-primary/15 text-primary border border-primary/30">
+                              Pro
+                            </span>
+                          )}
                           {isActive && (
                             <span className="ml-auto text-[10px] uppercase tracking-wider text-primary/70 font-bold">
                               Aqui
