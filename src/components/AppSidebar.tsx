@@ -69,9 +69,12 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <TooltipProvider delayDuration={0}>
               <SidebarMenu className="space-y-2">
-                {allItems.map(item => {
+                {allItems.map((item, idx) => {
                   const active = location.pathname === item.to;
                   const label = item.labelKey === 'Admin' ? 'Admin' : t(item.labelKey, language);
+                  const isAdminItem = item.labelKey === 'Admin';
+                  const prevIsAdmin = idx > 0 && allItems[idx - 1].labelKey === 'Admin';
+                  const showDivider = isAdminItem && !prevIsAdmin;
                   const linkEl = (
                     <Link
                       to={item.to}
@@ -87,22 +90,34 @@ export default function AppSidebar() {
                     </Link>
                   );
                   return (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton asChild isActive={active}>
-                        {collapsed ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              {linkEl}
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                              {label}
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          linkEl
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <div key={item.to}>
+                      {showDivider && (
+                        <div className="my-3 px-4">
+                          <div className="border-t border-primary/10" />
+                          {!collapsed && (
+                            <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
+                              {language === 'pt-BR' ? 'Restrito' : 'Restricted'}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={active}>
+                          {collapsed ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                {linkEl}
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                {label}
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            linkEl
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </div>
                   );
                 })}
               </SidebarMenu>
