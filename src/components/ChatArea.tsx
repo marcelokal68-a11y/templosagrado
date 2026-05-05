@@ -451,8 +451,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
     const userMsg: Msg = { role: 'user', content: text.trim() };
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const headers = await getEdgeAuthHeaders();
     const guestId = user ? undefined : getGuestChatId();
 
     setMessages(prev => [...prev, userMsg]);
@@ -460,14 +459,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     setIsLoading(true);
 
     let assistantSoFar = '';
-    
+
     try {
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
+        headers,
         body: JSON.stringify({
           messages: [...messages, userMsg].slice(-40),
           context: chatContext,
@@ -481,6 +477,29 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           chatTone,
         }),
       });
+
+      if (resp.status === 401 || resp.status === 403) {
+        // Auth header invalid (expired session, malformed JWT). For guests this
+        // shouldn't happen — show a clear message and roll back the user msg.
+        setMessages(prev => prev.slice(0, -1));
+        if (user) {
+          // Try refreshing the session; if it fails, ask the user to sign back in.
+          await supabase.auth.refreshSession().catch(() => {});
+          toast({
+            title: 'Sessão expirada',
+            description: 'Por favor, entre novamente para continuar a conversa.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: t('chat.error', language),
+            description: t('chat.error_desc', language),
+            variant: 'destructive',
+          });
+        }
+        setIsLoading(false);
+        return;
+      }
 
       if (resp.status === 429) {
         toast({ title: t('chat.rate_limit', language), description: t('chat.rate_limit_desc', language), variant: 'destructive' });
