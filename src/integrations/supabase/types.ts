@@ -155,6 +155,33 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_chat_usage: {
+        Row: {
+          anon_id: string
+          created_at: string
+          period_start: string
+          questions_limit: number
+          questions_used: number
+          updated_at: string
+        }
+        Insert: {
+          anon_id: string
+          created_at?: string
+          period_start?: string
+          questions_limit?: number
+          questions_used?: number
+          updated_at?: string
+        }
+        Update: {
+          anon_id?: string
+          created_at?: string
+          period_start?: string
+          questions_limit?: number
+          questions_used?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invite_links: {
         Row: {
           code: string
@@ -733,6 +760,14 @@ export type Database = {
         Returns: undefined
       }
       sync_free_access_profiles: { Args: never; Returns: undefined }
+      try_consume_guest_question: {
+        Args: { _anon_id: string }
+        Returns: {
+          allowed: boolean
+          quota_limit: number
+          remaining: number
+        }[]
+      }
       try_consume_question: {
         Args: { _user_id: string }
         Returns: {
