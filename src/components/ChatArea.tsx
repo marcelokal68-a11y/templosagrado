@@ -45,10 +45,22 @@ const LOW_QUOTA_WARNING_THRESHOLD = 5;
 
 function parseSuggestions(content: string): { text: string; suggestions: string[] } {
   const match = content.match(/\[SUGGESTIONS\](.*?)\[\/SUGGESTIONS\]/s);
-  if (!match) return { text: content, suggestions: [] };
-  const text = content.replace(/\[SUGGESTIONS\].*?\[\/SUGGESTIONS\]/s, '').trim();
-  const suggestions = match[1].split('|').map(s => s.trim()).filter(Boolean);
-  return { text, suggestions };
+  if (match) {
+    const text = content.replace(/\[SUGGESTIONS\][\s\S]*?\[\/SUGGESTIONS\]/, '').trim();
+    const suggestions = match[1].split('|').map(s => s.trim()).filter(Boolean);
+    return { text, suggestions };
+  }
+  // Hide partial/streaming SUGGESTIONS marker (opened but not yet closed)
+  const partialIdx = content.indexOf('[SUGGESTIONS]');
+  if (partialIdx !== -1) {
+    return { text: content.slice(0, partialIdx).trimEnd(), suggestions: [] };
+  }
+  // Hide incomplete opening tag like "[SUGGEST" or "[SUGGESTION" at the very end
+  const openMatch = content.match(/\[(?:S(?:U(?:G(?:G(?:E(?:S(?:T(?:I(?:O(?:N(?:S)?)?)?)?)?)?)?)?)?)?)?$/);
+  if (openMatch) {
+    return { text: content.slice(0, openMatch.index).trimEnd(), suggestions: [] };
+  }
+  return { text: content, suggestions: [] };
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
@@ -507,52 +519,89 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       let textBuffer = '';
       let streamDone = false;
 
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') { streamDone = true; break; }
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            // Custom event: RAG sources injected by edge function
-            if (parsed.__sources && Array.isArray(parsed.__sources)) {
-              const incomingSources = parsed.__sources as Source[];
-              setMessages(prev => {
-                const last = prev[prev.length - 1];
-                if (last?.role === 'assistant') {
-                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, sources: incomingSources } : m);
-                }
-                return [...prev, { role: 'assistant', content: '', sources: incomingSources }];
-              });
-              continue;
-            }
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantSoFar += content;
-              setMessages(prev => {
-                const last = prev[prev.length - 1];
-                if (last?.role === 'assistant') {
-                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
-                }
-                return [...prev, { role: 'assistant', content: assistantSoFar }];
-              });
-            }
-          } catch {
-            textBuffer = line + '\n' + textBuffer;
-            break;
+      const handleSseEvent = (rawEvent: string) => {
+        // An SSE "event" may contain multiple `data:` lines that should be concatenated.
+        const dataLines: string[] = [];
+        for (const rawLine of rawEvent.split('\n')) {
+          const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
+          if (!line || line.startsWith(':')) continue;
+          if (line.startsWith('data:')) {
+            dataLines.push(line.slice(5).replace(/^ /, ''));
           }
         }
+        if (dataLines.length === 0) return;
+        const payload = dataLines.join('\n').trim();
+        if (!payload) return;
+        if (payload === '[DONE]') { streamDone = true; return; }
+
+        let parsed: any;
+        try { parsed = JSON.parse(payload); } catch { return; /* skip malformed event */ }
+
+        if (parsed.__sources && Array.isArray(parsed.__sources)) {
+          const incomingSources = parsed.__sources as Source[];
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last?.role === 'assistant') {
+              return prev.map((m, i) => i === prev.length - 1 ? { ...m, sources: incomingSources } : m);
+            }
+            return [...prev, { role: 'assistant', content: '', sources: incomingSources }];
+          });
+          return;
+        }
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) {
+          assistantSoFar += content;
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last?.role === 'assistant') {
+              return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+            }
+            return [...prev, { role: 'assistant', content: assistantSoFar }];
+          });
+        }
+      };
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) {
+          textBuffer += decoder.decode();
+          break;
+        }
+        textBuffer += decoder.decode(value, { stream: true });
+
+        // SSE events are separated by a blank line. Process every complete event.
+        while (true) {
+          const lf = textBuffer.indexOf('\n\n');
+          const crlf = textBuffer.indexOf('\r\n\r\n');
+          if (lf === -1 && crlf === -1) break;
+          let sepIndex: number;
+          let sepLen = 2;
+          if (crlf !== -1 && (lf === -1 || crlf < lf)) {
+            sepIndex = crlf;
+            sepLen = 4;
+          } else {
+            sepIndex = lf;
+          }
+          const rawEvent = textBuffer.slice(0, sepIndex);
+          textBuffer = textBuffer.slice(sepIndex + sepLen);
+          handleSseEvent(rawEvent);
+          if (streamDone) break;
+        }
+      }
+
+      // Flush any trailing event that wasn't terminated by a blank line.
+      if (textBuffer.trim().length > 0) {
+        handleSseEvent(textBuffer);
+        textBuffer = '';
+      }
+
+      if (assistantSoFar.length === 0) {
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === 'assistant' && !last.content) return prev.slice(0, -1);
+          return prev;
+        });
+        throw new Error('Empty stream');
       }
 
       // Free/trial tier: decrement local counter (server already incremented) and warn near the limit
