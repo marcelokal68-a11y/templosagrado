@@ -300,6 +300,37 @@ serve(async (req) => {
     let historySection = '';
     let memorySection = '';
     let chatTone: 'concise' | 'reflective' = (clientChatTone === 'concise' || clientChatTone === 'reflective') ? clientChatTone : 'reflective';
+    if (!userId) {
+      if (generateSummary) {
+        return new Response(JSON.stringify({ error: "unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const sb = await getSupabaseClient();
+      const { data: guestQuota, error: guestQuotaErr } = await sb.rpc(
+        'try_consume_guest_question',
+        { _anon_id: typeof guestId === 'string' ? guestId : '' },
+      );
+      if (guestQuotaErr) {
+        console.error('try_consume_guest_question error:', guestQuotaErr);
+        return new Response(JSON.stringify({ error: 'quota_unavailable' }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const guestQuotaRow = Array.isArray(guestQuota) ? guestQuota[0] : guestQuota;
+      if (!guestQuotaRow || guestQuotaRow.allowed === false) {
+        return new Response(JSON.stringify({
+          error: 'quota_exceeded',
+          message: 'Você atingiu o limite de perguntas grátis. Entre para continuar.',
+          quota_limit: guestQuotaRow?.quota_limit ?? 0,
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
     if (userId) {
       // Check if user has memory enabled and fetch their preferred chat tone + quota
       const sb = await getSupabaseClient();
