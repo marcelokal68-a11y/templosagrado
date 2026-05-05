@@ -358,13 +358,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   }, []);
 
   const buildTTSHeaders = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    return {
-      'Content-Type': 'application/json',
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      Authorization: `Bearer ${token}`,
-    };
+    return await getEdgeAuthHeaders();
   }, []);
 
   const preloadAudio = useCallback(async (text: string, index: number) => {
