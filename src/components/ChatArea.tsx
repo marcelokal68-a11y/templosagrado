@@ -94,26 +94,30 @@ function TypingDots() {
 }
 
 /* Minimalist sun icon for the divine avatar */
-function DivineIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" />
-    </svg>
-  );
-}
+const DivineIcon = forwardRef<SVGSVGElement>((_props, ref) => (
+  <svg ref={ref} viewBox="0 0 24 24" className="h-4.5 w-4.5 text-primary" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" />
+  </svg>
+));
+DivineIcon.displayName = 'DivineIcon';
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate }: {
-  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
+type MessageBubbleProps = {
+  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null;
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
   isLast?: boolean; onSuggestionClick?: (text: string) => void;
   isVisitor?: boolean; onPremiumGate?: () => void;
-}) {
+};
+
+const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function MessageBubble(
+  { msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate },
+  ref,
+) {
   const isUser = msg.role === 'user';
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
   return (
-    <div className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+    <div ref={ref} className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
       {/* Divine avatar */}
       {!isUser && (
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center mt-auto ring-1 ring-primary/20">
@@ -225,7 +229,7 @@ function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCo
       </div>
     </div>
   );
-}
+});
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
   const { language, user, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone, accessStatus, refreshProfile } = useApp();
