@@ -117,7 +117,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function Me
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
   return (
-    <div className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+    <div ref={ref} className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
       {/* Divine avatar */}
       {!isUser && (
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center mt-auto ring-1 ring-primary/20">
