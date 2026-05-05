@@ -231,6 +231,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [summaryText, setSummaryText] = useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [lgpdAccepted, setLgpdAccepted] = useState(() => localStorage.getItem('lgpd_accepted') === 'true');
+  const [guestQuestionsRemaining, setGuestQuestionsRemaining] = useState(() => {
+    const saved = Number(localStorage.getItem(GUEST_REMAINING_KEY));
+    return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
+  });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
@@ -430,8 +434,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
+    if (!user && guestQuestionsRemaining <= 0) {
+      setSessionClosed(true);
+      navigate('/auth?next=/pricing');
+      return;
+    }
 
     const userMsg: Msg = { role: 'user', content: text.trim() };
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const guestId = user ? undefined : getGuestChatId();
 
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
@@ -444,7 +457,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           messages: [...messages, userMsg].slice(-40),
@@ -454,6 +467,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           datetime: new Date().toISOString(),
           timezone,
           geo,
+          guestId,
           skipMemory: confessionalMode || undefined,
           chatTone,
         }),
@@ -536,7 +550,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       // Free/trial tier: decrement local counter (server already incremented) and warn near the limit
       const isMetered = accessStatus !== 'subscriber' && accessStatus !== 'admin';
       let newRemaining = questionsRemaining;
-      if (isMetered && questionsRemaining > 0) {
+      if (!user) {
+        newRemaining = Math.max(0, guestQuestionsRemaining - 1);
+        setGuestQuestionsRemaining(newRemaining);
+        localStorage.setItem(GUEST_REMAINING_KEY, String(newRemaining));
+      } else if (isMetered && questionsRemaining > 0) {
         newRemaining = questionsRemaining - 1;
         setQuestionsRemaining(newRemaining);
       }
