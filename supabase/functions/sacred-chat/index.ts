@@ -266,19 +266,23 @@ Use esse contexto para oferecer continuidade e referencias ao historico quando r
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // TS-002a: auth obrigatória. Anteriormente userId vinha do body sem validação,
-  // permitindo drenar quota/memórias de qualquer usuário. Agora o userId é
-  // sempre derivado do JWT verificado.
-  const { requireUser } = await import("../_shared/auth.ts");
-  const auth = await requireUser(req);
-  if ("error" in auth) return auth.error;
-  const authenticatedUserId = auth.user.id;
-
   try {
     const body = await req.json();
-    const { messages, context, language, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone } = body;
-    // Ignorar qualquer userId enviado pelo cliente; usar sempre o do token.
-    const userId = authenticatedUserId;
+    const { messages, context, language, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone, guestId } = body;
+    // Usuários logados são identificados exclusivamente pelo JWT verificado.
+    // Visitantes sem login podem usar conversa livre limitada via guestId anônimo.
+    let userId = "";
+    const authHeader = req.headers.get("Authorization") || "";
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.slice("Bearer ".length);
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
+      if (token && token !== anonKey) {
+        const { requireUser } = await import("../_shared/auth.ts");
+        const auth = await requireUser(req);
+        if ("error" in auth) return auth.error;
+        userId = auth.user.id;
+      }
+    }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
