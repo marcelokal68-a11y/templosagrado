@@ -54,6 +54,21 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
 const STT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-stt`;
+const GUEST_CHAT_ID_KEY = 'ts:guest-chat-id:v1';
+const GUEST_REMAINING_KEY = 'ts:guest-questions-remaining:v1';
+const GUEST_QUESTION_LIMIT = 20;
+
+function getGuestChatId(): string {
+  try {
+    const existing = localStorage.getItem(GUEST_CHAT_ID_KEY);
+    if (existing) return existing;
+    const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(GUEST_CHAT_ID_KEY, id);
+    return id;
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+}
 
 function TypingDots() {
   return (
@@ -216,6 +231,12 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [summaryText, setSummaryText] = useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [lgpdAccepted, setLgpdAccepted] = useState(() => localStorage.getItem('lgpd_accepted') === 'true');
+  const [guestQuestionsRemaining, setGuestQuestionsRemaining] = useState(() => {
+    const raw = localStorage.getItem(GUEST_REMAINING_KEY);
+    if (raw === null) return GUEST_QUESTION_LIMIT;
+    const saved = Number(raw);
+    return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
+  });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
@@ -415,8 +436,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const doSendMessage = async (text: string) => {
     if (!text.trim() || isLoading || sessionClosed) return;
+    if (!user && guestQuestionsRemaining <= 0) {
+      setSessionClosed(true);
+      navigate('/auth?next=/pricing');
+      return;
+    }
 
     const userMsg: Msg = { role: 'user', content: text.trim() };
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const guestId = user ? undefined : getGuestChatId();
 
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
@@ -429,7 +459,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           messages: [...messages, userMsg].slice(-40),
@@ -439,6 +469,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           datetime: new Date().toISOString(),
           timezone,
           geo,
+          guestId,
           skipMemory: confessionalMode || undefined,
           chatTone,
         }),
@@ -451,15 +482,21 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       }
       if (resp.status === 402) {
         // Quota esgotada — atualiza contador, encerra a sessão e oferece upgrade
-        setQuestionsRemaining(0);
-        refreshProfile?.();
+        if (!user) {
+          setGuestQuestionsRemaining(0);
+          localStorage.setItem(GUEST_REMAINING_KEY, '0');
+        } else {
+          setQuestionsRemaining(0);
+          refreshProfile?.();
+        }
         toast({
           title: 'Limite mensal atingido',
-          description: 'Você usou suas perguntas do mês. Faça upgrade para continuar.',
+          description: user ? 'Você usou suas perguntas do mês. Faça upgrade para continuar.' : 'Entre para continuar sua conversa.',
         });
         setMessages(prev => prev.slice(0, -1)); // remove pergunta não respondida
         setSessionClosed(true);
-        setShowUpgradeModal(true);
+        if (user) setShowUpgradeModal(true);
+        else navigate('/auth?next=/pricing');
         setIsLoading(false);
         return;
       }
@@ -521,7 +558,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       // Free/trial tier: decrement local counter (server already incremented) and warn near the limit
       const isMetered = accessStatus !== 'subscriber' && accessStatus !== 'admin';
       let newRemaining = questionsRemaining;
-      if (isMetered && questionsRemaining > 0) {
+      if (!user) {
+        newRemaining = Math.max(0, guestQuestionsRemaining - 1);
+        setGuestQuestionsRemaining(newRemaining);
+        localStorage.setItem(GUEST_REMAINING_KEY, String(newRemaining));
+      } else if (isMetered && questionsRemaining > 0) {
         newRemaining = questionsRemaining - 1;
         setQuestionsRemaining(newRemaining);
       }
@@ -1109,20 +1150,20 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                   </div>
                 )}
                 {/* Free quota indicator — always visible for free users */}
-                {user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0 && (
+                {((user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0) || (!user && guestQuestionsRemaining > 0)) && (
                   <div className="mx-3 mb-1 px-1 flex items-center justify-between gap-2">
                     <p className="text-xs text-muted-foreground">
                       <span className={cn(
                         "font-semibold",
-                        questionsRemaining <= 3 ? "text-amber-600" : "text-foreground/70"
+                        (user ? questionsRemaining : guestQuestionsRemaining) <= 3 ? "text-amber-600" : "text-foreground/70"
                       )}>
-                        {questionsRemaining}/20
+                        {user ? questionsRemaining : guestQuestionsRemaining}/20
                       </span>{' '}
-                      {questionsRemaining === 1 ? 'mensagem restante este mês' : 'mensagens restantes este mês'}
+                      {(user ? questionsRemaining : guestQuestionsRemaining) === 1 ? 'mensagem restante este mês' : 'mensagens restantes este mês'}
                     </p>
-                    {questionsRemaining <= 5 && (
-                      <Link to="/pricing" className="text-xs font-medium text-primary hover:underline whitespace-nowrap">
-                        Assinar Devoto →
+                    {(user ? questionsRemaining : guestQuestionsRemaining) <= 5 && (
+                      <Link to={user ? "/pricing" : "/auth?next=/pricing"} className="text-xs font-medium text-primary hover:underline whitespace-nowrap">
+                        {user ? 'Assinar Devoto →' : 'Entrar →'}
                       </Link>
                     )}
                   </div>
@@ -1155,9 +1196,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     placeholder={
                       user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0
                         ? 'Limite mensal atingido — assine para continuar'
+                        : !user && guestQuestionsRemaining <= 0
+                          ? 'Limite grátis atingido — entre para continuar'
                         : 'Sua mensagem...'
                     }
-                    disabled={!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0}
+                    disabled={(!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0) || (!user && guestQuestionsRemaining <= 0)}
                     className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30 disabled:opacity-50"
                     rows={1}
                   />
@@ -1184,7 +1227,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                   )}
                   <Button
                     onClick={sendMessage}
-                    disabled={isLoading || !chatInput.trim() || (!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0)}
+                    disabled={isLoading || !chatInput.trim() || (!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0) || (!user && guestQuestionsRemaining <= 0)}
                     size="icon"
                     className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
                   >

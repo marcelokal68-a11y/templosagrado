@@ -266,19 +266,26 @@ Use esse contexto para oferecer continuidade e referencias ao historico quando r
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // TS-002a: auth obrigatória. Anteriormente userId vinha do body sem validação,
-  // permitindo drenar quota/memórias de qualquer usuário. Agora o userId é
-  // sempre derivado do JWT verificado.
-  const { requireUser } = await import("../_shared/auth.ts");
-  const auth = await requireUser(req);
-  if ("error" in auth) return auth.error;
-  const authenticatedUserId = auth.user.id;
-
   try {
     const body = await req.json();
-    const { messages, context, language, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone } = body;
-    // Ignorar qualquer userId enviado pelo cliente; usar sempre o do token.
-    const userId = authenticatedUserId;
+    const { messages, context, language, datetime, timezone, isClosing, generateSummary, chatTone: clientChatTone, guestId } = body;
+    // Usuários logados são identificados exclusivamente pelo JWT verificado.
+    // Visitantes sem login podem usar conversa livre limitada via guestId anônimo.
+    let userId = "";
+    const authHeader = req.headers.get("Authorization") || "";
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.slice("Bearer ".length);
+      const publicKeys = new Set([
+        Deno.env.get("SUPABASE_ANON_KEY") || "",
+        Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "",
+      ].filter(Boolean));
+      if (token && !publicKeys.has(token)) {
+        const { requireUser } = await import("../_shared/auth.ts");
+        const auth = await requireUser(req);
+        if ("error" in auth) return auth.error;
+        userId = auth.user.id;
+      }
+    }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -296,6 +303,37 @@ serve(async (req) => {
     let historySection = '';
     let memorySection = '';
     let chatTone: 'concise' | 'reflective' = (clientChatTone === 'concise' || clientChatTone === 'reflective') ? clientChatTone : 'reflective';
+    if (!userId) {
+      if (generateSummary) {
+        return new Response(JSON.stringify({ error: "unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const sb = await getSupabaseClient();
+      const { data: guestQuota, error: guestQuotaErr } = await sb.rpc(
+        'try_consume_guest_question',
+        { _anon_id: typeof guestId === 'string' ? guestId : '' },
+      );
+      if (guestQuotaErr) {
+        console.error('try_consume_guest_question error:', guestQuotaErr);
+        return new Response(JSON.stringify({ error: 'quota_unavailable' }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const guestQuotaRow = Array.isArray(guestQuota) ? guestQuota[0] : guestQuota;
+      if (!guestQuotaRow || guestQuotaRow.allowed === false) {
+        return new Response(JSON.stringify({
+          error: 'quota_exceeded',
+          message: 'Você atingiu o limite de perguntas grátis. Entre para continuar.',
+          quota_limit: guestQuotaRow?.quota_limit ?? 0,
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
     if (userId) {
       // Check if user has memory enabled and fetch their preferred chat tone + quota
       const sb = await getSupabaseClient();
@@ -303,15 +341,21 @@ serve(async (req) => {
       // === QUOTA GATE — atomic (TS-004) ===
       // Skip for the summary endpoint — only count real user turns.
       if (!generateSummary) {
+        const { data: adminRoles } = await sb
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .eq('role', 'admin');
+        const isAdmin = Array.isArray(adminRoles) && adminRoles.length > 0;
+
         // Reset rolling period if 30 days elapsed (best-effort before decrement)
-        await sb.rpc('reset_questions_if_period_elapsed', { _user_id: userId });
+        if (!isAdmin) await sb.rpc('reset_questions_if_period_elapsed', { _user_id: userId });
 
         // Single SQL call: checks + decrements inside one locked row.
         // Subscribers always pass; free-tier users are race-free.
-        const { data: quotaResult, error: quotaErr } = await sb.rpc(
-          'try_consume_question',
-          { _user_id: userId },
-        );
+        const { data: quotaResult, error: quotaErr } = isAdmin
+          ? { data: [{ allowed: true, remaining: 999999, quota_limit: 999999 }], error: null }
+          : await sb.rpc('try_consume_question', { _user_id: userId });
         if (quotaErr) {
           console.error('try_consume_question error:', quotaErr);
           // Fail-closed on RPC error (better to show a retry than to serve free AI).
