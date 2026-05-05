@@ -36,6 +36,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
 import { isPreviewEnvironment } from '@/lib/access';
+import { getEdgeAuthHeaders } from '@/lib/authHeader';
 
 type Source = { id: string; title: string; author: string | null };
 type Msg = { role: 'user' | 'assistant'; content: string; sources?: Source[] };
