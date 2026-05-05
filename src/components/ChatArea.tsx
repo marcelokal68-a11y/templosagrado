@@ -229,7 +229,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function Me
       </div>
     </div>
   );
-}
+});
 
 const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_props, ref) => {
   const { language, user, chatContext, setChatContext, questionsRemaining, setQuestionsRemaining, messages, setMessages, chatInput, setChatInput, hasPendingUndo, undoClearChat, geo, memoryEnabled, setMemoryEnabled, chatTone, accessStatus, refreshProfile } = useApp();
