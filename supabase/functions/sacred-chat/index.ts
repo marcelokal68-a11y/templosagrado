@@ -338,15 +338,21 @@ serve(async (req) => {
       // === QUOTA GATE — atomic (TS-004) ===
       // Skip for the summary endpoint — only count real user turns.
       if (!generateSummary) {
+        const { data: adminRoles } = await sb
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .eq('role', 'admin');
+        const isAdmin = Array.isArray(adminRoles) && adminRoles.length > 0;
+
         // Reset rolling period if 30 days elapsed (best-effort before decrement)
-        await sb.rpc('reset_questions_if_period_elapsed', { _user_id: userId });
+        if (!isAdmin) await sb.rpc('reset_questions_if_period_elapsed', { _user_id: userId });
 
         // Single SQL call: checks + decrements inside one locked row.
         // Subscribers always pass; free-tier users are race-free.
-        const { data: quotaResult, error: quotaErr } = await sb.rpc(
-          'try_consume_question',
-          { _user_id: userId },
-        );
+        const { data: quotaResult, error: quotaErr } = isAdmin
+          ? { data: [{ allowed: true, remaining: 999999, quota_limit: 999999 }], error: null }
+          : await sb.rpc('try_consume_question', { _user_id: userId });
         if (quotaErr) {
           console.error('try_consume_question error:', quotaErr);
           // Fail-closed on RPC error (better to show a retry than to serve free AI).
