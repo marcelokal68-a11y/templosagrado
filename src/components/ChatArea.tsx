@@ -54,6 +54,21 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
 const STT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-stt`;
+const GUEST_CHAT_ID_KEY = 'ts:guest-chat-id:v1';
+const GUEST_REMAINING_KEY = 'ts:guest-questions-remaining:v1';
+const GUEST_QUESTION_LIMIT = 20;
+
+function getGuestChatId(): string {
+  try {
+    const existing = localStorage.getItem(GUEST_CHAT_ID_KEY);
+    if (existing) return existing;
+    const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(GUEST_CHAT_ID_KEY, id);
+    return id;
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+}
 
 function TypingDots() {
   return (
