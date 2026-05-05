@@ -102,12 +102,17 @@ const DivineIcon = forwardRef<SVGSVGElement>((_props, ref) => (
 ));
 DivineIcon.displayName = 'DivineIcon';
 
-function MessageBubble({ msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate }: {
-  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null; 
+type MessageBubbleProps = {
+  msg: Msg; index: number; playingIndex: number | null; loadingAudio: number | null;
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
   isLast?: boolean; onSuggestionClick?: (text: string) => void;
   isVisitor?: boolean; onPremiumGate?: () => void;
-}) {
+};
+
+const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function MessageBubble(
+  { msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate },
+  ref,
+) {
   const isUser = msg.role === 'user';
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
