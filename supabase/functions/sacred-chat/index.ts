@@ -275,15 +275,18 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization") || "";
     if (authHeader.startsWith("Bearer ")) {
       const token = authHeader.slice("Bearer ".length);
-      const publicKeys = new Set([
-        Deno.env.get("SUPABASE_ANON_KEY") || "",
-        Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "",
-      ].filter(Boolean));
-      if (token && !publicKeys.has(token)) {
-        const { requireUser } = await import("../_shared/auth.ts");
-        const auth = await requireUser(req);
-        if ("error" in auth) return auth.error;
-        userId = auth.user.id;
+      // Try to validate token as a real user JWT. If it fails (e.g. it's the
+      // publishable/anon key), silently fall back to guest mode instead of 401.
+      try {
+        const url = Deno.env.get("SUPABASE_URL") ?? "";
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+        if (url && anonKey && token) {
+          const sb = createClient(url, anonKey);
+          const { data } = await sb.auth.getUser(token);
+          if (data?.user?.id) userId = data.user.id;
+        }
+      } catch (_e) {
+        // ignore — treat as guest
       }
     }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
