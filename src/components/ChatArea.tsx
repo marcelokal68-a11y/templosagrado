@@ -480,15 +480,21 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       }
       if (resp.status === 402) {
         // Quota esgotada — atualiza contador, encerra a sessão e oferece upgrade
-        setQuestionsRemaining(0);
-        refreshProfile?.();
+        if (!user) {
+          setGuestQuestionsRemaining(0);
+          localStorage.setItem(GUEST_REMAINING_KEY, '0');
+        } else {
+          setQuestionsRemaining(0);
+          refreshProfile?.();
+        }
         toast({
           title: 'Limite mensal atingido',
-          description: 'Você usou suas perguntas do mês. Faça upgrade para continuar.',
+          description: user ? 'Você usou suas perguntas do mês. Faça upgrade para continuar.' : 'Entre para continuar sua conversa.',
         });
         setMessages(prev => prev.slice(0, -1)); // remove pergunta não respondida
         setSessionClosed(true);
-        setShowUpgradeModal(true);
+        if (user) setShowUpgradeModal(true);
+        else navigate('/auth?next=/pricing');
         setIsLoading(false);
         return;
       }
