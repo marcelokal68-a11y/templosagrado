@@ -232,7 +232,9 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [lgpdAccepted, setLgpdAccepted] = useState(() => localStorage.getItem('lgpd_accepted') === 'true');
   const [guestQuestionsRemaining, setGuestQuestionsRemaining] = useState(() => {
-    const saved = Number(localStorage.getItem(GUEST_REMAINING_KEY));
+    const raw = localStorage.getItem(GUEST_REMAINING_KEY);
+    if (raw === null) return GUEST_QUESTION_LIMIT;
+    const saved = Number(raw);
     return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
   });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
