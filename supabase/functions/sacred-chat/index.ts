@@ -275,8 +275,11 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization") || "";
     if (authHeader.startsWith("Bearer ")) {
       const token = authHeader.slice("Bearer ".length);
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
-      if (token && token !== anonKey) {
+      const publicKeys = new Set([
+        Deno.env.get("SUPABASE_ANON_KEY") || "",
+        Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "",
+      ].filter(Boolean));
+      if (token && !publicKeys.has(token)) {
         const { requireUser } = await import("../_shared/auth.ts");
         const auth = await requireUser(req);
         if ("error" in auth) return auth.error;
