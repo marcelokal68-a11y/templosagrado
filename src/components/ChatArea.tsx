@@ -1142,20 +1142,20 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                   </div>
                 )}
                 {/* Free quota indicator — always visible for free users */}
-                {user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0 && (
+                {((user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining > 0) || (!user && guestQuestionsRemaining > 0)) && (
                   <div className="mx-3 mb-1 px-1 flex items-center justify-between gap-2">
                     <p className="text-xs text-muted-foreground">
                       <span className={cn(
                         "font-semibold",
-                        questionsRemaining <= 3 ? "text-amber-600" : "text-foreground/70"
+                        (user ? questionsRemaining : guestQuestionsRemaining) <= 3 ? "text-amber-600" : "text-foreground/70"
                       )}>
-                        {questionsRemaining}/20
+                        {user ? questionsRemaining : guestQuestionsRemaining}/20
                       </span>{' '}
-                      {questionsRemaining === 1 ? 'mensagem restante este mês' : 'mensagens restantes este mês'}
+                      {(user ? questionsRemaining : guestQuestionsRemaining) === 1 ? 'mensagem restante este mês' : 'mensagens restantes este mês'}
                     </p>
-                    {questionsRemaining <= 5 && (
-                      <Link to="/pricing" className="text-xs font-medium text-primary hover:underline whitespace-nowrap">
-                        Assinar Devoto →
+                    {(user ? questionsRemaining : guestQuestionsRemaining) <= 5 && (
+                      <Link to={user ? "/pricing" : "/auth?next=/pricing"} className="text-xs font-medium text-primary hover:underline whitespace-nowrap">
+                        {user ? 'Assinar Devoto →' : 'Entrar →'}
                       </Link>
                     )}
                   </div>
@@ -1188,9 +1188,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     placeholder={
                       user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0
                         ? 'Limite mensal atingido — assine para continuar'
+                        : !user && guestQuestionsRemaining <= 0
+                          ? 'Limite grátis atingido — entre para continuar'
                         : 'Sua mensagem...'
                     }
-                    disabled={!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0}
+                    disabled={(!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0) || (!user && guestQuestionsRemaining <= 0)}
                     className="min-h-[44px] max-h-[100px] resize-none text-base rounded-2xl bg-background border-border shadow-[0_0_10px_rgba(0,0,0,0.05)] focus-visible:ring-primary/30 disabled:opacity-50"
                     rows={1}
                   />
@@ -1217,7 +1219,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                   )}
                   <Button
                     onClick={sendMessage}
-                    disabled={isLoading || !chatInput.trim() || (!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0)}
+                    disabled={isLoading || !chatInput.trim() || (!!user && !inPreview && accessStatus !== 'subscriber' && accessStatus !== 'admin' && questionsRemaining <= 0) || (!user && guestQuestionsRemaining <= 0)}
                     size="icon"
                     className="shrink-0 h-10 w-10 rounded-full bg-foreground text-background hover:bg-foreground/85 disabled:opacity-30"
                   >
