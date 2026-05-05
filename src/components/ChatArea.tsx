@@ -45,10 +45,22 @@ const LOW_QUOTA_WARNING_THRESHOLD = 5;
 
 function parseSuggestions(content: string): { text: string; suggestions: string[] } {
   const match = content.match(/\[SUGGESTIONS\](.*?)\[\/SUGGESTIONS\]/s);
-  if (!match) return { text: content, suggestions: [] };
-  const text = content.replace(/\[SUGGESTIONS\].*?\[\/SUGGESTIONS\]/s, '').trim();
-  const suggestions = match[1].split('|').map(s => s.trim()).filter(Boolean);
-  return { text, suggestions };
+  if (match) {
+    const text = content.replace(/\[SUGGESTIONS\][\s\S]*?\[\/SUGGESTIONS\]/, '').trim();
+    const suggestions = match[1].split('|').map(s => s.trim()).filter(Boolean);
+    return { text, suggestions };
+  }
+  // Hide partial/streaming SUGGESTIONS marker (opened but not yet closed)
+  const partialIdx = content.indexOf('[SUGGESTIONS]');
+  if (partialIdx !== -1) {
+    return { text: content.slice(0, partialIdx).trimEnd(), suggestions: [] };
+  }
+  // Hide incomplete opening tag like "[SUGGEST" or "[SUGGESTION" at the very end
+  const openMatch = content.match(/\[(?:S(?:U(?:G(?:G(?:E(?:S(?:T(?:I(?:O(?:N(?:S)?)?)?)?)?)?)?)?)?)?)?$/);
+  if (openMatch) {
+    return { text: content.slice(0, openMatch.index).trimEnd(), suggestions: [] };
+  }
+  return { text: content, suggestions: [] };
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
