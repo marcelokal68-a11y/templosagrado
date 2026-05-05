@@ -692,12 +692,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const generateSummary = async () => {
     setIsGeneratingSummary(true);
     try {
+      const summaryHeaders = await getEdgeAuthHeaders();
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers: summaryHeaders,
         body: JSON.stringify({
           messages: messages.map(m => ({ role: m.role, content: parseSuggestions(m.content).text })),
           context: chatContext,
