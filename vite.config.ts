@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => ({
         short_name: "Templo Sagrado",
         description: "Orientação espiritual personalizada de 12 tradições religiosas e 20 filosofias.",
         theme_color: "#c68a2e",
-        background_color: "#0c0a09",
+        background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
