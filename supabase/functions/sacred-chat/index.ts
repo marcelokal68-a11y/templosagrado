@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { retrieveRagContext } from "../_shared/rag.ts";
 import { corsHeadersFor } from "../_shared/cors.ts";
+import { responseLanguage } from "../_shared/lang.ts";
+import { streamFromGateway } from "../_shared/aiStream.ts";
 
 const SACRED_TEXTS: Record<string, string> = {
   christian: "the Bible (Old and New Testament)",
@@ -297,8 +299,7 @@ serve(async (req) => {
     const needInstruction = context?.need ? `The faithful seeks: ${context.need}.` : "";
     const topicInstruction = context?.topic ? `The discussion topic is: ${context.topic}.` : "";
 
-    const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
-    const responseLang = langMap[language] || 'Brazilian Portuguese';
+    const responseLang = responseLanguage(language);
 
     let historySection = '';
     let memorySection = '';
@@ -616,71 +617,19 @@ BENCAO FINAL
 
 Cada seção deve ter no mínimo 3 frases substantivas. Seja específico — não use generalidades.` : ''}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: generateSummary ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-        // Generous ceiling to avoid truncated responses, especially for the structured
-        // deep summary (Pro) which has multiple long sections. Normal mentor replies
-        // are short anyway, so this only kicks in when needed.
-        max_tokens: generateSummary ? 4000 : 1500,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Inject sources as a custom SSE event before forwarding the AI stream.
-    if (ragSources.length === 0) {
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
-    }
-
-    const sourcesPayload = `data: ${JSON.stringify({ __sources: ragSources })}\n\n`;
-    const encoder = new TextEncoder();
-    const upstream = response.body!;
-    const stream = new ReadableStream({
-      async start(controller) {
-        controller.enqueue(encoder.encode(sourcesPayload));
-        const reader = upstream.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          controller.enqueue(value);
-        }
-        controller.close();
-      },
-    });
-    return new Response(stream, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    return await streamFromGateway({
+      apiKey: LOVABLE_API_KEY,
+      model: generateSummary ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages,
+      ],
+      // Generous ceiling to avoid truncated responses, especially for the structured
+      // deep summary (Pro) which has multiple long sections. Normal mentor replies
+      // are short anyway, so this only kicks in when needed.
+      maxTokens: generateSummary ? 4000 : 1500,
+      sources: ragSources,
+      req,
     });
   } catch (e) {
     console.error("chat error:", e);
