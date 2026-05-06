@@ -429,6 +429,13 @@ export type Database = {
             referencedRelation: "prayer_wall_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "prayer_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       prayer_reactions: {
@@ -459,6 +466,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "prayer_wall_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayer_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -494,6 +508,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "prayer_wall_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayer_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -704,7 +725,67 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      prayer_reactions_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          post_id: string | null
+          reaction_type: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayer_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_wall_posts_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prayer_wall_posts_public: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          is_anonymous: boolean | null
+          is_public: boolean | null
+          philosophy: string | null
+          religion: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          display_name?: never
+          id?: string | null
+          is_anonymous?: boolean | null
+          is_public?: boolean | null
+          philosophy?: string | null
+          religion?: string | null
+          user_id?: never
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          display_name?: never
+          id?: string | null
+          is_anonymous?: boolean | null
+          is_public?: boolean | null
+          philosophy?: string | null
+          religion?: string | null
+          user_id?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       decrement_invite_usage: {
