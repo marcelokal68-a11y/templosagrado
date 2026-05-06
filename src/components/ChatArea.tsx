@@ -643,18 +643,14 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           topic: chatContext.topic || null,
           philosophy: chatContext.philosophy || null,
         };
+        // Persist chat in `chat_messages` only. We previously also wrote to
+        // `activity_history` (type='chat'), which doubled storage and made
+        // history queries inconsistent. `chat_messages` is the source of truth
+        // for chat; `activity_history` is for verse/practice/prayer/summary.
         supabase.from('chat_messages').insert([
           { ...ctx, role: 'user', content: userMsg.content },
           { ...ctx, role: 'assistant', content: assistantSoFar },
         ]).then(() => {});
-
-        (supabase.from('activity_history' as any) as any).insert({
-          user_id: user.id,
-          type: 'chat',
-          title: userMsg.content.length > 60 ? userMsg.content.slice(0, 60) + '...' : userMsg.content,
-          content: `👤 ${userMsg.content}\n\n🕊️ ${assistantSoFar}`,
-          metadata: { religion: chatContext.religion || null, philosophy: chatContext.philosophy || null },
-        }).then(() => {});
       }
 
       if (assistantSoFar.length > 0) {
