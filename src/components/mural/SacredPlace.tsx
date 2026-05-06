@@ -28,8 +28,8 @@ export default function SacredPlace({ selectedReligion, userReligion }: SacredPl
 
   const fetchPosts = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('prayer_wall_posts')
+    const { data } = await (supabase as any)
+      .from('prayer_wall_posts_public')
       .select('*')
       .eq('religion', selectedReligion)
       .order('created_at', { ascending: false })
@@ -38,20 +38,17 @@ export default function SacredPlace({ selectedReligion, userReligion }: SacredPl
     setPosts(data || []);
 
     if (data && data.length > 0) {
-      const postIds = data.map(p => p.id);
-      const { data: rxns } = await supabase
-        .from('prayer_reactions')
-        .select('*')
-        .in('post_id', postIds);
+      const postIds = data.map((p: any) => p.id);
+      const { data: rxns } = await (supabase as any)
+        .rpc('get_prayer_reactions', { _post_ids: postIds });
 
       const map: typeof reactions = {};
-      for (const p of data) {
-        const pRxns = (rxns || []).filter(r => r.post_id === p.id);
-        map[p.id] = {
-          pray: pRxns.filter(r => r.reaction_type === 'pray').length,
-          heart: pRxns.filter(r => r.reaction_type === 'heart').length,
-          userPray: pRxns.some(r => r.reaction_type === 'pray' && r.user_id === user.id),
-          userHeart: pRxns.some(r => r.reaction_type === 'heart' && r.user_id === user.id),
+      for (const r of (rxns || [])) {
+        map[r.post_id] = {
+          pray: Number(r.pray_count) || 0,
+          heart: Number(r.heart_count) || 0,
+          userPray: !!r.user_pray,
+          userHeart: !!r.user_heart,
         };
       }
       setReactions(map);
