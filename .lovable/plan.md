@@ -1,57 +1,84 @@
 
+# Relatório — arquitetura, duplicidades e conflitos
 
-## Diagnóstico
+## 1. Causa raiz da tela em branco (já corrigida na turn anterior)
 
-Dois problemas relacionados, ambos confirmados ao ler o código:
+`src/integrations/supabase/client.ts` chamava `createClient(SUPABASE_URL, KEY)` no top-level. No bundle de produção `import.meta.env.VITE_SUPABASE_URL` veio `undefined` → `Error: supabaseUrl is required` → árvore React não monta → tela 100% branca em `templosagrado.lovable.app`. Adicionei fallback hardcoded (chaves anon — públicas) em `client.ts` e `lib/authHeader.ts`. **Requer Publish/Update para corrigir produção.**
 
-### 1. Texto do Versículo do Dia gera incompleto (raiz do bug do áudio)
+## 2. Duplicidades e conflitos encontrados
 
-Em `supabase/functions/verse-of-day/index.ts` (linhas 548-561), a chamada à IA **não define `max_tokens`**. O prompt pede 5-8 linhas de explicação + Patrística/Talmud/Tafsir + reflexão + fontes + nota acadêmica + parágrafo `practical_use` (4-6 linhas). Para tradições eruditas (Judaísmo, Católico com Patrística, Islã com tafsir), isso ultrapassa fácil 1500-2000 tokens. Sem `max_tokens` explícito, o gateway aplica um default baixo, **a resposta é cortada no meio do JSON**, o `JSON.parse` falha e cai no fallback que joga o texto cru no campo `explanation` (sem `practical_use`, sem `reference`, etc.), ou o JSON parcial perde campos.
+### A. Edge functions de chat sobrepostas
+- `sacred-chat` — chat principal do Mentor (usado por `ChatArea` e `PublishToMural`)
+- `learn-chat` — chat de Estudo (usado por `Learn`)
 
-Pior: **o JSON truncado é cacheado** no `daily_verse_cache` (linha 588), então o texto incompleto fica gravado o dia inteiro para todos os usuários daquela tradição/idioma. Isso explica por que parece "travar" em alguns dispositivos — quem caiu no cache truncado vê texto curto e o áudio depende desse texto curto/quebrado (e em alguns casos `content.explanation` vira o JSON cru não-parseado, causando narração estranha ou falha).
+Ambas: importam `_shared/rag.ts`, definem `corsHeaders` inline (duplicado), repetem listas TOPIC_NAMES e SACRED_TEXTS, repetem prompt-engineering. **NÃO é redundância pura** (têm prompts/personas diferentes), mas ~60% do código é repetido.
 
-Não há checagem de `finish_reason` para detectar a truncagem.
+### B. CORS duplicado em 22/23 edge functions
+Existe `supabase/functions/_shared/cors.ts` com `corsHeadersFor`/`preflight`/`json`, mas só **1** função o usa. As outras 22 redefinem `corsHeaders` inline com `Access-Control-Allow-Origin: *` — inconsistente com o shared e com a política de allowlist do projeto.
 
-### 2. PWA/tela pequena: layout do cabeçalho do card "trava"
+### C. Quota de convidados (guest_chat_usage)
+- Tabela criada com RLS `ALL → false` (correto: só `service_role` acessa via RPC).
+- Função `try_consume_guest_question` está com `SECURITY DEFINER` mas **3 migrations consecutivas** ajustaram permissões (revoke/grant). Hoje só `service_role` executa — ok.
+- Edge function `sacred-chat` chama via `supabase.rpc(...)` com service-role client — ok.
+- Sem problema funcional, apenas histórico ruidoso de migrations.
 
-Em `src/pages/Verse.tsx` linhas 178-194, o `CardHeader` coloca título + 3 botões (Ouvir, Atualizar, Publicar no Mural) na **mesma linha** com `flex items-center justify-between`. Em viewport 402px (PWA mobile), o título `Sparkles + nome da parashá/leitura` empurra os botões e eles quebram de forma ruim, podendo ficar cortados/sobrepostos. Não é o áudio que trava — é o layout que esmaga os controles.
+### D. Acoplamento entre tabelas chat_messages × chat_sessions × activity_history
+- `chat_messages` armazena cada mensagem do chat principal.
+- `chat_sessions` agrupa por afiliação (foi adicionada para "continuidade IA").
+- `activity_history` recebe entradas duplicadas de chat (vide `ChatArea.tsx:651`, `776`) **além** de Verse, Practice, Prayers.
+  - Isso significa que conversas aparecem **duas vezes** em queries de histórico se alguém juntar as fontes.
+- Ao "limpar tudo" (`ChatArea.tsx:1356-1358`) deleta de 3 tabelas distintas — manter a redundância dobra trabalho e aumenta superfície de inconsistência.
 
----
+### E. Componentes muito grandes (alto risco de regressão)
+- `ChatArea.tsx`: **1420 linhas** — concentra: chat, streaming SSE, LGPD gate, TTS, STT, sumário, exclusão, modais de upgrade, banner de exploração, sugestões, modo confessional, persistência. Já causou os warnings de `forwardRef` recentes e o bug de stream parser.
+- `ContextPanel.tsx`: **595 linhas** — playlists Spotify, lista de tradições, mapeamento de tópicos, dialogs de troca de fé. **Ainda emite warning de forwardRef** (`ContextPanel` não é forwardRef, mas Index passa um `ref` para `ChatArea` via Index, e algum filho intermediário recebe ref indevida).
 
-## Correção
+### F. AI model mismatch
+- Memória do projeto diz: chat = Gemini 2.5 Flash, análise = Gemini 2.5 Pro.
+- `sacred-chat` hoje usa modelo conforme env/header — não validei se está coerente. Vou conferir e alinhar se divergir.
 
-### A. Backend — `supabase/functions/verse-of-day/index.ts`
+### G. Tipos Supabase tocados manualmente (`types.ts`)
+Foi editado direto por um turn anterior — esse arquivo é auto-gerado e qualquer migration nova vai sobrescrever as edições. Risco baixo agora (não trava build), mas precisa ser revertido para regeneração natural.
 
-1. **Adicionar `max_tokens: 2000`** na chamada do gateway (suficiente para JSON completo das tradições mais densas).
-2. **Detectar truncagem**: ler `finish_reason` da resposta. Se for `length`, logar warning e **NÃO cachear** (assim o próximo request gera de novo em vez de servir resposta quebrada para todos).
-3. **Validar JSON parseado antes de cachear**: só cachear se `parsed.title` E `parsed.explanation` existirem como strings não vazias. Se o parse caiu no fallback (texto cru), pular o cache.
-4. **Fallback de modelo**: se a primeira tentativa truncar (`finish_reason === 'length'`), repetir uma vez com `google/gemini-2.5-pro` (mais robusto para JSON longo) antes de devolver.
+### H. `index.html` ainda tem `theme_color #c68a2e` e PWA `background_color #0c0a09` (escuro), mas o design atual é "Clean Light". O fundo escuro do PWA splash conflita com o tema.
 
-### B. Limpeza imediata do cache poluído
+## 3. Plano de correções críticas (ordem)
 
-Migration SQL para deletar entradas de hoje que foram salvas truncadas (sem `practical_use` ou com `explanation` excessivamente longa contendo `{`):
-```sql
-DELETE FROM daily_verse_cache 
-WHERE cache_date = CURRENT_DATE 
-  AND (verse_data->>'practical_use' IS NULL 
-       OR verse_data->>'practical_use' = ''
-       OR verse_data->>'explanation' LIKE '%{%"title"%');
-```
+### Passo 1 — Garantir que produção volte a renderizar
+Já feito na turn anterior (fallbacks no client). Você precisa apenas clicar **Publish → Update** para ir ao ar.
 
-### C. Frontend — `src/pages/Verse.tsx`
+### Passo 2 — Eliminar warnings de ref e estabilizar UI
+- Auditar `ContextPanel.tsx` — encontrar onde um filho recebe `ref` sem `forwardRef` e converter (ou remover o ref).
+- Confirmar que `ChatArea`, `MessageBubble` e `DivineIcon` (já em forwardRef) estão consistentes.
 
-5. **Arrumar layout do header do card no mobile** (linhas 178-198): empilhar título numa linha e botões numa segunda linha em telas pequenas. Trocar o `flex items-center justify-between` por uma estrutura `flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`, e fazer a barra de botões `flex-wrap` para nunca cortar.
-6. **Esconder texto dos botões em telas muito estreitas** (já é assim para Refresh; aplicar a Listen também — manter só ícone < 360px).
-7. **Validação extra no cliente**: antes de chamar `playTTS`, verificar se `content.explanation` tem ≥ 30 caracteres e não começa com `{` (heurística anti-JSON-cru). Se falhar, mostrar toast "Conteúdo incompleto, recarregando…" e chamar `fetchVerse()` automaticamente uma vez.
+### Passo 3 — Consolidar CORS nas edge functions
+- Migrar todas as 22 funções inline para `corsHeadersFor(req)` / `preflight(req)` / `json()` do `_shared/cors.ts`.
+- Remove ~22 blocos duplicados de CORS, alinha com a allowlist de origens.
+- Sem mudanças de comportamento para o usuário.
 
-### Arquivos a editar
+### Passo 4 — Parar de duplicar conversas em activity_history
+- `ChatArea` deixa de inserir em `activity_history` quando o conteúdo já vai para `chat_messages`. Histórico do chat é lido de `chat_messages` (já é).
+- `activity_history` continua para Verse, Practice, Prayers, Journey (entradas que NÃO ficam em outras tabelas).
+- "Limpar tudo" deleta apenas `chat_messages` + `user_memory` + entradas de `activity_history` que NÃO sejam type='chat'.
 
-- `supabase/functions/verse-of-day/index.ts` — adicionar `max_tokens`, checar `finish_reason`, validar antes de cachear, retry em Pro.
-- `src/pages/Verse.tsx` — header responsivo + guard anti-conteúdo-quebrado antes da narração.
-- Nova migração SQL — limpar cache poluído de hoje.
+### Passo 5 — Reverter edição manual em `types.ts`
+Restaurar o arquivo no estado pré-edição (será regenerado pelo Supabase).
 
-### Fora de escopo
+### Passo 6 — Pequenos ajustes
+- Alinhar `manifest.background_color` para a paleta clara (ou manter escuro intencionalmente — confirmar).
+- Confirmar modelo Gemini de `sacred-chat` bate com a regra do projeto.
 
-- Não vou mexer em `elevenlabs-tts` nem em `ttsPlayer.ts` — eles funcionam; o problema é o texto que chega neles.
-- Não vou aumentar `max_tokens` de outras funções (chat, prayers) neste passo — só `verse-of-day`, que é o caso reportado. Posso fazer auditoria similar nas outras numa próxima rodada se quiser.
+### Fora do escopo desta rodada (proposta para depois)
+- Refatorar `ChatArea` em sub-componentes (LgpdGate, ChatStream, ChatComposer, ChatActions). Reduz de 1420 para ~400 + 4 arquivos de ~200.
+- Extrair lógica comum de `sacred-chat` e `learn-chat` em `_shared/promptBuilder.ts` + `_shared/sacredTexts.ts`.
 
+## 4. O que vou EVITAR fazer agora
+- Não vou deletar tabelas, edge functions ou alterar RLS de tabelas com dados.
+- Não vou tocar em fluxo de pagamento/Stripe/auth.
+- Não vou refatorar `ChatArea`/`ContextPanel` em larga escala — apenas corrigir o ref warning específico.
+
+## 5. Riscos
+- **Passo 4** muda histórico exibido: usuários que esperavam ver chat em `/journey` (activity_history) podem perceber se a página agregava as duas fontes. Vou verificar `Journey.tsx` antes de mudar.
+- **Passo 3** muda CORS: se algum domínio não-listado consumia as funções, vai começar a receber bloqueio. A allowlist atual cobre os domínios de produção e localhost.
+
+Aprove para eu executar do Passo 2 ao 6 (o Passo 1 já está commitado, falta só o seu Update).
