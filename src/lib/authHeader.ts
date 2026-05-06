@@ -1,6 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const FALLBACK_PUBLISHABLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaXltdGtyZXN5bmxqd2NraHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzEzMDMsImV4cCI6MjA4NzEwNzMwM30.fKGUmOUK5XU1TnuFzSRPNIJQypxBzayekcsMXZhqVMw';
+const PUBLISHABLE_KEY =
+  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || FALLBACK_PUBLISHABLE_KEY;
 
 /**
  * Returns headers suitable for calling a Supabase Edge Function.
