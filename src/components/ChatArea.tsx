@@ -1350,7 +1350,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               onClick={async () => {
                 await Promise.all([
                   supabase.from('chat_messages').delete().eq('user_id', user!.id),
-                  supabase.from('activity_history').delete().eq('user_id', user!.id),
+                  // Only chat-typed activity entries (legacy duplicates). Verse/practice/prayer stay.
+                  supabase.from('activity_history').delete().eq('user_id', user!.id).eq('type', 'chat'),
                   supabase.from('user_memory').delete().eq('user_id', user!.id),
                 ]);
                 stopAudio();
