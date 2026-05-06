@@ -5,11 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeadersFor } from "../_shared/cors.ts";
 
 const EMBED_MODEL = "google/text-embedding-004";
 const CHUNK_CHAR_TARGET = 2400; // ~800 tokens
@@ -95,6 +91,7 @@ async function extractTextFromFile(buffer: ArrayBuffer, fileName: string): Promi
 }
 
 serve(async (req) => {
+  const corsHeaders = corsHeadersFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

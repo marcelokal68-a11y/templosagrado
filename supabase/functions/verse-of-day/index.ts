@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeadersFor } from "../_shared/cors.ts";
 
 const practicalUseInstruction: Record<string, string> = {
   'pt-BR': `\nInclua também um campo "practical_use" com um parágrafo inspirador (4-6 linhas) sobre como aplicar este ensinamento na vida prática do usuário hoje. Reveze entre temas como: cuidar da saúde física e mental, fortalecer a alma, excelência no trabalho, cultivar amizades, nutrir a família, servir a comunidade. Escreva de forma inédita, poética e motivadora, como um grande sacerdote falando diretamente ao coração do leitor. O leitor deve terminar de ler e sentir vontade de agir imediatamente.`,
@@ -421,6 +417,7 @@ Responde SOLO con JSON válido (sin markdown):
 }
 
 serve(async (req) => {
+  const corsHeaders = corsHeadersFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

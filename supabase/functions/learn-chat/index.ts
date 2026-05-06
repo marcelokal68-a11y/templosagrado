@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { retrieveRagContext } from "../_shared/rag.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeadersFor } from "../_shared/cors.ts";
 
 const TOPIC_NAMES: Record<string, Record<string, string>> = {
   'pt-BR': {
@@ -52,6 +48,7 @@ const TOPIC_NAMES: Record<string, Record<string, string>> = {
 };
 
 serve(async (req) => {
+  const corsHeaders = corsHeadersFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
