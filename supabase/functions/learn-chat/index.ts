@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { retrieveRagContext } from "../_shared/rag.ts";
 import { corsHeadersFor } from "../_shared/cors.ts";
+import { responseLanguage } from "../_shared/lang.ts";
+import { streamFromGateway } from "../_shared/aiStream.ts";
 
 const TOPIC_NAMES: Record<string, Record<string, string>> = {
   'pt-BR': {
@@ -59,8 +61,7 @@ serve(async (req) => {
     const lang = language || 'pt-BR';
     const topicName = TOPIC_NAMES[lang]?.[topic] || TOPIC_NAMES['pt-BR']?.[topic] || topic;
 
-    const langMap: Record<string, string> = { 'pt-BR': 'Brazilian Portuguese', 'en': 'English', 'es': 'Spanish' };
-    const responseLang = langMap[lang] || 'Brazilian Portuguese';
+    const responseLang = responseLanguage(lang);
 
     const catholicSection = topic === 'catholic' ? `
 
@@ -677,66 +678,18 @@ CRITICAL RULES:
 - NEVER proselytize or advocate for any tradition. Present facts with academic neutrality.
 - NEVER append suggested questions, follow-up question lists, or any "---SUGGESTIONS---" block at the end. Just answer and stop. Let the student lead the next question.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-        // Lessons can include long historical context, citations and rich tradition
-        // sections. Give enough room so the answer never gets cut mid-sentence.
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (ragSources.length === 0) {
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
-    }
-
-    const sourcesPayload = `data: ${JSON.stringify({ __sources: ragSources })}\n\n`;
-    const encoder = new TextEncoder();
-    const upstream = response.body!;
-    const stream = new ReadableStream({
-      async start(controller) {
-        controller.enqueue(encoder.encode(sourcesPayload));
-        const reader = upstream.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          controller.enqueue(value);
-        }
-        controller.close();
-      },
-    });
-    return new Response(stream, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    return await streamFromGateway({
+      apiKey: LOVABLE_API_KEY,
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages,
+      ],
+      // Lessons can include long historical context, citations and rich tradition
+      // sections. Give enough room so the answer never gets cut mid-sentence.
+      maxTokens: 2000,
+      sources: ragSources,
+      req,
     });
   } catch (e) {
     console.error("learn-chat error:", e);
