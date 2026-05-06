@@ -2,8 +2,18 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Hardcoded fallbacks (publishable anon credentials — safe to ship in client bundle).
+// Required because production builds occasionally lose import.meta.env injection,
+// which used to throw at module load and produce a fully blank page.
+const FALLBACK_SUPABASE_URL = 'https://ejiymtkresynljwckhug.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaXltdGtyZXN5bmxqd2NraHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzEzMDMsImV4cCI6MjA4NzEwNzMwM30.fKGUmOUK5XU1TnuFzSRPNIJQypxBzayekcsMXZhqVMw';
+
+const SUPABASE_URL =
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) || FALLBACK_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY =
+  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+  FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
