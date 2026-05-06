@@ -725,31 +725,6 @@ export type Database = {
       }
     }
     Views: {
-      prayer_reactions_public: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          post_id: string | null
-          reaction_type: string | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "prayer_reactions_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "prayer_wall_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prayer_reactions_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "prayer_wall_posts_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       prayer_wall_posts_public: {
         Row: {
           content: string | null
@@ -791,6 +766,16 @@ export type Database = {
       decrement_invite_usage: {
         Args: { _invite_id: string }
         Returns: undefined
+      }
+      get_prayer_reactions: {
+        Args: { _post_ids: string[] }
+        Returns: {
+          heart_count: number
+          post_id: string
+          pray_count: number
+          user_heart: boolean
+          user_pray: boolean
+        }[]
       }
       has_role: {
         Args: {
