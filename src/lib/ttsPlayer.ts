@@ -4,9 +4,9 @@
 
 import { hashKey, getCachedAudio, putCachedAudio } from './ttsCache';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 
-const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const TTS_URL = edgeFunctionUrl('elevenlabs-tts');
 
 export class TTSCapReachedError extends Error {
   constructor(public cap: number, public used: number, message: string) {
@@ -68,7 +68,7 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      apikey: ANON_KEY,
+      apikey: PUBLISHABLE_KEY,
       Authorization: `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({ text, speed }),
