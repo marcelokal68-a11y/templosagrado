@@ -36,7 +36,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
 import { isPreviewEnvironment } from '@/lib/access';
-import { getEdgeAuthHeaders, hasLiveSession } from '@/lib/authHeader';
+import { edgeFunctionUrl, getEdgeAuthHeaders, hasLiveSession, PUBLISHABLE_KEY } from '@/lib/authHeader';
 
 type Source = { id: string; title: string; author: string | null };
 type Msg = { role: 'user' | 'assistant'; content: string; sources?: Source[] };
@@ -64,9 +64,9 @@ function parseSuggestions(content: string): { text: string; suggestions: string[
   return { text: content, suggestions: [] };
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`;
-const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
-const STT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-stt`;
+const CHAT_URL = edgeFunctionUrl('sacred-chat');
+const TTS_URL = edgeFunctionUrl('elevenlabs-tts');
+const STT_URL = edgeFunctionUrl('elevenlabs-stt');
 const GUEST_CHAT_ID_KEY = 'ts:guest-chat-id:v1';
 const GUEST_REMAINING_KEY = 'ts:guest-questions-remaining:v1';
 const GUEST_QUESTION_LIMIT = 20;
@@ -839,8 +839,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           const resp = await fetch(STT_URL, {
             method: 'POST',
             headers: {
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: PUBLISHABLE_KEY,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
             },
             body: formData,
           });
