@@ -20,7 +20,7 @@ import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle, Mi
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { playTTS, TTSCapReachedError, type PlayTTSResult } from '@/lib/ttsPlayer';
+import { playTTS, TTSCapReachedError, TTSAuthRequiredError, type PlayTTSResult } from '@/lib/ttsPlayer';
 import ListenButton from '@/components/learn/ListenButton';
 import PodcastControls from '@/components/learn/PodcastControls';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
