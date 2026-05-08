@@ -37,7 +37,7 @@ const ALLOWED_HEADERS =
 export function corsHeadersFor(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   const allowAll = Deno.env.get("CORS_ALLOW_ALL") === "1";
-  const allowOrigin = ALLOWED_ORIGINS.has(origin)
+  const allowOrigin = isAllowedOrigin(origin)
     ? origin
     : allowAll
       ? "*"
