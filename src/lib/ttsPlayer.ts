@@ -15,6 +15,13 @@ export class TTSCapReachedError extends Error {
   }
 }
 
+export class TTSAuthRequiredError extends Error {
+  constructor() {
+    super('Faça login para ouvir narrações em áudio.');
+    this.name = 'TTSAuthRequiredError';
+  }
+}
+
 export interface PlayTTSOptions {
   text: string;
   speed?: number;
