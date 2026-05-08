@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { edgeFunctionUrl, getEdgeAuthHeaders } from '@/lib/authHeader';
 
 interface PublishToMuralProps {
   originalContent: string;
@@ -49,12 +50,9 @@ export default function PublishToMural({ originalContent, variant = 'icon', clas
     setSummary('');
 
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sacred-chat`, {
+      const resp = await fetch(edgeFunctionUrl('sacred-chat'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers: await getEdgeAuthHeaders(),
         body: JSON.stringify({
           messages: [
             { role: 'user', content: `Resuma o seguinte conteúdo em até 500 caracteres para publicação em um mural sagrado. Mantenha a essência espiritual e inspiradora. Responda APENAS com o resumo, sem explicações:\n\n${originalContent.slice(0, 2000)}` },
