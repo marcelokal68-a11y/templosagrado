@@ -36,7 +36,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
 import { isPreviewEnvironment } from '@/lib/access';
-import { getEdgeAuthHeaders } from '@/lib/authHeader';
+import { getEdgeAuthHeaders, hasLiveSession } from '@/lib/authHeader';
 
 type Source = { id: string; title: string; author: string | null };
 type Msg = { role: 'user' | 'assistant'; content: string; sources?: Source[] };
@@ -367,6 +367,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const preloadAudio = useCallback(async (text: string, index: number) => {
     if (audioCacheRef.current.has(index)) return;
+    if (!(await hasLiveSession())) return; // guests: skip preload
     try {
       const headers = await buildTTSHeaders();
       const resp = await fetch(TTS_URL, {
@@ -402,6 +403,20 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       return;
     }
 
+    if (!(await hasLiveSession())) {
+      toast({
+        title: language === 'pt-BR' ? 'Faça login para ouvir' : 'Sign in to listen',
+        description: language === 'pt-BR'
+          ? 'A narração em áudio está disponível apenas para usuários autenticados.'
+          : 'Audio narration is available only for signed-in users.',
+        action: (
+          <ToastAction altText="Login" onClick={() => navigate('/auth')}>
+            {language === 'pt-BR' ? 'Entrar' : 'Sign in'}
+          </ToastAction>
+        ),
+      });
+      return;
+    }
     setLoadingAudio(index);
     try {
       const headers = await buildTTSHeaders();
@@ -436,7 +451,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     } finally {
       setLoadingAudio(null);
     }
-  }, [playingIndex, stopAudio, language, toast, buildTTSHeaders, ttsSpeed]);
+  }, [playingIndex, stopAudio, language, toast, buildTTSHeaders, ttsSpeed, navigate]);
 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
