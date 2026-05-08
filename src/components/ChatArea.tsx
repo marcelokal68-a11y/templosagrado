@@ -367,6 +367,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
   const preloadAudio = useCallback(async (text: string, index: number) => {
     if (audioCacheRef.current.has(index)) return;
+    if (!(await hasLiveSession())) return; // guests: skip preload
     try {
       const headers = await buildTTSHeaders();
       const resp = await fetch(TTS_URL, {
