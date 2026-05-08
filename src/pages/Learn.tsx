@@ -20,7 +20,7 @@ import { ArrowLeft, SendHorizonal, Loader2, GraduationCap, Sparkles, Shuffle, Mi
 import ReligionIcon from '@/components/ReligionIcon';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { playTTS, TTSCapReachedError, type PlayTTSResult } from '@/lib/ttsPlayer';
+import { playTTS, TTSCapReachedError, TTSAuthRequiredError, type PlayTTSResult } from '@/lib/ttsPlayer';
 import ListenButton from '@/components/learn/ListenButton';
 import PodcastControls from '@/components/learn/PodcastControls';
 import SanskritGlossary from '@/components/learn/SanskritGlossary';
@@ -176,7 +176,14 @@ export default function Learn() {
       playerRef.current = result;
       setPlayingIndex(index);
     } catch (e: any) {
-      if (e instanceof TTSCapReachedError) {
+      if (e instanceof TTSAuthRequiredError) {
+        toast.error(language === 'en'
+          ? 'Sign in to listen to narrations.'
+          : language === 'es'
+            ? 'Inicia sesión para escuchar narraciones.'
+            : 'Faça login para ouvir narrações em áudio.');
+        setPodcastMode(false);
+      } else if (e instanceof TTSCapReachedError) {
         toast.error(language === 'en'
           ? 'Monthly narration limit reached. Try again next month or upgrade.'
           : language === 'es'
