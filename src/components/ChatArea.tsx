@@ -451,7 +451,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     } finally {
       setLoadingAudio(null);
     }
-  }, [playingIndex, stopAudio, language, toast, buildTTSHeaders, ttsSpeed]);
+  }, [playingIndex, stopAudio, language, toast, buildTTSHeaders, ttsSpeed, navigate]);
 
   const handleCopy = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
