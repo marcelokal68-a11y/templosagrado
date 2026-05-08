@@ -2,8 +2,16 @@ import { supabase } from '@/integrations/supabase/client';
 
 const FALLBACK_PUBLISHABLE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaXltdGtyZXN5bmxqd2NraHVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzEzMDMsImV4cCI6MjA4NzEwNzMwM30.fKGUmOUK5XU1TnuFzSRPNIJQypxBzayekcsMXZhqVMw';
-const PUBLISHABLE_KEY =
+const FALLBACK_SUPABASE_URL = 'https://ejiymtkresynljwckhug.supabase.co';
+export const PUBLISHABLE_KEY =
   (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || FALLBACK_PUBLISHABLE_KEY;
+export const SUPABASE_FUNCTIONS_URL = `${
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) || FALLBACK_SUPABASE_URL
+}/functions/v1`;
+
+export function edgeFunctionUrl(functionName: string): string {
+  return `${SUPABASE_FUNCTIONS_URL}/${functionName}`;
+}
 
 /**
  * Returns headers suitable for calling a Supabase Edge Function.
