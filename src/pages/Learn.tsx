@@ -34,6 +34,7 @@ import CandombleGlossary from '@/components/learn/CandombleGlossary';
 import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
 import HebrewGlossary from '@/components/learn/HebrewGlossary';
 import StarterQuestionChips from '@/components/learn/StarterQuestionChips';
+import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -47,7 +48,7 @@ const PHILOSOPHIES = [
   'shamanism', 'taoism', 'anthroposophy', 'cosmism', 'ubuntu',
 ];
 
-const LEARN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learn-chat`;
+const LEARN_URL = edgeFunctionUrl('learn-chat');
 
 // ===== Trending traditions (deterministic weekly seed) =====
 type TrendingItem = { key: string; kind: 'religion' | 'philosophy' };
@@ -309,7 +310,7 @@ export default function Learn() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
           messages: [...history, userMsg].map(m => ({ role: m.role, content: m.content })),

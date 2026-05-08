@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { History, Trash2, X, Feather, Copy, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 
 type HistoryMsg = { id: string; role: string; content: string; created_at: string };
 type Conversation = { userMsg: HistoryMsg; assistantMsg: HistoryMsg };
@@ -89,11 +90,11 @@ export default function ChatHistory() {
     setGenerating(true);
     setPosts([]);
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-post`, {
+      const resp = await fetch(edgeFunctionUrl('generate-post'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ text, networks: selectedNetworks }),
       });
