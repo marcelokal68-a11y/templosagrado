@@ -34,7 +34,7 @@ import CandombleGlossary from '@/components/learn/CandombleGlossary';
 import BuddhistGlossary from '@/components/learn/BuddhistGlossary';
 import HebrewGlossary from '@/components/learn/HebrewGlossary';
 import StarterQuestionChips from '@/components/learn/StarterQuestionChips';
-import { edgeFunctionUrl } from '@/lib/authHeader';
+import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 
 const RELIGIONS = [
   'christian', 'catholic', 'protestant', 'mormon', 'jewish', 'islam',
@@ -310,7 +310,7 @@ export default function Learn() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
           messages: [...history, userMsg].map(m => ({ role: m.role, content: m.content })),
