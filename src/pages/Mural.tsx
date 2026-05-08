@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SendHorizonal, Loader2, Globe } from 'lucide-react';
 import { containsProfanity } from '@/lib/profanityFilter';
 import { sanitizeDisplayName } from '@/lib/sanitizeDisplayName';
+import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 import EcumenicalWall from '@/components/mural/EcumenicalWall';
 
 export default function Mural() {
@@ -29,11 +30,11 @@ export default function Mural() {
   const moderateContent = useCallback(async (content: string): Promise<{ allowed: boolean; category: string; reason: string } | null> => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/moderate-post`, {
+      const resp = await fetch(edgeFunctionUrl('moderate-post'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session?.access_token || PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ content }),
       });
