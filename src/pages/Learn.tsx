@@ -176,7 +176,14 @@ export default function Learn() {
       playerRef.current = result;
       setPlayingIndex(index);
     } catch (e: any) {
-      if (e instanceof TTSCapReachedError) {
+      if (e instanceof TTSAuthRequiredError) {
+        toast.error(language === 'en'
+          ? 'Sign in to listen to narrations.'
+          : language === 'es'
+            ? 'Inicia sesión para escuchar narraciones.'
+            : 'Faça login para ouvir narrações em áudio.');
+        setPodcastMode(false);
+      } else if (e instanceof TTSCapReachedError) {
         toast.error(language === 'en'
           ? 'Monthly narration limit reached. Try again next month or upgrade.'
           : language === 'es'
