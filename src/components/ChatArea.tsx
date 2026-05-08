@@ -403,6 +403,20 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
       return;
     }
 
+    if (!(await hasLiveSession())) {
+      toast({
+        title: language === 'pt-BR' ? 'Faça login para ouvir' : 'Sign in to listen',
+        description: language === 'pt-BR'
+          ? 'A narração em áudio está disponível apenas para usuários autenticados.'
+          : 'Audio narration is available only for signed-in users.',
+        action: (
+          <ToastAction altText="Login" onClick={() => navigate('/auth')}>
+            {language === 'pt-BR' ? 'Entrar' : 'Sign in'}
+          </ToastAction>
+        ),
+      });
+      return;
+    }
     setLoadingAudio(index);
     try {
       const headers = await buildTTSHeaders();
