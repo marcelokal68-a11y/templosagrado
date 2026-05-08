@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { History, Trash2, X, Feather, Copy, Check, Loader2, MessageCircle, BookOpen, Heart, CheckSquare, Brain, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 
 type ActivityItem = {
   id: string;
@@ -111,11 +112,11 @@ export default function ActivityHistory() {
     setGenerating(true);
     setPosts([]);
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-post`, {
+      const resp = await fetch(edgeFunctionUrl('generate-post'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ text, networks: selectedNetworks }),
       });
@@ -150,11 +151,11 @@ export default function ActivityHistory() {
     setAnalyzing(true);
     setAnalysisResult('');
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-history`, {
+      const resp = await fetch(edgeFunctionUrl('analyze-history'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
           items: selectedItems.map(i => ({ type: i.type, title: i.title, content: i.content, created_at: i.created_at })),
