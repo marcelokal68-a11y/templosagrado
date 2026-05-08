@@ -48,20 +48,29 @@ export async function playTTS({ text, speed = 1.15, onEnded }: PlayTTSOptions): 
   }
 
   // 2) Cache miss → fetch streaming response
-  // Use the user's session token (when logged in) so the edge function can
-  // identify them and apply the monthly TTS cap. Falls back to anon key.
+  // The TTS edge function REQUIRES an authenticated user (monthly cap is
+  // enforced per-user). Anonymous calls would be rejected as 401, so we
+  // bail out early with a clear error instead of sending the publishable
+  // key (which has no `sub` claim and triggers a confusing 401).
   const { data: { session } } = await supabase.auth.getSession();
-  const authToken = session?.access_token ?? ANON_KEY;
+  if (!session?.access_token) {
+    throw new TTSAuthRequiredError();
+  }
 
   const response = await fetch(TTS_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       apikey: ANON_KEY,
-      Authorization: `Bearer ${authToken}`,
+      Authorization: `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({ text, speed }),
   });
+
+  if (response.status === 401 || response.status === 403) {
+    throw new TTSAuthRequiredError();
+  }
+
 
   if (response.status === 429) {
     let payload: any = {};
