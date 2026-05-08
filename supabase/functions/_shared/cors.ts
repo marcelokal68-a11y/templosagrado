@@ -14,6 +14,20 @@ const ALLOWED_ORIGINS = new Set([
   "http://127.0.0.1:8080",
 ]);
 
+// Allow Lovable preview/sandbox subdomains (id-preview--*.lovable.app,
+// *.lovableproject.com, *.sandbox.lovable.dev). These rotate per project
+// so we cannot enumerate them; we match by suffix instead.
+const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
+  /^https:\/\/[a-z0-9-]+\.lovable\.app$/i,
+  /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/i,
+  /^https:\/\/[a-z0-9-]+\.sandbox\.lovable\.dev$/i,
+];
+
+function isAllowedOrigin(origin: string): boolean {
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin));
+}
+
 const ALLOWED_HEADERS =
   "authorization, x-client-info, apikey, content-type, " +
   "x-supabase-client-platform, x-supabase-client-platform-version, " +
@@ -23,7 +37,7 @@ const ALLOWED_HEADERS =
 export function corsHeadersFor(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   const allowAll = Deno.env.get("CORS_ALLOW_ALL") === "1";
-  const allowOrigin = ALLOWED_ORIGINS.has(origin)
+  const allowOrigin = isAllowedOrigin(origin)
     ? origin
     : allowAll
       ? "*"
