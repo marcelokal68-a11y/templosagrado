@@ -204,7 +204,7 @@ function ChipGroup({ label, items, prefix, selected, onSelect, specificItems }: 
 }
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
-  const { language, chatContext, setChatContext, clearChatWithUndo, preferredReligion, user, refreshProfile } = useApp();
+  const { language, chatContext, setChatContext, setMessages, preferredReligion, user, refreshProfile } = useApp();
   const navigate = useNavigate();
   const [exploreIntent, setExploreIntent] = useState<typeof FAITH_OPTIONS[0] | null>(null);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
