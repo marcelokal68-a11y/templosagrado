@@ -248,12 +248,20 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     }
   };
 
-  const applyOption = (option: typeof FAITH_OPTIONS[0]) => {
-    clearChatWithUndo();
+  const applyOption = async (option: typeof FAITH_OPTIONS[0]) => {
+    const prevReligion = chatContext.religion;
+    const prevPhilosophy = chatContext.philosophy;
+    if (user && (prevReligion || prevPhilosophy)) {
+      await clearAffiliationHistory(user.id, prevReligion, prevPhilosophy);
+    }
+    setMessages([]);
     if (option.mode === 'religion') {
       setChatContext(prev => ({ ...prev, religion: option.key, philosophy: '', topic: '' }));
     } else {
       setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
+    }
+    if (prevReligion || prevPhilosophy) {
+      toast.success(t('faith.switch_done', language));
     }
   };
 
