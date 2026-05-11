@@ -1400,6 +1400,52 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete one exchange dialog */}
+      <AlertDialog open={deleteOneIndex !== null} onOpenChange={(open) => !open && setDeleteOneIndex(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('chat.delete_one_title', language)}</AlertDialogTitle>
+            <AlertDialogDescription>{t('chat.delete_one_desc', language)}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('panel.keep', language)}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                const idx = deleteOneIndex;
+                if (idx === null) return;
+                const userMsg = messages[idx];
+                const assistantMsg = messages[idx + 1];
+                const removeCount = assistantMsg && assistantMsg.role === 'assistant' ? 2 : 1;
+                // Best-effort DB cleanup by content match (most recent matches)
+                if (user && !confessionalMode && userMsg) {
+                  try {
+                    const contents = [userMsg.content];
+                    if (removeCount === 2) contents.push(assistantMsg.content);
+                    await supabase
+                      .from('chat_messages')
+                      .delete()
+                      .eq('user_id', user.id)
+                      .in('content', contents);
+                  } catch {}
+                }
+                setMessages(prev => {
+                  const next = [...prev];
+                  next.splice(idx, removeCount);
+                  return next;
+                });
+                stopAudio();
+                audioCacheRef.current.clear();
+                setDeleteOneIndex(null);
+                toast({ title: t('chat.message_deleted', language) });
+              }}
+            >
+              {t('chat.delete_one', language)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* Summary dialog */}
       <Dialog open={showSummaryDialog} onOpenChange={setShowSummaryDialog}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
