@@ -221,13 +221,11 @@ export default function Journey() {
           <Card className="p-8 text-center">
             <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <h2 className="text-base font-medium mb-2">{t('journey.empty', language)}</h2>
-            <p className="text-sm text-muted-foreground mb-5">
-              Cada conversa, oração e versículo aparece neste livro pessoal.
-            </p>
+            <p className="text-sm text-muted-foreground mb-5">{L.emptyDesc}</p>
             <Link to="/">
               <Button className="gap-1.5">
                 <MessageCircle className="h-4 w-4" />
-                Conversar com o mentor
+                {L.talkMentor}
               </Button>
             </Link>
           </Card>
@@ -286,7 +284,7 @@ export default function Journey() {
                   {selected.title}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(selected.created_at).toLocaleDateString('pt-BR', {
+                  {new Date(selected.created_at).toLocaleDateString(L.locale, {
                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
                   })}
                 </p>
@@ -298,7 +296,7 @@ export default function Journey() {
               </ScrollArea>
               <div className="flex gap-2 pt-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => copyContent(selected.content)} className="gap-1.5 flex-1">
-                  <Copy className="h-3.5 w-3.5" /> Copiar
+                  <Copy className="h-3.5 w-3.5" /> {L.copy}
                 </Button>
                 {selected.type === 'summary' && (
                   <Button variant="outline" size="sm" onClick={() => downloadPdf(selected)} className="gap-1.5 flex-1">
@@ -306,7 +304,7 @@ export default function Journey() {
                   </Button>
                 )}
                 <Button variant="ghost" size="sm" onClick={() => deleteItem(selected.id)} className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
-                  <Trash2 className="h-3.5 w-3.5" /> Apagar
+                  <Trash2 className="h-3.5 w-3.5" /> {L.deletev}
                 </Button>
               </div>
             </>
