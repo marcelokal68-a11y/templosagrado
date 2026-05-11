@@ -256,6 +256,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
+  const [deleteOneIndex, setDeleteOneIndex] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [confessionalMode, setConfessionalMode] = useState(false);
   const [sessionClosed, setSessionClosed] = useState(false);
