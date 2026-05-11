@@ -759,6 +759,10 @@ const translations: Record<Language, Record<string, string>> = {
     
     'history.title': 'History',
     'history.delete_all': 'Delete all',
+    'history.delete_one': 'Delete this conversation',
+    'history.delete_one_title': 'Delete this conversation?',
+    'history.delete_one_desc': 'This exchange will be permanently removed from your history.',
+    'history.deleted_one': 'Conversation deleted',
     'history.empty': 'No saved messages.',
     'history.deleted': 'History deleted',
     
