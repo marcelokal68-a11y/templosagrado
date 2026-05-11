@@ -590,6 +590,16 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.account_created': 'Conta criada!',
     'auth.verify_email': 'Verifique seu email para confirmar antes de entrar.',
     'auth.privacy_link': 'Política de Privacidade',
+    'auth.inapp_warning_title': 'Login do Google pode falhar aqui',
+    'auth.inapp_warning_body': 'Você está num navegador embutido (Instagram, Facebook, etc.) que bloqueia o login do Google. Use o e-mail/senha abaixo ou abra o link no Safari/Chrome.',
+    'auth.standalone_warning': 'Dica: se o login do Google travar, tente entrar pelo navegador antes de usar o app instalado.',
+    'oauth_error.title': 'Não consegui completar o login',
+    'oauth_error.subtitle': 'O Google retornou um erro de verificação. Você pode tentar de novo ou entrar com e-mail.',
+    'oauth_error.inapp_title': 'Você está num navegador embutido',
+    'oauth_error.inapp_body': 'Apps como Instagram e Facebook bloqueiam o login do Google. Copie o link abaixo e abra no Safari ou Chrome.',
+    'oauth_error.copy_link': 'Copiar link do app',
+    'oauth_error.try_again': 'Tentar Google de novo',
+    'oauth_error.try_email': 'Entrar com e-mail',
 
     // Landing
     'landing.hero_title': 'Templo Sagrado',
