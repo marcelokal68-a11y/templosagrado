@@ -173,7 +173,10 @@ export default function Profile() {
     if (!error) {
       setProfile({ ...profile, preferred_religion: value });
       setEditingReligion(false);
-      toast({ title: 'Tradição atualizada!' });
+      // Sync with global app state so chat/sidebar reflect immediately
+      setChatContext(prev => ({ ...prev, religion: value || '', philosophy: '', topic: '' }));
+      await refreshProfile();
+      toast({ title: value ? 'Tradição atualizada!' : 'Tradição removida' });
     }
   };
 
