@@ -990,21 +990,27 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         )}
 
         {/* Messages */}
-        {messages.map((msg, i) => (
-          <MessageBubble
-            key={i}
-            msg={msg}
-            index={i}
-            playingIndex={playingIndex}
-            loadingAudio={loadingAudio}
-            onNarrate={playNarration}
-            onCopy={handleCopy}
-            isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
-            onSuggestionClick={(text) => doSendMessage(text)}
-            isVisitor={!user}
-            onPremiumGate={() => navigate('/auth?next=/pricing')}
-          />
-        ))}
+        {messages.map((msg, i) => {
+          // Allow deleting a user message (and its assistant reply pair) from current view
+          const canDelete = !isLoading && msg.role === 'user' && (i < messages.length - 1 ? messages[i + 1].role === 'assistant' : true);
+          return (
+            <MessageBubble
+              key={i}
+              msg={msg}
+              index={i}
+              playingIndex={playingIndex}
+              loadingAudio={loadingAudio}
+              onNarrate={playNarration}
+              onCopy={handleCopy}
+              isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
+              onSuggestionClick={(text) => doSendMessage(text)}
+              isVisitor={!user}
+              onPremiumGate={() => navigate('/auth?next=/pricing')}
+              onDelete={canDelete ? (idx) => setDeleteOneIndex(idx) : undefined}
+              deleteLabel={t('chat.delete_one', language)}
+            />
+          );
+        })}
         
         {/* Typing indicator */}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
