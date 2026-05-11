@@ -39,13 +39,58 @@ type ActivityItem = {
   created_at: string;
 };
 
+const J_LABELS = {
+  'pt-BR': {
+    all: 'Todos', summary: 'Resumos', chat: 'Conversas', verse: 'Versículos', prayer: 'Orações', practice: 'Práticas',
+    today: 'hoje', yesterday: 'ontem',
+    daysAgo: (n: number) => `há ${n} dias`,
+    weeksAgo: (n: number) => `há ${n} semana${n > 1 ? 's' : ''}`,
+    monthsAgo: (n: number) => `há ${n} ${n === 1 ? 'mês' : 'meses'}`,
+    locale: 'pt-BR',
+    intro: 'Cada conversa, oração e versículo que você guardou compõe seu livro pessoal de caminhada espiritual.',
+    emptyDesc: 'Cada conversa, oração e versículo aparece neste livro pessoal.',
+    talkMentor: 'Conversar com o mentor',
+    privacyNote: 'Apenas você vê esta página. Nem mesmo nossa equipe tem acesso.',
+    copy: 'Copiar', deletev: 'Apagar', copied: 'Copiado!', removed: 'Removido da sua jornada',
+    pageOf: (p: number, total: number) => `Templo Sagrado · templosagrado.lovable.app · página ${p} de ${total}`,
+  },
+  en: {
+    all: 'All', summary: 'Summaries', chat: 'Conversations', verse: 'Verses', prayer: 'Prayers', practice: 'Practices',
+    today: 'today', yesterday: 'yesterday',
+    daysAgo: (n: number) => `${n} days ago`,
+    weeksAgo: (n: number) => `${n} week${n > 1 ? 's' : ''} ago`,
+    monthsAgo: (n: number) => `${n} month${n > 1 ? 's' : ''} ago`,
+    locale: 'en-US',
+    intro: 'Every conversation, prayer and verse you saved makes up your personal book of spiritual journey.',
+    emptyDesc: 'Every conversation, prayer and verse appears in this personal book.',
+    talkMentor: 'Chat with the mentor',
+    privacyNote: 'Only you see this page. Not even our team has access.',
+    copy: 'Copy', deletev: 'Delete', copied: 'Copied!', removed: 'Removed from your journey',
+    pageOf: (p: number, total: number) => `Sacred Temple · templosagrado.lovable.app · page ${p} of ${total}`,
+  },
+  es: {
+    all: 'Todos', summary: 'Resúmenes', chat: 'Conversaciones', verse: 'Versículos', prayer: 'Oraciones', practice: 'Prácticas',
+    today: 'hoy', yesterday: 'ayer',
+    daysAgo: (n: number) => `hace ${n} días`,
+    weeksAgo: (n: number) => `hace ${n} semana${n > 1 ? 's' : ''}`,
+    monthsAgo: (n: number) => `hace ${n} ${n === 1 ? 'mes' : 'meses'}`,
+    locale: 'es-ES',
+    intro: 'Cada conversación, oración y versículo que guardaste compone tu libro personal de camino espiritual.',
+    emptyDesc: 'Cada conversación, oración y versículo aparece en este libro personal.',
+    talkMentor: 'Hablar con el mentor',
+    privacyNote: 'Solo tú ves esta página. Ni siquiera nuestro equipo tiene acceso.',
+    copy: 'Copiar', deletev: 'Borrar', copied: '¡Copiado!', removed: 'Eliminado de tu jornada',
+    pageOf: (p: number, total: number) => `Templo Sagrado · templosagrado.lovable.app · página ${p} de ${total}`,
+  },
+};
+
 const TYPE_FILTERS = [
-  { id: 'all', label: 'Todos', icon: History },
-  { id: 'summary', label: 'Resumos', icon: FileText },
-  { id: 'chat', label: 'Conversas', icon: MessageCircle },
-  { id: 'verse', label: 'Versículos', icon: BookOpen },
-  { id: 'prayer', label: 'Orações', icon: Heart },
-  { id: 'practice', label: 'Práticas', icon: CheckSquare },
+  { id: 'all', icon: History },
+  { id: 'summary', icon: FileText },
+  { id: 'chat', icon: MessageCircle },
+  { id: 'verse', icon: BookOpen },
+  { id: 'prayer', icon: Heart },
+  { id: 'practice', icon: CheckSquare },
 ];
 
 function getTypeIcon(type: string) {
@@ -59,26 +104,27 @@ function getTypeIcon(type: string) {
   }
 }
 
-function relativeDate(iso: string): string {
+function relativeDate(iso: string, L: typeof J_LABELS['pt-BR']): string {
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'hoje';
-  if (diffDays === 1) return 'ontem';
-  if (diffDays < 7) return `há ${diffDays} dias`;
-  if (diffDays < 30) return `há ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''}`;
-  if (diffDays < 365) return `há ${Math.floor(diffDays / 30)} ${Math.floor(diffDays / 30) === 1 ? 'mês' : 'meses'}`;
-  return d.toLocaleDateString('pt-BR');
+  if (diffDays === 0) return L.today;
+  if (diffDays === 1) return L.yesterday;
+  if (diffDays < 7) return L.daysAgo(diffDays);
+  if (diffDays < 30) return L.weeksAgo(Math.floor(diffDays / 7));
+  if (diffDays < 365) return L.monthsAgo(Math.floor(diffDays / 30));
+  return d.toLocaleDateString(L.locale);
 }
 
-function monthLabel(iso: string): string {
+function monthLabel(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
 export default function Journey() {
   const { language, user } = useApp();
+  const L = J_LABELS[language] || J_LABELS['pt-BR'];
   const { toast } = useToast();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,12 +150,12 @@ export default function Journey() {
     await supabase.from('activity_history').delete().eq('id', id);
     setItems(prev => prev.filter(i => i.id !== id));
     setSelected(null);
-    toast({ title: 'Removido da sua jornada' });
+    toast({ title: L.removed });
   };
 
   const copyContent = async (content: string) => {
     await navigator.clipboard.writeText(content);
-    toast({ title: 'Copiado!' });
+    toast({ title: L.copied });
   };
 
   const downloadPdf = async (item: ActivityItem) => {
@@ -125,7 +171,7 @@ export default function Journey() {
   // Group by month
   const groups: Record<string, ActivityItem[]> = {};
   filtered.forEach(i => {
-    const k = monthLabel(i.created_at);
+    const k = monthLabel(i.created_at, L.locale);
     if (!groups[k]) groups[k] = [];
     groups[k].push(i);
   });
@@ -143,7 +189,7 @@ export default function Journey() {
             {t('journey.title', language)}
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-            Cada conversa, oração e versículo que você guardou compõe seu livro pessoal de caminhada espiritual.
+            {L.intro}
           </p>
         </div>
 
@@ -161,7 +207,7 @@ export default function Journey() {
               )}
             >
               <f.icon className="h-3.5 w-3.5" />
-              {f.label}
+              {(L as any)[f.id]}
             </button>
           ))}
         </div>
@@ -175,13 +221,11 @@ export default function Journey() {
           <Card className="p-8 text-center">
             <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <h2 className="text-base font-medium mb-2">{t('journey.empty', language)}</h2>
-            <p className="text-sm text-muted-foreground mb-5">
-              Cada conversa, oração e versículo aparece neste livro pessoal.
-            </p>
+            <p className="text-sm text-muted-foreground mb-5">{L.emptyDesc}</p>
             <Link to="/">
               <Button className="gap-1.5">
                 <MessageCircle className="h-4 w-4" />
-                Conversar com o mentor
+                {L.talkMentor}
               </Button>
             </Link>
           </Card>
@@ -206,7 +250,7 @@ export default function Journey() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2 mb-0.5">
                             <p className="text-sm font-medium truncate text-foreground">{item.title}</p>
-                            <span className="text-[11px] text-muted-foreground shrink-0">{relativeDate(item.created_at)}</span>
+                            <span className="text-[11px] text-muted-foreground shrink-0">{relativeDate(item.created_at, L)}</span>
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2">{item.content}</p>
                         </div>
@@ -224,7 +268,7 @@ export default function Journey() {
         <div className="mt-10 pt-6 border-t border-border/50 text-center">
           <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 text-primary/70" />
-            Apenas você vê esta página. Nem mesmo nossa equipe tem acesso.
+            {L.privacyNote}
           </div>
         </div>
       </div>
@@ -240,7 +284,7 @@ export default function Journey() {
                   {selected.title}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(selected.created_at).toLocaleDateString('pt-BR', {
+                  {new Date(selected.created_at).toLocaleDateString(L.locale, {
                     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
                   })}
                 </p>
@@ -252,7 +296,7 @@ export default function Journey() {
               </ScrollArea>
               <div className="flex gap-2 pt-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => copyContent(selected.content)} className="gap-1.5 flex-1">
-                  <Copy className="h-3.5 w-3.5" /> Copiar
+                  <Copy className="h-3.5 w-3.5" /> {L.copy}
                 </Button>
                 {selected.type === 'summary' && (
                   <Button variant="outline" size="sm" onClick={() => downloadPdf(selected)} className="gap-1.5 flex-1">
@@ -260,7 +304,7 @@ export default function Journey() {
                   </Button>
                 )}
                 <Button variant="ghost" size="sm" onClick={() => deleteItem(selected.id)} className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
-                  <Trash2 className="h-3.5 w-3.5" /> Apagar
+                  <Trash2 className="h-3.5 w-3.5" /> {L.deletev}
                 </Button>
               </div>
             </>

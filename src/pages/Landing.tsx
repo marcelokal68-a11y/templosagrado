@@ -44,7 +44,7 @@ export default function Landing() {
             <Link to="/" className="w-full sm:w-auto">
               <Button size="lg" className="gap-2 text-base px-10 sacred-gradient text-primary-foreground border-0 w-full sm:w-auto h-12">
                 <Sparkles className="h-5 w-5" />
-                Começar Agora
+                {t('landing.start_now', language)}
               </Button>
             </Link>
           </div>
@@ -57,15 +57,15 @@ export default function Landing() {
           <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto text-center">
             <div className="flex flex-col items-center gap-1">
               <span className="text-2xl md:text-4xl font-bold text-primary">8</span>
-              <span className="text-[10px] md:text-sm text-muted-foreground font-medium">Tradições</span>
+              <span className="text-[10px] md:text-sm text-muted-foreground font-medium">{t('landing.stat_traditions', language)}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <span className="text-2xl md:text-4xl font-bold text-primary">∞</span>
-              <span className="text-[10px] md:text-sm text-muted-foreground font-medium">Orações pela Paz</span>
+              <span className="text-[10px] md:text-sm text-muted-foreground font-medium">{t('landing.stat_prayers', language)}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <span className="text-2xl md:text-4xl font-bold text-primary">24/7</span>
-              <span className="text-[10px] md:text-sm text-muted-foreground font-medium">Disponível</span>
+              <span className="text-[10px] md:text-sm text-muted-foreground font-medium">{t('landing.stat_available', language)}</span>
             </div>
           </div>
         </div>
@@ -78,10 +78,10 @@ export default function Landing() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
           {[
-            { step: 1, icon: MessageCircle, title: 'Escolha sua tradição', desc: 'Católico, Evangélico, Espírita, Matriz Africana, Judaísmo, Hinduísmo, Mórmon ou Filosofia.' },
-            { step: 2, icon: MessageCircle, title: 'Converse com o Sacerdote', desc: 'Faça perguntas e receba orientação por texto ou voz.' },
-            { step: 3, icon: Heart, title: 'Gere orações', desc: 'Crie orações personalizadas com referências sagradas.' },
-            { step: 4, icon: CheckSquare, title: 'Pratique diariamente', desc: 'Checklist espiritual para nutrir sua jornada.' },
+            { step: 1, icon: MessageCircle, title: t('landing.step1_title', language), desc: t('landing.step1_desc', language) },
+            { step: 2, icon: MessageCircle, title: t('landing.step2_title', language), desc: t('landing.step2_desc', language) },
+            { step: 3, icon: Heart, title: t('landing.step3_title', language), desc: t('landing.step3_desc', language) },
+            { step: 4, icon: CheckSquare, title: t('landing.step4_title', language), desc: t('landing.step4_desc', language) },
           ].map((item) => (
             <div key={item.step} className="flex flex-col items-center text-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
@@ -194,21 +194,21 @@ export default function Landing() {
       {/* Pricing CTA (simplified — no full pricing grid) */}
       <section className="container py-16 px-4 text-center">
         <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3">
-          Comece gratuitamente. Evolua quando quiser.
+          {t('landing.cta_pricing_title', language)}
         </h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-          10 perguntas grátis para começar. Planos a partir de R$19,90/mês para acesso ilimitado.
+          {t('landing.cta_pricing_desc', language)}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link to="/">
             <Button size="lg" className="gap-2 px-8 sacred-gradient text-primary-foreground border-0 h-12">
               <Sparkles className="h-5 w-5" />
-              Começar Grátis
+              {t('landing.start_free', language)}
             </Button>
           </Link>
           <Link to="/pricing">
             <Button variant="outline" size="lg" className="gap-2 px-8 border-border hover:border-primary/30 h-12">
-              Ver Planos
+              {t('landing.see_plans', language)}
             </Button>
           </Link>
         </div>

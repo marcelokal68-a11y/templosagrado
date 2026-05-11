@@ -1,39 +1,70 @@
-## Problema
+## Objetivo
+Garantir que **todo o app** (UI, toasts, modais, glossários, página de planos, política, etc.) tenha versões completas em **Inglês (en)** e **Espanhol (es)** além de Português-BR. Hoje muitos componentes ainda têm strings em português "no código", mesmo quando o resto do app usa o sistema `t()` de `src/lib/i18n.ts`.
 
-No PWA (mobile) está confuso/quebrado mudar de fé. Investigando o código encontrei 3 causas concretas:
+## Diagnóstico
 
-1. **No mobile o `ContextPanel` (onde fica "Escolha seu caminho") não é renderizado.** Em `src/pages/Index.tsx` ele só aparece em `md:` para cima. No celular o usuário não tem como trocar a tradição direto do chat.
-2. **A lista do Perfil está incompleta.** `src/pages/Profile.tsx` lista só 8 tradições (catholic, protestant, spiritist, candomble, jewish, hindu, mormon, agnostic) — faltam **christian, islam, buddhist, umbanda** que existem no ContextPanel e no resto do app. Quem é Evangélico, Muçulmano, Budista ou Umbandista não consegue salvar no Perfil.
-3. **Salvar tradição no Perfil não atualiza o AppContext.** `saveReligion` só faz `setProfile` local — `chatContext.religion` e `preferredReligion` continuam com o valor antigo até recarregar o app, e o `AlertDialog` "ask_faith" pode disparar de novo. Resultado: parece que "não funciona".
+- `src/lib/i18n.ts` já tem **613 chaves cobertas nas 3 línguas** (pt-BR / en / es) — está consistente.
+- Porém, **45 arquivos** ainda contêm strings em português hardcoded (toasts, descrições, labels de seções, conteúdo institucional). Áreas mais afetadas:
+  - **Páginas:** `Pricing.tsx` (planos, features, mensagens), `Privacy.tsx` (texto institucional), `Profile.tsx`, `Journey.tsx`, `Auth.tsx`, `Landing.tsx`, `Mural.tsx`, `Verse.tsx`, `Practice.tsx`, `Prayers.tsx`, `Invite.tsx`, `InviteRedeem.tsx`, `Install.tsx`, `Admin*.tsx`.
+  - **Componentes:** `ContextPanel.tsx`, `ChatArea.tsx`, `ChatHistory.tsx`, `ActivityHistory.tsx`, `TrialBanner.tsx`.
+  - **Mural:** `NoteForm.tsx`, `EcumenicalWall.tsx`, `SacredPlace.tsx`, `TempleGallery.tsx`, `ReportDialog.tsx`, `ReligionPicker.tsx`, `PrayerNote.tsx`, `PublishToMural.tsx`.
+  - **Learn (glossários e comparações):** `SanskritGlossary.tsx`, `BuddhistGlossary.tsx`, `HebrewGlossary.tsx`, `SpiritistGlossary.tsx`, `CandombleGlossary.tsx`, `ChristianBranchesComparison.tsx`, `IslamBranchesComparison.tsx`, `JewishBranchesComparison.tsx`, `BuddhistSchoolsComparison.tsx`, `HinduDarshanasComparison.tsx`, `PodcastControls.tsx`, `ListenButton.tsx`.
+  - **Outros:** `ttsPlayer.ts` (mensagens de erro).
+- Os glossários (`SanskritGlossary`, `BuddhistGlossary`, etc.) já têm conteúdo em pt/en/es no próprio arquivo via objetos por idioma — mas alguns labels auxiliares ainda estão em PT.
+- O backend (edge functions de chat/verso/análise) já recebe o `language` do usuário e responde no idioma certo; **não precisa mudar**.
 
-Bônus: o `AlertDialog` em `AppContext.tsx` usa a mesma chave `learn.ask_faith` para título e descrição (texto duplicado).
+## Estratégia (apenas frontend / apresentação)
 
-## Correções
+1. **Centralizar no `t()`** — para textos curtos e reutilizáveis (toasts, botões, labels), adicionar novas chaves em `src/lib/i18n.ts` nos 3 idiomas e substituir os literais por `t('chave', language)`.
+2. **Padrão `labels = { 'pt-BR': {...}, en: {...}, es: {...} }`** — para blocos longos e específicos da página (ex.: Pricing, Privacy, Install já usa esse padrão), manter o objeto local com as 3 versões e selecionar via `language`.
+3. **Glossários e comparações** — completar `pt/en/es` em cada termo / branch / school onde faltar, e traduzir os labels de cabeçalho (já presentes em alguns).
+4. **Toasts e alerts** — todo `toast({...})` com texto em PT vira `t('chave', language)`.
 
-### 1. Sincronizar Perfil com AppContext
-`src/pages/Profile.tsx`
-- Em `saveReligion`, após o update no Supabase chamar `refreshProfile()` do `useApp()` (já existe) para repropagar `preferred_religion` → `chatContext.religion` e `preferredReligion`.
-- Limpar `chatContext.religion` quando salvar `null` ("Limpar minha fé").
+## Plano de execução por lotes
 
-### 2. Lista completa no Perfil
-`src/pages/Profile.tsx`
-- Substituir o array `traditions` pelos mesmos 11 itens do `ContextPanel.FAITH_OPTIONS` (christian, catholic, protestant, mormon, jewish, islam, hindu, buddhist, spiritist, umbanda, candomble) + manter "agnostic" como fallback ou na opção "Prefiro não especificar".
-- Manter destaque "★ sua tradição" no item salvo.
+Para manter cada lote revisável e o `i18n.ts` organizado, dividir em 6 etapas. Cada etapa adiciona as chaves novas no `i18n.ts` (em pt-BR, en, es) e troca os literais nos arquivos correspondentes.
 
-### 3. Acesso ao seletor de fé no mobile
-`src/pages/Index.tsx` + `src/components/ChatArea.tsx`
-- Adicionar um botão discreto no header do chat mobile ("Tradição: ★ Cristão ▾") que abre um `Sheet`/`Drawer` com o `ContextPanel` (reusando o componente existente — sem duplicar lógica).
-- O `Sheet` fecha ao escolher/confirmar (já existe `onClose` no ContextPanel).
-- Assim, no PWA o usuário troca a fé pelo mesmo fluxo que no desktop, com o diálogo "Mudar minha fé / Só explorar / Cancelar" já implementado.
+**Lote 1 — Páginas principais de conversão**
+- `Pricing.tsx` (planos, features, mensagens de cancelamento, banner gratuito, rodapé Stripe/PIX)
+- `Auth.tsx` (formulário de login/signup, mensagens de erro)
+- `Landing.tsx` (hero, CTAs, trust badges restantes)
 
-### 4. Corrigir diálogo duplicado
-`src/contexts/AppContext.tsx`
-- Usar texto distinto para `AlertDialogDescription` (algo como "Quer salvar essa tradição como sua fé principal? Você pode mudar a qualquer momento no Perfil.") em vez de repetir o título.
+**Lote 2 — Páginas de conta e jornada**
+- `Profile.tsx` (toasts de salvar, labels de seção, religião)
+- `Journey.tsx` (cabeçalhos, mensagens vazias, botões)
+- `Invite.tsx` + `InviteRedeem.tsx` (fluxo de convites)
+- `Install.tsx` (já tem padrão labels — só revisar)
+- `Privacy.tsx` (já tem padrão labels — completar EN/ES se faltar)
 
-## Resultado
-- No PWA, mudar a fé funciona pelo Perfil **e** pelo chat (botão no header → Sheet com ContextPanel).
-- Trocar no Perfil reflete imediatamente no chat (sem F5).
-- Todas as 11 tradições disponíveis nos dois lugares.
-- Diálogo de confirmação sem texto duplicado.
+**Lote 3 — Chat e contexto**
+- `ChatArea.tsx`, `ChatHistory.tsx`, `ActivityHistory.tsx` (toasts, placeholders, ações)
+- `ContextPanel.tsx` (seletor de fé / mood / necessidade — labels e descrições)
+- `TrialBanner.tsx` (CTA do trial)
+- `ttsPlayer.ts` (mensagens de erro de áudio)
 
-Não mexe em backend, RLS, edge functions ou esquema — só UI/estado no frontend.
+**Lote 4 — Mural Sagrado**
+- `NoteForm.tsx`, `PublishToMural.tsx`, `PrayerNote.tsx`, `ReligionPicker.tsx`
+- `EcumenicalWall.tsx`, `SacredPlace.tsx`, `TempleGallery.tsx`, `ReportDialog.tsx`
+
+**Lote 5 — Aprender (glossários e comparações)**
+- Completar pt/en/es em todos os glossários e comparações listados.
+- Traduzir labels de cabeçalho ("Termos sânscritos essenciais", etc.) — alguns já estão multilíngues.
+- `PodcastControls.tsx`, `ListenButton.tsx`.
+
+**Lote 6 — Páginas restantes e admin**
+- `Verse.tsx`, `Practice.tsx`, `Prayers.tsx`, `Mural.tsx`
+- `Admin.tsx`, `AdminAnalytics.tsx`, `AdminKnowledge.tsx` (admin pode ficar só em PT se preferir; ver pergunta abaixo)
+
+## Validação ao final de cada lote
+
+- `rg "[áàâãéêíóôõúç]" <arquivos do lote>` deve retornar **somente** strings dentro de blocos `'pt-BR'` de objetos labels ou comentários.
+- Trocar idioma no app (PT→EN→ES) e abrir as telas alteradas para conferir que nada ficou em PT.
+- Build automático do harness valida tipos.
+
+## Fora do escopo
+- Não mexer em backend / edge functions (já são multi-idioma via prompt).
+- Não criar novos componentes nem mudar lógica de negócio.
+- Não traduzir conteúdo dinâmico vindo do banco (orações enviadas, posts do mural — são do usuário).
+
+## Pergunta para confirmar antes de começar
+- **Páginas de Admin** (`/admin`, `/admin/analytics`, `/admin/knowledge`): traduzir também ou manter só em PT-BR (já que só você acessa)? Vou seguir traduzindo tudo, a menos que prefira pular o admin.

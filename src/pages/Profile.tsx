@@ -34,8 +34,216 @@ const traditions = [
   { value: 'agnostic', labelKey: 'religion.agnostic' },
 ] as const;
 
+const LABELS = {
+  'pt-BR': {
+    cancelError: 'Erro ao cancelar',
+    reactivateError: 'Erro ao reativar',
+    error: 'Erro',
+    subCancelled: 'Assinatura cancelada',
+    cancelDesc: 'Você manterá o acesso até o fim do período pago.',
+    subReactivated: 'Assinatura reativada 🙏',
+    reactivateDesc: 'Que bom ter você de volta. Sua assinatura continuará normalmente.',
+    nameUpdated: 'Nome atualizado!',
+    traditionUpdated: 'Tradição atualizada!',
+    traditionRemoved: 'Tradição removida',
+    notDefined: 'Não definida',
+    pro: 'Pro ⭐',
+    trial: (n: number) => `Trial (${n} ${n === 1 ? 'dia' : 'dias'})`,
+    expired: 'Expirado',
+    free: 'Gratuito',
+    welcome: 'Bem-vindo ao Templo Sagrado! 🙏',
+    onboardingTitle: 'Bem-vindo(a) ao Templo Sagrado',
+    onboardingDesc1: 'Confirme seu nome e tradição para começar. Você tem',
+    onboardingDays: '7 dias grátis',
+    onboardingDesc2: 'de acesso completo.',
+    admin: '★ Admin',
+    lifetime: '★ Vitalício',
+    user: 'Usuário',
+    name: 'Nome',
+    save: 'Salvar',
+    cancel: 'Cancelar',
+    email: 'Email',
+    choosePath: 'Escolha seu caminho',
+    yourFaithHighlighted: ' — sua fé está destacada',
+    yourTradition: '★ sua tradição',
+    preferNot: 'Prefiro não especificar',
+    tradition: 'Tradição',
+    clearMyFaith: 'Limpar minha fé',
+    plan: 'Plano',
+    subCancelledTitle: 'Assinatura cancelada',
+    keepAccessUntil: 'Você mantém acesso completo até',
+    afterReverts: 'Após essa data, sua conta voltará ao plano gratuito.',
+    reactivating: 'Reativando...',
+    reactivate: 'Reativar assinatura',
+    questionsUsed: 'Perguntas usadas',
+    cancelling: 'Cancelando...',
+    cancelSub: 'Cancelar assinatura',
+    chatTone: 'Tom do Chat',
+    chatToneDesc: 'Escolha como o mentor responde às suas mensagens.',
+    toneShortOn: 'Tom curto e direto ativado',
+    toneDeepOn: 'Tom profundo e reflexivo ativado',
+    short: 'Curto e direto',
+    shortDesc: '3-4 frases, ao ponto',
+    deep: 'Profundo e reflexivo',
+    deepDesc: 'Exemplos do dia a dia',
+    privacy: 'Privacidade',
+    mentorMemory: 'Memória do Mentor',
+    memoryOnDesc: 'O mentor lembra detalhes que você compartilhou',
+    memoryOffDesc: 'Conversas não são memorizadas entre sessões',
+    memoryOn: 'Memória ativada',
+    memoryOff: 'Memória desativada',
+    allMemoriesDeleted: 'Todas as memórias foram apagadas',
+    deleting: 'Apagando...',
+    deleteAllMemories: 'Apagar todas as memórias',
+    upgradePro: 'Fazer Upgrade Pro',
+    saveAndEnter: 'Salvar e Entrar no Templo',
+    cancelSubTitle: 'Cancelar assinatura?',
+    cancelSubDesc: 'Você manterá acesso completo até o fim do período já pago. Após essa data, sua conta voltará ao plano gratuito.',
+    keepSub: 'Manter assinatura',
+    yesCancel: 'Sim, cancelar',
+    locale: 'pt-BR',
+  },
+  en: {
+    cancelError: 'Failed to cancel',
+    reactivateError: 'Failed to reactivate',
+    error: 'Error',
+    subCancelled: 'Subscription cancelled',
+    cancelDesc: 'You will keep access until the end of the paid period.',
+    subReactivated: 'Subscription reactivated 🙏',
+    reactivateDesc: 'Great to have you back. Your subscription will continue normally.',
+    nameUpdated: 'Name updated!',
+    traditionUpdated: 'Tradition updated!',
+    traditionRemoved: 'Tradition removed',
+    notDefined: 'Not set',
+    pro: 'Pro ⭐',
+    trial: (n: number) => `Trial (${n} ${n === 1 ? 'day' : 'days'})`,
+    expired: 'Expired',
+    free: 'Free',
+    welcome: 'Welcome to Sacred Temple! 🙏',
+    onboardingTitle: 'Welcome to Sacred Temple',
+    onboardingDesc1: 'Confirm your name and tradition to begin. You have',
+    onboardingDays: '7 free days',
+    onboardingDesc2: 'of full access.',
+    admin: '★ Admin',
+    lifetime: '★ Lifetime',
+    user: 'User',
+    name: 'Name',
+    save: 'Save',
+    cancel: 'Cancel',
+    email: 'Email',
+    choosePath: 'Choose your path',
+    yourFaithHighlighted: ' — your faith is highlighted',
+    yourTradition: '★ your tradition',
+    preferNot: 'Prefer not to say',
+    tradition: 'Tradition',
+    clearMyFaith: 'Clear my faith',
+    plan: 'Plan',
+    subCancelledTitle: 'Subscription cancelled',
+    keepAccessUntil: 'You keep full access until',
+    afterReverts: 'After that date, your account will revert to the free plan.',
+    reactivating: 'Reactivating...',
+    reactivate: 'Reactivate subscription',
+    questionsUsed: 'Questions used',
+    cancelling: 'Cancelling...',
+    cancelSub: 'Cancel subscription',
+    chatTone: 'Chat Tone',
+    chatToneDesc: 'Choose how the mentor responds to your messages.',
+    toneShortOn: 'Short and direct tone enabled',
+    toneDeepOn: 'Deep and reflective tone enabled',
+    short: 'Short and direct',
+    shortDesc: '3-4 sentences, to the point',
+    deep: 'Deep and reflective',
+    deepDesc: 'Everyday examples',
+    privacy: 'Privacy',
+    mentorMemory: 'Mentor Memory',
+    memoryOnDesc: 'The mentor remembers details you shared',
+    memoryOffDesc: 'Conversations are not remembered between sessions',
+    memoryOn: 'Memory enabled',
+    memoryOff: 'Memory disabled',
+    allMemoriesDeleted: 'All memories deleted',
+    deleting: 'Deleting...',
+    deleteAllMemories: 'Delete all memories',
+    upgradePro: 'Upgrade to Pro',
+    saveAndEnter: 'Save and Enter Temple',
+    cancelSubTitle: 'Cancel subscription?',
+    cancelSubDesc: 'You will keep full access until the end of the period already paid. After that date, your account will revert to the free plan.',
+    keepSub: 'Keep subscription',
+    yesCancel: 'Yes, cancel',
+    locale: 'en-US',
+  },
+  es: {
+    cancelError: 'Error al cancelar',
+    reactivateError: 'Error al reactivar',
+    error: 'Error',
+    subCancelled: 'Suscripción cancelada',
+    cancelDesc: 'Conservarás el acceso hasta el fin del período pagado.',
+    subReactivated: 'Suscripción reactivada 🙏',
+    reactivateDesc: 'Qué bueno tenerte de vuelta. Tu suscripción continuará normalmente.',
+    nameUpdated: '¡Nombre actualizado!',
+    traditionUpdated: '¡Tradición actualizada!',
+    traditionRemoved: 'Tradición removida',
+    notDefined: 'No definida',
+    pro: 'Pro ⭐',
+    trial: (n: number) => `Trial (${n} ${n === 1 ? 'día' : 'días'})`,
+    expired: 'Expirado',
+    free: 'Gratis',
+    welcome: '¡Bienvenido a Templo Sagrado! 🙏',
+    onboardingTitle: 'Bienvenido a Templo Sagrado',
+    onboardingDesc1: 'Confirma tu nombre y tradición para comenzar. Tienes',
+    onboardingDays: '7 días gratis',
+    onboardingDesc2: 'de acceso completo.',
+    admin: '★ Admin',
+    lifetime: '★ Vitalicio',
+    user: 'Usuario',
+    name: 'Nombre',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    email: 'Email',
+    choosePath: 'Elige tu camino',
+    yourFaithHighlighted: ' — tu fe está destacada',
+    yourTradition: '★ tu tradición',
+    preferNot: 'Prefiero no especificar',
+    tradition: 'Tradición',
+    clearMyFaith: 'Limpiar mi fe',
+    plan: 'Plan',
+    subCancelledTitle: 'Suscripción cancelada',
+    keepAccessUntil: 'Conservas acceso completo hasta',
+    afterReverts: 'Después de esa fecha, tu cuenta volverá al plan gratis.',
+    reactivating: 'Reactivando...',
+    reactivate: 'Reactivar suscripción',
+    questionsUsed: 'Preguntas usadas',
+    cancelling: 'Cancelando...',
+    cancelSub: 'Cancelar suscripción',
+    chatTone: 'Tono del Chat',
+    chatToneDesc: 'Elige cómo el mentor responde a tus mensajes.',
+    toneShortOn: 'Tono corto y directo activado',
+    toneDeepOn: 'Tono profundo y reflexivo activado',
+    short: 'Corto y directo',
+    shortDesc: '3-4 frases, al grano',
+    deep: 'Profundo y reflexivo',
+    deepDesc: 'Ejemplos del día a día',
+    privacy: 'Privacidad',
+    mentorMemory: 'Memoria del Mentor',
+    memoryOnDesc: 'El mentor recuerda detalles que compartiste',
+    memoryOffDesc: 'Las conversaciones no se recuerdan entre sesiones',
+    memoryOn: 'Memoria activada',
+    memoryOff: 'Memoria desactivada',
+    allMemoriesDeleted: 'Todas las memorias fueron borradas',
+    deleting: 'Borrando...',
+    deleteAllMemories: 'Borrar todas las memorias',
+    upgradePro: 'Mejorar a Pro',
+    saveAndEnter: 'Guardar y Entrar al Templo',
+    cancelSubTitle: '¿Cancelar suscripción?',
+    cancelSubDesc: 'Conservarás acceso completo hasta el fin del período ya pagado. Después de esa fecha, tu cuenta volverá al plan gratis.',
+    keepSub: 'Mantener suscripción',
+    yesCancel: 'Sí, cancelar',
+    locale: 'es-ES',
+  },
+};
+
 export default function Profile() {
   const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext } = useApp();
+  const L = LABELS[language] || LABELS['pt-BR'];
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -82,15 +290,12 @@ export default function Profile() {
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
       if (resp.error || resp.data?.error) {
-        throw new Error(resp.data?.error || resp.error?.message || 'Erro ao cancelar');
+        throw new Error(resp.data?.error || resp.error?.message || L.cancelError);
       }
-      toast({
-        title: 'Assinatura cancelada',
-        description: 'Você manterá o acesso até o fim do período pago.',
-      });
+      toast({ title: L.subCancelled, description: L.cancelDesc });
       await loadSubInfo();
     } catch (e: any) {
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+      toast({ title: L.error, description: e.message, variant: 'destructive' });
     } finally {
       setCancelling(false);
     }
@@ -104,15 +309,12 @@ export default function Profile() {
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
       if (resp.error || resp.data?.error) {
-        throw new Error(resp.data?.error || resp.error?.message || 'Erro ao reativar');
+        throw new Error(resp.data?.error || resp.error?.message || L.reactivateError);
       }
-      toast({
-        title: 'Assinatura reativada 🙏',
-        description: 'Que bom ter você de volta. Sua assinatura continuará normalmente.',
-      });
+      toast({ title: L.subReactivated, description: L.reactivateDesc });
       await loadSubInfo();
     } catch (e: any) {
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+      toast({ title: L.error, description: e.message, variant: 'destructive' });
     } finally {
       setReactivating(false);
     }
@@ -158,7 +360,7 @@ export default function Profile() {
     if (!error) {
       setProfile({ ...profile, display_name: trimmed });
       setEditingName(false);
-      toast({ title: 'Nome atualizado!' });
+      toast({ title: L.nameUpdated });
     }
   };
 
@@ -173,10 +375,9 @@ export default function Profile() {
     if (!error) {
       setProfile({ ...profile, preferred_religion: value });
       setEditingReligion(false);
-      // Sync with global app state so chat/sidebar reflect immediately
       setChatContext(prev => ({ ...prev, religion: value || '', philosophy: '', topic: '' }));
       await refreshProfile();
-      toast({ title: value ? 'Tradição atualizada!' : 'Tradição removida' });
+      toast({ title: value ? L.traditionUpdated : L.traditionRemoved });
     }
   };
 
@@ -184,19 +385,19 @@ export default function Profile() {
 
   const religionLabel = profile.preferred_religion
     ? t(`religion.${profile.preferred_religion}`, language) || profile.preferred_religion
-    : 'Não definida';
+    : L.notDefined;
 
   const planLabel = isSubscriber
-    ? 'Pro ⭐'
+    ? L.pro
     : accessStatus === 'trial'
-      ? `Trial (${trialDaysLeft} ${trialDaysLeft === 1 ? 'dia' : 'dias'})`
+      ? L.trial(trialDaysLeft)
       : accessStatus === 'expired'
-        ? 'Expirado'
-        : 'Gratuito';
+        ? L.expired
+        : L.free;
 
   const formatEndDate = (iso: string | null) =>
     iso
-      ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+      ? new Date(iso).toLocaleDateString(L.locale, { day: '2-digit', month: 'long', year: 'numeric' })
       : null;
   const cancelledEndDate = subInfo?.cancel_at_period_end ? formatEndDate(subInfo.subscription_end) : null;
 
@@ -206,27 +407,23 @@ export default function Profile() {
     if (trimmed && trimmed !== profile.display_name) {
       await supabase.from('profiles').update({ display_name: trimmed }).eq('user_id', user.id);
     }
-    toast({ title: 'Bem-vindo ao Templo Sagrado! 🙏' });
+    toast({ title: L.welcome });
     navigate('/', { replace: true });
   };
 
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-md mx-auto px-4 py-8 space-y-6 pb-32">
-        {/* Onboarding banner */}
         {isOnboarding && (
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
             <Sparkles className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-sm font-semibold text-foreground mb-1">
-              Bem-vindo(a) ao Templo Sagrado
-            </p>
+            <p className="text-sm font-semibold text-foreground mb-1">{L.onboardingTitle}</p>
             <p className="text-xs text-muted-foreground leading-snug">
-              Confirme seu nome e tradição para começar. Você tem <strong className="text-primary">7 dias grátis</strong> de acesso completo.
+              {L.onboardingDesc1} <strong className="text-primary">{L.onboardingDays}</strong> {L.onboardingDesc2}
             </p>
           </div>
         )}
 
-        {/* Avatar */}
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
@@ -240,21 +437,19 @@ export default function Profile() {
                     : 'bg-amber-500/90 text-white ring-amber-400/40'
                 }`}
               >
-                {isAdmin ? '★ Admin' : '★ Vitalício'}
+                {isAdmin ? L.admin : L.lifetime}
               </span>
             )}
           </div>
           <h1 className="text-xl font-semibold text-foreground mt-2">
-            {profile.display_name || 'Usuário'}
+            {profile.display_name || L.user}
           </h1>
         </div>
 
-        {/* Info cards */}
         <div className="space-y-3">
-          {/* Name — editable */}
           {editingName ? (
             <div className="p-4 rounded-xl bg-card border border-primary/30 space-y-3">
-              <p className="text-xs text-muted-foreground">Nome</p>
+              <p className="text-xs text-muted-foreground">{L.name}</p>
               <Input
                 value={nameValue}
                 onChange={e => setNameValue(e.target.value)}
@@ -264,35 +459,34 @@ export default function Profile() {
               />
               <div className="flex gap-2">
                 <Button size="sm" onClick={saveName} disabled={saving || !nameValue.trim()} className="gap-1.5 bg-primary text-primary-foreground">
-                  <Check className="h-4 w-4" /> Salvar
+                  <Check className="h-4 w-4" /> {L.save}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setNameValue(profile.display_name || ''); }}>
-                  <X className="h-4 w-4" /> Cancelar
+                  <X className="h-4 w-4" /> {L.cancel}
                 </Button>
               </div>
             </div>
           ) : (
             <EditableRow
               icon={<User className="h-5 w-5 text-primary/70" />}
-              label="Nome"
-              value={profile.display_name || 'Usuário'}
+              label={L.name}
+              value={profile.display_name || L.user}
               onEdit={() => setEditingName(true)}
             />
           )}
 
           <InfoRow
             icon={<Mail className="h-5 w-5 text-primary/70" />}
-            label="Email"
+            label={L.email}
             value={user.email || '—'}
           />
 
-          {/* Religion — editable */}
           {editingReligion ? (
             <div className="p-4 rounded-xl bg-card border border-primary/30 space-y-3">
               <p className="text-xs text-muted-foreground">
-                Escolha seu caminho
+                {L.choosePath}
                 {profile.preferred_religion && (
-                  <span className="ml-1 text-primary"> — sua fé está destacada</span>
+                  <span className="ml-1 text-primary">{L.yourFaithHighlighted}</span>
                 )}
               </p>
               <div className="space-y-2">
@@ -314,7 +508,7 @@ export default function Profile() {
                     >
                       <span>{t(tr.labelKey, language)}</span>
                       {isSaved && (
-                        <span className="text-[11px] font-medium text-primary shrink-0">★ sua tradição</span>
+                        <span className="text-[11px] font-medium text-primary shrink-0">{L.yourTradition}</span>
                       )}
                     </button>
                   );
@@ -324,18 +518,18 @@ export default function Profile() {
                   disabled={saving}
                   className="w-full text-left px-3 py-2.5 rounded-lg border border-border/50 text-sm text-muted-foreground hover:border-primary/30 hover:bg-primary/5 transition-colors"
                 >
-                  Prefiro não especificar
+                  {L.preferNot}
                 </button>
               </div>
               <Button size="sm" variant="ghost" onClick={() => setEditingReligion(false)}>
-                <X className="h-4 w-4 mr-1" /> Cancelar
+                <X className="h-4 w-4 mr-1" /> {L.cancel}
               </Button>
             </div>
           ) : (
             <>
               <EditableRow
                 icon={<BookOpen className="h-5 w-5 text-primary/70" />}
-                label="Tradição"
+                label={L.tradition}
                 value={profile.preferred_religion ? `★ ${religionLabel}` : religionLabel}
                 onEdit={() => setEditingReligion(true)}
               />
@@ -348,7 +542,7 @@ export default function Profile() {
                   onClick={() => saveReligion(null)}
                 >
                   <X className="h-3.5 w-3.5" />
-                  Limpar minha fé
+                  {L.clearMyFaith}
                 </Button>
               )}
             </>
@@ -356,20 +550,17 @@ export default function Profile() {
 
           <InfoRow
             icon={<Crown className="h-5 w-5 text-primary/70" />}
-            label="Plano"
+            label={L.plan}
             value={planLabel}
           />
 
-          {/* Cancellation notice — when subscription is set to end at period end */}
           {cancelledEndDate && (
             <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-3">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground">
-                  Assinatura cancelada
-                </p>
+                <p className="text-sm font-semibold text-foreground">{L.subCancelledTitle}</p>
                 <p className="text-xs text-muted-foreground leading-snug">
-                  Você mantém acesso completo até <strong className="text-primary">{cancelledEndDate}</strong>.
-                  Após essa data, sua conta voltará ao plano gratuito.
+                  {L.keepAccessUntil} <strong className="text-primary">{cancelledEndDate}</strong>.
+                  {' '}{L.afterReverts}
                 </p>
               </div>
               <Button
@@ -379,18 +570,17 @@ export default function Profile() {
                 onClick={handleReactivateSubscription}
               >
                 <Sparkles className="h-4 w-4" />
-                {reactivating ? 'Reativando...' : 'Reativar assinatura'}
+                {reactivating ? L.reactivating : L.reactivate}
               </Button>
             </div>
           )}
 
           <InfoRow
             icon={<Sparkles className="h-5 w-5 text-primary/70" />}
-            label="Perguntas usadas"
+            label={L.questionsUsed}
             value={`${profile.questions_used} / ${profile.questions_limit}`}
           />
 
-          {/* Cancel subscription — only for paying subscribers, not admin/lifetime/trial, and not already cancelled */}
           {isSubscriber && !isAdmin && accessStatus !== 'trial' && !subInfo?.cancel_at_period_end && (
             <Button
               variant="outline"
@@ -400,24 +590,21 @@ export default function Profile() {
               onClick={() => setConfirmCancelOpen(true)}
             >
               <X className="h-4 w-4" />
-              {cancelling ? 'Cancelando...' : 'Cancelar assinatura'}
+              {cancelling ? L.cancelling : L.cancelSub}
             </Button>
           )}
-          {/* Chat tone preference */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="h-4 w-4 text-primary/70" />
-              <span className="text-sm font-semibold text-foreground">Tom do Chat</span>
+              <span className="text-sm font-semibold text-foreground">{L.chatTone}</span>
             </div>
             <div className="p-4 rounded-xl bg-card border border-border/50 space-y-3">
-              <p className="text-xs text-muted-foreground leading-snug">
-                Escolha como o mentor responde às suas mensagens.
-              </p>
+              <p className="text-xs text-muted-foreground leading-snug">{L.chatToneDesc}</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => {
                     setChatTone('concise');
-                    toast({ title: 'Tom curto e direto ativado' });
+                    toast({ title: L.toneShortOn });
                   }}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     chatTone === 'concise'
@@ -426,16 +613,14 @@ export default function Profile() {
                   }`}
                 >
                   <p className={`text-sm font-medium ${chatTone === 'concise' ? 'text-primary' : 'text-foreground'}`}>
-                    Curto e direto
+                    {L.short}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    3-4 frases, ao ponto
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">{L.shortDesc}</p>
                 </button>
                 <button
                   onClick={() => {
                     setChatTone('reflective');
-                    toast({ title: 'Tom profundo e reflexivo ativado' });
+                    toast({ title: L.toneDeepOn });
                   }}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     chatTone === 'reflective'
@@ -444,33 +629,27 @@ export default function Profile() {
                   }`}
                 >
                   <p className={`text-sm font-medium ${chatTone === 'reflective' ? 'text-primary' : 'text-foreground'}`}>
-                    Profundo e reflexivo
+                    {L.deep}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Exemplos do dia a dia
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">{L.deepDesc}</p>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Privacy section */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             <div className="flex items-center gap-2 mb-2">
               <Shield className="h-4 w-4 text-primary/70" />
-              <span className="text-sm font-semibold text-foreground">Privacidade</span>
+              <span className="text-sm font-semibold text-foreground">{L.privacy}</span>
             </div>
 
-            {/* Memory toggle */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/50">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <Brain className="h-5 w-5 text-primary/70 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">Memória do Mentor</p>
+                  <p className="text-sm font-medium text-foreground">{L.mentorMemory}</p>
                   <p className="text-xs text-muted-foreground leading-snug">
-                    {memoryEnabled
-                      ? 'O mentor lembra detalhes que você compartilhou'
-                      : 'Conversas não são memorizadas entre sessões'}
+                    {memoryEnabled ? L.memoryOnDesc : L.memoryOffDesc}
                   </p>
                 </div>
               </div>
@@ -478,12 +657,11 @@ export default function Profile() {
                 checked={memoryEnabled}
                 onCheckedChange={v => {
                   setMemoryEnabled(v);
-                  toast({ title: v ? 'Memória ativada' : 'Memória desativada' });
+                  toast({ title: v ? L.memoryOn : L.memoryOff });
                 }}
               />
             </div>
 
-            {/* Delete memories button */}
             <Button
               variant="outline"
               size="sm"
@@ -494,27 +672,25 @@ export default function Profile() {
                 setDeletingMemories(true);
                 await supabase.from('user_memory').delete().eq('user_id', user.id);
                 setDeletingMemories(false);
-                toast({ title: 'Todas as memórias foram apagadas' });
+                toast({ title: L.allMemoriesDeleted });
               }}
             >
               <Trash2 className="h-4 w-4" />
-              {deletingMemories ? 'Apagando...' : 'Apagar todas as memórias'}
+              {deletingMemories ? L.deleting : L.deleteAllMemories}
             </Button>
           </div>
         </div>
 
-        {/* Upgrade CTA — hide during onboarding */}
         {!isSubscriber && !isOnboarding && (
           <Link to="/pricing" className="block">
             <Button className="w-full h-12 text-base sacred-gradient text-primary-foreground border-0 gap-2">
               <Sparkles className="h-5 w-5" />
-              Fazer Upgrade Pro
+              {L.upgradePro}
             </Button>
           </Link>
         )}
       </div>
 
-      {/* Sticky onboarding CTA */}
       {isOnboarding && (
         <div className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border p-4">
           <div className="max-w-md mx-auto">
@@ -522,7 +698,7 @@ export default function Profile() {
               onClick={handleSaveAndEnter}
               className="w-full h-12 text-base sacred-gradient text-primary-foreground border-0 gap-2"
             >
-              Salvar e Entrar no Templo
+              {L.saveAndEnter}
               <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
@@ -532,19 +708,16 @@ export default function Profile() {
       <AlertDialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você manterá acesso completo até o fim do período já pago.
-              Após essa data, sua conta voltará ao plano gratuito.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{L.cancelSubTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{L.cancelSubDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Manter assinatura</AlertDialogCancel>
+            <AlertDialogCancel>{L.keepSub}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancelSubscription}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Sim, cancelar
+              {L.yesCancel}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
