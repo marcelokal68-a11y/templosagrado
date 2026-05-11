@@ -367,7 +367,23 @@ export default function Profile() {
 
   const saveReligion = async (value: string | null) => {
     if (!user || !profile) return;
+    // If switching to a different tradition (and one already exists), confirm first
+    const prev = profile.preferred_religion;
+    if (prev && prev !== value) {
+      setPendingReligion({ value });
+      return;
+    }
+    await applyReligionChange(value);
+  };
+
+  const applyReligionChange = async (value: string | null) => {
+    if (!user || !profile) return;
+    const prev = profile.preferred_religion;
     setSaving(true);
+    if (prev && prev !== value) {
+      const { clearAffiliationHistory } = await import('@/lib/clearAffiliationHistory');
+      await clearAffiliationHistory(user.id, prev, null);
+    }
     const { error } = await supabase
       .from('profiles')
       .update({ preferred_religion: value })
@@ -376,9 +392,14 @@ export default function Profile() {
     if (!error) {
       setProfile({ ...profile, preferred_religion: value });
       setEditingReligion(false);
+      setMessages([]);
       setChatContext(prev => ({ ...prev, religion: value || '', philosophy: '', topic: '' }));
       await refreshProfile();
-      toast({ title: value ? L.traditionUpdated : L.traditionRemoved });
+      toast({
+        title: prev && prev !== value
+          ? t('faith.switch_done', language)
+          : (value ? L.traditionUpdated : L.traditionRemoved),
+      });
     }
   };
 
