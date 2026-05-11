@@ -252,7 +252,7 @@ export default function Journey() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2 mb-0.5">
                             <p className="text-sm font-medium truncate text-foreground">{item.title}</p>
-                            <span className="text-[11px] text-muted-foreground shrink-0">{relativeDate(item.created_at)}</span>
+                            <span className="text-[11px] text-muted-foreground shrink-0">{relativeDate(item.created_at, L)}</span>
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2">{item.content}</p>
                         </div>
@@ -270,7 +270,7 @@ export default function Journey() {
         <div className="mt-10 pt-6 border-t border-border/50 text-center">
           <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 text-primary/70" />
-            Apenas você vê esta página. Nem mesmo nossa equipe tem acesso.
+            {L.privacyNote}
           </div>
         </div>
       </div>
