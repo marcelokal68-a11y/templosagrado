@@ -242,7 +242,7 @@ const LABELS = {
 };
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext, setMessages } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext, messages, setMessages } = useApp();
   const L = LABELS[language] || LABELS['pt-BR'];
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -379,28 +379,56 @@ export default function Profile() {
   const applyReligionChange = async (value: string | null) => {
     if (!user || !profile) return;
     const prev = profile.preferred_religion;
+    const prevMessages = [...messages];
     setSaving(true);
-    if (prev && prev !== value) {
-      const { clearAffiliationHistory } = await import('@/lib/clearAffiliationHistory');
-      await clearAffiliationHistory(user.id, prev, null);
-    }
     const { error } = await supabase
       .from('profiles')
       .update({ preferred_religion: value })
       .eq('user_id', user.id);
     setSaving(false);
-    if (!error) {
-      setProfile({ ...profile, preferred_religion: value });
-      setEditingReligion(false);
-      setMessages([]);
-      setChatContext(prev => ({ ...prev, religion: value || '', philosophy: '', topic: '' }));
-      await refreshProfile();
-      toast({
-        title: prev && prev !== value
-          ? t('faith.switch_done', language)
-          : (value ? L.traditionUpdated : L.traditionRemoved),
-      });
+    if (error) return;
+
+    setProfile({ ...profile, preferred_religion: value });
+    setEditingReligion(false);
+    setMessages([]);
+    setChatContext(prevCtx => ({ ...prevCtx, religion: value || '', philosophy: '', topic: '' }));
+    await refreshProfile();
+
+    const isSwitch = !!(prev && prev !== value);
+    if (!isSwitch) {
+      toast({ title: value ? L.traditionUpdated : L.traditionRemoved });
+      return;
     }
+
+    // Defer the actual deletion so the user can undo
+    const UNDO_MS = 15000;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      if (cancelled) return;
+      const { clearAffiliationHistory } = await import('@/lib/clearAffiliationHistory');
+      await clearAffiliationHistory(user.id, prev, null);
+    }, UNDO_MS);
+
+    const { toast: sonnerToast } = await import('sonner');
+    sonnerToast.success(t('faith.switch_done', language), {
+      duration: UNDO_MS,
+      action: {
+        label: t('faith.undo', language),
+        onClick: async () => {
+          cancelled = true;
+          clearTimeout(timer);
+          await supabase
+            .from('profiles')
+            .update({ preferred_religion: prev })
+            .eq('user_id', user.id);
+          setProfile(p => (p ? { ...p, preferred_religion: prev } : p));
+          setMessages(prevMessages);
+          setChatContext(prevCtx => ({ ...prevCtx, religion: prev || '', philosophy: '', topic: '' }));
+          await refreshProfile();
+          sonnerToast.success(t('faith.switch_undone', language));
+        },
+      },
+    });
   };
 
   if (!user || !profile) return null;
