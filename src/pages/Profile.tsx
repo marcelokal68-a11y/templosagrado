@@ -331,6 +331,7 @@ export default function Profile() {
   const [nameValue, setNameValue] = useState('');
   const [editingReligion, setEditingReligion] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pendingReligion, setPendingReligion] = useState<{ value: string | null } | null>(null);
 
   useEffect(() => {
     if (!user) return;
