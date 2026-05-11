@@ -282,11 +282,8 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
     }
     await refreshProfile();
-    applyOption(option);
+    await applyOption(option);
     setExploreIntent(null);
-    toast.success(
-      language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada'
-    );
   };
 
   // From the 3-option dialog: explore in /learn without changing faith
