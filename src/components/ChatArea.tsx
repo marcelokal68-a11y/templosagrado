@@ -1154,19 +1154,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     )}
                     {messages.length > 0 && (
                       <DropdownMenuItem
-                        onClick={async () => {
-                          if (user && !confessionalMode) {
-                            await supabase.from('chat_messages').delete().eq('user_id', user.id);
-                          }
+                        onClick={() => {
                           stopAudio();
                           audioCacheRef.current.clear();
                           setMessages([]);
                           setSessionClosed(false);
+                          toast({ title: t('chat.clear_view', language), description: t('chat.clear_view_done', language) });
                         }}
                         className="text-muted-foreground"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t('chat.clear', language)}
+                        <Eraser className="h-4 w-4 mr-2" />
+                        {t('chat.clear_view', language)}
                       </DropdownMenuItem>
                     )}
                     {user && !confessionalMode && (
