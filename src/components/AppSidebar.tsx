@@ -61,7 +61,7 @@ export default function AppSidebar() {
 
   return (
     <Sidebar
-      className={cn("hidden md:flex border-r border-primary/10 transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-52")}
+      className={cn("hidden md:flex border-r border-primary/10 transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-auto min-w-[13rem]")}
       collapsible="icon"
     >
       <SidebarContent className="flex flex-col pt-24 h-full">
@@ -88,8 +88,8 @@ export default function AppSidebar() {
                     >
                       <item.icon className={cn("shrink-0 h-6 w-6", active && "drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]")} />
                       {!collapsed && (
-                        <span className="text-base font-medium flex items-center gap-2 min-w-0">
-                          <span className="truncate">{label}</span>
+                        <span className="text-base font-medium flex items-center gap-2 whitespace-nowrap">
+                          <span>{label}</span>
                           {isJourney && (
                             <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] leading-none uppercase tracking-wider font-bold bg-primary/15 text-primary border border-primary/30">
                               Pro
