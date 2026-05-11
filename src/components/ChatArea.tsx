@@ -119,7 +119,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function Me
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
   return (
-    <div ref={ref} className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+    <div ref={ref} className={cn("group/msg flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
       {/* Divine avatar */}
       {!isUser && (
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center mt-auto ring-1 ring-primary/20">
@@ -127,7 +127,20 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function Me
         </div>
       )}
       
-      <div className={cn("flex flex-col gap-0.5", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
+      <div className={cn("flex flex-col gap-0.5 relative", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
+        {onDelete && (
+          <button
+            onClick={() => onDelete(index)}
+            title={deleteLabel}
+            aria-label={deleteLabel}
+            className={cn(
+              "absolute -top-2 z-10 p-1 rounded-full bg-background border border-border text-muted-foreground hover:text-destructive hover:border-destructive transition-colors opacity-60 hover:opacity-100",
+              isUser ? "-left-2" : "-right-2"
+            )}
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
         <div className={cn(
           "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed",
           isUser
