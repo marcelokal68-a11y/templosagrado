@@ -744,6 +744,32 @@ export default function Profile() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!pendingReligion} onOpenChange={(open) => { if (!open) setPendingReligion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('faith.switch_title', language)}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('faith.switch_desc', language)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingReligion(null)}>
+              {t('faith.switch_cancel', language)}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                const v = pendingReligion?.value ?? null;
+                setPendingReligion(null);
+                await applyReligionChange(v);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('faith.switch_confirm', language)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
