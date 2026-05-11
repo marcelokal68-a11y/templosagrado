@@ -6,7 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import { History, Trash2, X, Feather, Copy, Check, Loader2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { History, Trash2, Feather, Copy, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
@@ -41,6 +51,10 @@ export default function ChatHistory() {
   const [messages, setMessages] = useState<HistoryMsg[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Confirmation dialogs
+  const [convoToDelete, setConvoToDelete] = useState<Conversation | null>(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+
   // Post generation state
   const [postConvoIndex, setPostConvoIndex] = useState<number | null>(null);
   const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
@@ -72,12 +86,15 @@ export default function ChatHistory() {
   const deleteConvo = async (convo: Conversation) => {
     await supabase.from('chat_messages').delete().in('id', [convo.userMsg.id, convo.assistantMsg.id]);
     setMessages(prev => prev.filter(m => m.id !== convo.userMsg.id && m.id !== convo.assistantMsg.id));
+    setConvoToDelete(null);
+    toast({ title: t('history.deleted_one', language) || 'Conversa apagada' });
   };
 
   const deleteAll = async () => {
     if (!user) return;
     await supabase.from('chat_messages').delete().eq('user_id', user.id);
     setMessages([]);
+    setConfirmDeleteAll(false);
     toast({ title: t('history.deleted', language) || 'Histórico apagado' });
   };
 
@@ -131,7 +148,7 @@ export default function ChatHistory() {
           <SheetTitle className="flex items-center justify-between">
             <span>{t('history.title', language) || 'Histórico'}</span>
             {conversations.length > 0 && (
-              <Button variant="destructive" size="sm" onClick={deleteAll} className="gap-1.5">
+              <Button variant="destructive" size="sm" onClick={() => setConfirmDeleteAll(true)} className="gap-1.5">
                 <Trash2 className="h-3.5 w-3.5" />
                 {t('history.delete_all', language) || 'Apagar tudo'}
               </Button>
@@ -147,12 +164,14 @@ export default function ChatHistory() {
           )}
           <div className="space-y-3 pr-2">
             {conversations.map((convo, idx) => (
-              <div key={convo.userMsg.id} className="group relative bg-card border border-border rounded-lg p-3 space-y-2">
+              <div key={convo.userMsg.id} className="relative bg-card border border-border rounded-lg p-3 pr-10 space-y-2">
                 <button
-                  onClick={() => deleteConvo(convo)}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  onClick={() => setConvoToDelete(convo)}
+                  title={t('history.delete_one', language) || 'Apagar esta conversa'}
+                  aria-label={t('history.delete_one', language) || 'Apagar esta conversa'}
+                  className="absolute top-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
                 <p className="text-[10px] font-medium text-muted-foreground">
                   {new Date(convo.userMsg.created_at).toLocaleDateString()}
@@ -236,6 +255,44 @@ export default function ChatHistory() {
           </div>
         </ScrollArea>
       </SheetContent>
+
+      {/* Delete one confirmation */}
+      <AlertDialog open={!!convoToDelete} onOpenChange={(o) => !o && setConvoToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.delete_one_title', language) || 'Apagar esta conversa?'}</AlertDialogTitle>
+            <AlertDialogDescription>{t('history.delete_one_desc', language) || 'Esta troca será removida permanentemente do seu histórico.'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('panel.keep', language) || 'Manter'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => convoToDelete && deleteConvo(convoToDelete)}
+            >
+              {t('history.delete_one', language) || 'Apagar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete all confirmation */}
+      <AlertDialog open={confirmDeleteAll} onOpenChange={setConfirmDeleteAll}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('chat.clear_all_title', language) || 'Apagar todo o histórico?'}</AlertDialogTitle>
+            <AlertDialogDescription>{t('chat.clear_all_desc', language)}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('panel.keep', language) || 'Manter'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={deleteAll}
+            >
+              {t('history.delete_all', language) || 'Apagar tudo'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
