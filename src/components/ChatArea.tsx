@@ -1094,19 +1094,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
                 {messages.length > 0 && (
                   <button
-                    onClick={async () => {
-                      if (user) {
-                        await supabase.from('chat_messages').delete().eq('user_id', user.id);
-                      }
+                    onClick={() => {
                       stopAudio();
                       audioCacheRef.current.clear();
                       setMessages([]);
                       setSessionClosed(false);
+                      toast({ title: t('chat.clear_view', language), description: t('chat.clear_view_done', language) });
                     }}
-                    className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors min-h-[44px] flex items-center"
-                    title={t('chat.clear', language)}
+                    className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center"
+                    title={t('chat.clear_view', language)}
+                    aria-label={t('chat.clear_view', language)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Eraser className="h-4 w-4" />
                   </button>
                 )}
                 <DropdownMenu>
