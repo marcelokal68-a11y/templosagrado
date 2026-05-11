@@ -61,7 +61,8 @@ export default function AppSidebar() {
 
   return (
     <Sidebar
-      className={cn("hidden md:flex border-r border-primary/10 transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-auto min-w-[13rem]")}
+      className={cn("hidden md:flex border-r border-primary/10 transition-all duration-300 shrink-0", collapsed ? "w-14" : "w-60")}
+      style={!collapsed ? { ['--sidebar-width' as any]: '15rem' } : undefined}
       collapsible="icon"
     >
       <SidebarContent className="flex flex-col pt-24 h-full">
