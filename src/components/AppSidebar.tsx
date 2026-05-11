@@ -3,7 +3,7 @@ import { MessageCircle, BookOpen, ScrollText, Shield, GraduationCap, Brain } fro
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -77,29 +77,6 @@ export default function AppSidebar() {
                   const prevIsAdmin = idx > 0 && allItems[idx - 1].labelKey === 'Admin';
                   const showDivider = isAdminItem && !prevIsAdmin;
                   const isJourney = item.to === '/journey';
-                  const linkEl = (
-                    <Link
-                      to={item.to}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
-                        active
-                          ? "bg-primary/15 text-primary font-semibold sacred-glow"
-                          : "text-foreground/60 hover:text-primary hover:bg-primary/5"
-                      )}
-                    >
-                      <item.icon className={cn("shrink-0 h-6 w-6", active && "drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]")} />
-                      {!collapsed && (
-                        <span className="text-base font-medium flex items-center gap-2 whitespace-nowrap">
-                          <span>{label}</span>
-                          {isJourney && (
-                            <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] leading-none uppercase tracking-wider font-bold bg-primary/15 text-primary border border-primary/30">
-                              Pro
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </Link>
-                  );
                   return (
                     <div key={item.to}>
                       {showDivider && (
@@ -114,18 +91,14 @@ export default function AppSidebar() {
                       )}
                       <SidebarMenuItem>
                         <SidebarMenuButton asChild isActive={active}>
-                          {collapsed ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                {linkEl}
-                              </TooltipTrigger>
-                              <TooltipContent side="right">
-                                {label}
-                              </TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            linkEl
-                          )}
+                          <NavItem
+                            to={item.to}
+                            label={label}
+                            Icon={item.icon}
+                            active={active}
+                            collapsed={collapsed}
+                            isJourney={isJourney}
+                          />
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     </div>
@@ -137,5 +110,68 @@ export default function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
+  );
+}
+
+type NavItemProps = {
+  to: string;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  active: boolean;
+  collapsed: boolean;
+  isJourney: boolean;
+};
+
+function NavItem({ to, label, Icon, active, collapsed, isJourney }: NavItemProps) {
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = labelRef.current;
+    if (!el || collapsed) { setTruncated(false); return; }
+    const measure = () => setTruncated(el.scrollWidth > el.clientWidth + 1);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, [label, collapsed]);
+
+  const link = (
+    <Link
+      to={to}
+      className={cn(
+        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all min-w-0",
+        active
+          ? "bg-primary/15 text-primary font-semibold sacred-glow"
+          : "text-foreground/60 hover:text-primary hover:bg-primary/5"
+      )}
+    >
+      <Icon className={cn("shrink-0 h-6 w-6", active && "drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]")} />
+      {!collapsed && (
+        <span className="text-base font-medium flex items-center gap-2 min-w-0 flex-1">
+          <span ref={labelRef} className="whitespace-nowrap overflow-hidden text-ellipsis min-w-0">
+            {label}
+          </span>
+          {isJourney && (
+            <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] leading-none uppercase tracking-wider font-bold bg-primary/15 text-primary border border-primary/30">
+              Pro
+            </span>
+          )}
+        </span>
+      )}
+    </Link>
+  );
+
+  const showTooltip = collapsed || truncated;
+  if (!showTooltip) return link;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipContent side="right">
+        {label}{isJourney ? ' (Pro)' : ''}
+      </TooltipContent>
+    </Tooltip>
   );
 }

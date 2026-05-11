@@ -1,49 +1,29 @@
 ## Objetivo
 
-Tornar a função de limpar chat mais clara e granular: permitir apagar **tudo**, apagar **só uma conversa específica**, ou apagar **só uma mensagem do chat atual**, em qualquer dispositivo (incluindo toque).
+Garantir que o nome de cada item da sidebar seja sempre legível: se o texto for cortado pela largura disponível, mostrar um **tooltip** ao passar o mouse com o nome completo. No modo recolhido o tooltip continua aparecendo (já existe).
 
 ## Situação atual
 
-- **ChatArea (chat ativo)**:
-  - Ícone 🗑️ no topo "Limpar" hoje deleta TODAS as mensagens do banco sem confirmação — comportamento perigoso e confuso.
-  - Item "Apagar tudo" no menu já existe e tem diálogo de confirmação ✅.
-  - Não há como apagar uma única troca (pergunta+resposta) dentro do chat ativo.
-- **ChatHistory (sheet de histórico)**:
-  - Botão "Apagar tudo" funciona ✅.
-  - Botão de excluir item individual existe mas está com `opacity-0 group-hover:opacity-100` → invisível no mobile/touch.
-  - Sem confirmação ao apagar item individual.
+`src/components/AppSidebar.tsx`:
+- Tooltip só é renderizado quando `collapsed === true`.
+- No modo expandido, o `<span>` tem `whitespace-nowrap` — se o label for maior que a área disponível, fica cortado sem feedback.
 
-## Mudanças
+## Mudança
 
-### 1. ChatArea — separar "limpar tela" de "apagar do banco"
-- Renomear o ícone 🗑️ do topo para **"Limpar tela"** (`chat.clear_view`): apenas zera `messages` em memória, **não toca no banco**. Sem confirmação.
-- Manter "Apagar tudo" (`chat.clear_all`) no menu com diálogo (já existente) que apaga do banco.
-- Remover o item duplicado "Limpar" do dropdown (que hoje apaga tudo do banco silenciosamente).
+Em `AppSidebar.tsx`:
 
-### 2. ChatArea — apagar uma troca individual
-- Ao passar mouse / tocar uma bolha de mensagem, mostrar botão ✕ pequeno que apaga aquele par (user + assistant).
-- Atualiza `messages` localmente e remove os 2 IDs no banco (se usuário logado e não-confessional).
+1. Criar um pequeno componente interno `NavItemLabel` (ou usar `useRef` + `useLayoutEffect` por item) que mede o `<span>` do label:
+   - `isTruncated = el.scrollWidth > el.clientWidth + 1`
+   - Recalcular em `resize` e quando `label`/`collapsed` mudam.
+2. Envolver o link com `<Tooltip>` quando **`collapsed`** OU **`isTruncated`** for verdadeiro. Conteúdo do tooltip = `label` (+ badge "Pro" se aplicável, em texto).
+3. Manter `whitespace-nowrap` + `overflow-hidden text-ellipsis` no `<span>` para que o truncamento seja visível e mensurável.
+4. Tooltip aparece em `side="right"` em ambos os casos para consistência.
 
-### 3. ChatHistory — exclusão por item sempre visível + confirmar
-- Trocar `opacity-0 group-hover:opacity-100` por botão sempre visível (ícone 🗑️ pequeno no canto).
-- Adicionar `AlertDialog` de confirmação tanto para item individual quanto para "Apagar tudo".
-- Toast de feedback após remoção.
-
-### 4. i18n
-Adicionar chaves nos 3 idiomas (pt-BR / en / es):
-- `chat.clear_view` → "Limpar tela" / "Clear view" / "Limpar pantalla"
-- `chat.clear_view_desc` → "Apenas oculta a conversa atual. Nada é apagado do histórico."
-- `chat.delete_one_title` / `chat.delete_one_desc` → confirmação de troca única
-- `history.delete_one_title` / `history.delete_one_desc` → confirmação no histórico
-- `chat.message_deleted` → toast
-
-## Arquivos afetados
-- `src/components/ChatArea.tsx` — separar handlers, adicionar botão ✕ por mensagem, AlertDialog para troca única
-- `src/components/ChatHistory.tsx` — botão sempre visível, AlertDialog de confirmação
-- `src/lib/i18n.ts` — novas chaves nos 3 idiomas
+## Arquivo afetado
+- `src/components/AppSidebar.tsx`
 
 ## Validação
-- No chat ativo: clicar 🗑️ topo → some da tela mas reaparece se recarregar (porque continua no banco).
-- "Apagar tudo" → confirma → apaga banco + tela.
-- ✕ em uma bolha → confirma → some essa troca da tela e do banco.
-- No histórico: ✕ em um item visível mesmo no mobile, com confirmação.
+- Sidebar expandida com label curto ("Chat") → sem tooltip.
+- Sidebar expandida com label longo o suficiente para ser cortado (ex.: redimensionar `--sidebar-width` ou label traduzido maior em EN/ES) → tooltip aparece com nome completo.
+- Sidebar recolhida → tooltip continua aparecendo (comportamento atual preservado).
+- Item Journey mantém o badge "Pro" visível inline; tooltip mostra apenas o texto.
