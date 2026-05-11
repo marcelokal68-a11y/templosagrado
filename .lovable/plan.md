@@ -1,60 +1,70 @@
-## Objetivo
+# Plano: corrigir login Google travado + liberar acesso vitalício
 
-Quando o usuário trocar sua fé/religião (ou filosofia), **avisar claramente** que o histórico de conversa daquela jornada será apagado e, ao confirmar, **apagar de fato** as mensagens antigas no banco. Após a troca, o mentor e as sugestões já passam a refletir a nova fé (comportamento que já existe via `chatContext`).
+## Diagnóstico
 
-## Situação atual
+A tela "Authorization failed — State verification failed (invalid_request)" vem do broker OAuth gerenciado da Lovable (`auth.lovable.app`). Ele acontece quando o cookie/estado de "início" do fluxo não é encontrado no callback. As causas reais que afetam usuários reais (não o app em si) são:
 
-- **`src/components/ContextPanel.tsx`** já tem dois diálogos ao trocar de fé:
-  - Diálogo "Mudar de caminho?" — texto genérico, sem mencionar apagamento e sem deletar nada do banco.
-  - Diálogo "Mudar para X?" (3 opções) — também não menciona apagamento.
-  - Ambos chamam `applyOption()` → `clearChatWithUndo()` (apenas limpa a tela, com undo de 20s).
-- **`src/pages/Profile.tsx`** → `saveReligion()` troca a religião **silenciosamente**, sem aviso e sem limpar histórico.
-- **`src/components/ChatArea.tsx`** já filtra mensagens por `religion`/`philosophy`, então conversas antigas ficam guardadas no banco mesmo quando ocultas.
+1. **Navegador in-app** (Instagram, Facebook, TikTok, LinkedIn, WhatsApp) — bloqueiam cookies cross-site, então o `state` salvo no início nunca chega no callback.
+2. **PWA instalado em modo standalone** — o iOS/Android abre o Google em outro navegador; o callback volta dentro do PWA sem o cookie de estado.
+3. **Usuário cancelou e tentou de novo** com state expirado.
+4. **Bloqueador de cookies de terceiros agressivo** (Safari ITP estrito, Brave).
 
-## Mudanças
+Não conseguimos consertar a verificação dentro do broker (ele é gerenciado), mas podemos prevenir o erro e dar uma saída elegante quando ele acontece — hoje o usuário fica numa tela morta sem caminho de volta.
 
-### 1. Função utilitária compartilhada
-Criar `clearAffiliationHistory(userId, prevReligion, prevPhilosophy)` em `src/lib/clearAffiliationHistory.ts`:
-- `DELETE FROM chat_messages WHERE user_id=? AND (religion=prevReligion OR philosophy=prevPhilosophy)`.
-- `DELETE FROM activity_history WHERE user_id=? AND type='chat' AND (metadata->>religion = prevReligion OR metadata->>philosophy = prevPhilosophy)`.
-- **Não toca em** `user_memory`, versículos, orações, atividades de prática.
+Sobre o acesso vitalício: o app já tem `is_pro` / `is_subscriber` na `profiles`, mas há um trigger `protect_subscription_fields` que bloqueia updates fora do `service_role`. Vou aplicar a liberação por migração (roda como service role) e adicionar uma proteção para esse e-mail nunca cair no paywall mesmo se algo zerar o profile.
 
-### 2. ContextPanel.tsx — texto + ação real
-- Substituir o texto dos dois diálogos para deixar claro:
-  > "Ao trocar de fé, **todo o histórico de conversa da jornada anterior será apagado permanentemente**. As próximas perguntas e respostas serão guiadas pela nova tradição."
-- Em `applyOption(option)` (e em `handleChangeFaith`), antes do `clearChatWithUndo()`:
-  - Capturar `prev = { religion: chatContext.religion, philosophy: chatContext.philosophy }`.
-  - Chamar `clearAffiliationHistory(user.id, prev.religion, prev.philosophy)`.
-  - Como o histórico foi de fato apagado, **remover o `clearChatWithUndo` (com undo)** e usar um simples `setMessages([])` — não faz sentido oferecer "Desfazer" se o banco já foi apagado. Mostrar toast de confirmação.
+## O que vou fazer
 
-### 3. Profile.tsx — adicionar aviso antes de salvar
-- Em `saveReligion(value)`: se `profile.preferred_religion && profile.preferred_religion !== value`, abrir um `AlertDialog` de confirmação com o mesmo texto do ContextPanel. Só ao confirmar:
-  - Capturar religião anterior, executar `clearAffiliationHistory`, depois fazer o `update` em `profiles` e atualizar contexto.
-- Toast: "Tradição atualizada. Histórico anterior apagado."
+### 1. Prevenir o erro de OAuth (frontend)
 
-### 4. i18n
-Adicionar nas 3 línguas (pt-BR / en / es):
-- `faith.switch_title` → "Mudar de fé?" / "Change faith?" / "¿Cambiar de fe?"
-- `faith.switch_desc` → "Ao trocar, todo o histórico de conversa da jornada anterior será apagado permanentemente. As próximas perguntas serão guiadas pela nova tradição."
-- `faith.switch_confirm` → "Trocar e apagar histórico"
-- `faith.switch_done` → "Tradição atualizada. Histórico anterior apagado."
+Em `src/pages/Auth.tsx`:
 
-Atualizar `ContextPanel.tsx` e `Profile.tsx` para usar essas chaves no lugar dos textos hardcoded.
+- Detectar **navegador in-app** (UA contém `Instagram`, `FBAN`, `FBAV`, `Line`, `MicroMessenger`, `Twitter`, `LinkedInApp`, `TikTok`) e, antes de chamar `lovable.auth.signInWithOAuth`, mostrar um aviso amigável com botão "Copiar link e abrir no navegador" + destacar a opção de e-mail/senha.
+- Detectar **PWA em modo standalone** (`window.matchMedia('(display-mode: standalone)').matches`) e, no botão Google, avisar que pode ser necessário fazer login uma vez no Safari/Chrome antes de usar o app instalado, ou oferecer fallback de e-mail.
+- Antes do redirect, limpar restos de tentativas anteriores (`sessionStorage` keys do broker, se houver) para evitar state stale.
 
-### 5. Permissões
-Já cobertas pelas RLS existentes:
-- `chat_messages` — DELETE permitido para o próprio user (`auth.uid() = user_id`).
-- `activity_history` — DELETE permitido para o próprio user.
+### 2. Tela de retorno amigável quando o broker falhar
+
+Hoje o usuário cai em `auth.lovable.app/...?error=invalid_request` e fica preso lá sem botão de voltar. Vou:
+
+- Adicionar uma rota `/auth/oauth-error` no app que lê `?error=` e `?error_description=` da query e mostra:
+  - Mensagem explicando o que aconteceu em PT-BR
+  - Botão "Tentar de novo" (volta pra `/auth`)
+  - Botão "Entrar com e-mail" (volta pra `/auth` com aba e-mail)
+  - Dica sobre navegador in-app quando aplicável
+- Atualizar o `redirect_uri` passado para o broker para essa rota quando ele errar; como o broker decide a tela final, também vou expor a rota como link de fallback no rodapé do `/auth` ("Tive problema com o Google →").
+
+> Observação: o broker da Lovable controla a página de erro em si; não dá para substituí-la diretamente. O que conseguimos é guiar o usuário de volta para o app a partir dessa página (link/QR), e prevenir que ele chegue lá nos casos previsíveis acima.
+
+### 3. Liberar acesso vitalício para `pedro.chermont@leq.com.br`
+
+Migração SQL que:
+
+- Cria tabela `lifetime_access (email text primary key, granted_at timestamptz default now(), note text)` com RLS (apenas service role lê/escreve).
+- Insere `pedro.chermont@leq.com.br`.
+- Atualiza o trigger `handle_new_user` (ou cria um novo `apply_lifetime_access` AFTER INSERT em `profiles`) para, quando o e-mail do `auth.users` correspondente estiver em `lifetime_access`, setar `is_pro=true`, `is_subscriber=true`, `questions_limit=999999`, `trial_ends_at = now() + interval '100 years'`. Esse trigger roda como definer/service role, então passa pelo `protect_subscription_fields`.
+- Roda um update one-shot agora: se o usuário já existe (`auth.users.email = 'pedro.chermont@leq.com.br'`), aplica os mesmos campos no profile dele imediatamente.
+- Também ajusta a `check-subscription` Edge Function para considerar `lifetime_access` como sempre ativo (evita que uma sincronização Stripe sobrescreva os campos).
+
+### 4. Validação
+
+- Build local + lint.
+- Teste unitário cobrindo: detecção de UA in-app, render da tela `/auth/oauth-error` com query params, e a função util de "isLifetimeEmail".
+- Verificar via `psql` depois da migração que o profile do Pedro (se existir) está com `is_pro=true` e `questions_limit` alto.
 
 ## Arquivos afetados
-- `src/lib/clearAffiliationHistory.ts` (novo)
-- `src/components/ContextPanel.tsx`
-- `src/pages/Profile.tsx`
-- `src/lib/i18n.ts`
 
-## Validação
-1. Iniciar conversa com Cristianismo → ver mensagens.
-2. Pelo ContextPanel, escolher Budismo → diálogo aparece com texto explícito → confirmar → tela limpa, toast confirma, recarregar página: nada do Cristianismo aparece em `chat_messages` (verificar).
-3. Pelo Profile, mudar tradição salva → diálogo idêntico → confirmar → mesmo efeito.
-4. Cancelar o diálogo em qualquer tela → nada muda, histórico permanece.
-5. Após troca, novas perguntas/respostas vêm guiadas pela nova fé (comportamento já existente).
+- `src/pages/Auth.tsx` — detecção in-app/PWA + avisos.
+- `src/pages/OAuthError.tsx` (novo) — tela de retorno amigável.
+- `src/App.tsx` — rota nova.
+- `src/lib/inAppBrowser.ts` (novo) — util de detecção + teste.
+- `src/lib/i18n.ts` — strings PT/EN/ES.
+- `supabase/migrations/<timestamp>_lifetime_access.sql` (novo).
+- `supabase/functions/check-subscription/index.ts` — respeitar `lifetime_access`.
+
+## Detalhes técnicos
+
+- A detecção in-app é só por User-Agent (não 100%, mas pega >95% dos casos reais). Não bloqueia o botão; só mostra um banner.
+- A tabela `lifetime_access` é por e-mail (não user_id) para funcionar mesmo antes do primeiro login. O trigger faz o join no momento da criação do profile.
+- O trigger novo precisa rodar com `SECURITY DEFINER` e `SET search_path = public` para passar pelo `protect_subscription_fields` (que checa `request.jwt.claims->>role = 'service_role'`). Como definer roda com role `postgres`, o teste do trigger atual permite a alteração.
+- O fluxo OAuth gerenciado da Lovable não expõe hooks para customizar a página de erro do broker; por isso a estratégia é prevenir + dar saída no app, não substituir a página do broker.
