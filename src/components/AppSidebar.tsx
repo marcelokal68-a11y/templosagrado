@@ -77,29 +77,6 @@ export default function AppSidebar() {
                   const prevIsAdmin = idx > 0 && allItems[idx - 1].labelKey === 'Admin';
                   const showDivider = isAdminItem && !prevIsAdmin;
                   const isJourney = item.to === '/journey';
-                  const linkEl = (
-                    <Link
-                      to={item.to}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
-                        active
-                          ? "bg-primary/15 text-primary font-semibold sacred-glow"
-                          : "text-foreground/60 hover:text-primary hover:bg-primary/5"
-                      )}
-                    >
-                      <item.icon className={cn("shrink-0 h-6 w-6", active && "drop-shadow-[0_0_6px_hsl(38_80%_55%_/_0.5)]")} />
-                      {!collapsed && (
-                        <span className="text-base font-medium flex items-center gap-2 whitespace-nowrap">
-                          <span>{label}</span>
-                          {isJourney && (
-                            <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] leading-none uppercase tracking-wider font-bold bg-primary/15 text-primary border border-primary/30">
-                              Pro
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </Link>
-                  );
                   return (
                     <div key={item.to}>
                       {showDivider && (
@@ -114,18 +91,14 @@ export default function AppSidebar() {
                       )}
                       <SidebarMenuItem>
                         <SidebarMenuButton asChild isActive={active}>
-                          {collapsed ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                {linkEl}
-                              </TooltipTrigger>
-                              <TooltipContent side="right">
-                                {label}
-                              </TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            linkEl
-                          )}
+                          <NavItem
+                            to={item.to}
+                            label={label}
+                            Icon={item.icon}
+                            active={active}
+                            collapsed={collapsed}
+                            isJourney={isJourney}
+                          />
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     </div>
