@@ -662,6 +662,7 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.professor_mode': 'Modo Professor — pergunte o que quiser',
     'learn.ask_placeholder': 'Faça uma pergunta ao professor...',
     'learn.ask_faith': 'Deseja configurar {religion} como sua religião de fé?',
+    'learn.ask_faith_desc': 'Salvamos sua tradição para personalizar o chat, o versículo do dia e o mural. Você pode mudar a qualquer momento no Perfil.',
     'learn.yes': 'Sim, é minha fé',
     'learn.not_now': 'Não agora',
     // LGPD
@@ -1304,6 +1305,7 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.professor_mode': 'Professor Mode — ask anything',
     'learn.ask_placeholder': 'Ask the professor a question...',
     'learn.ask_faith': 'Would you like to set {religion} as your faith religion?',
+    'learn.ask_faith_desc': 'We save your tradition to personalize the chat, daily verse and wall. You can change it anytime in your Profile.',
     'learn.yes': 'Yes, it\'s my faith',
     'learn.not_now': 'Not now',
     'lgpd.title': 'Privacy & Data Protection',
@@ -1945,6 +1947,7 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.professor_mode': 'Modo Profesor — pregunta lo que quieras',
     'learn.ask_placeholder': 'Haz una pregunta al profesor...',
     'learn.ask_faith': '¿Deseas configurar {religion} como tu religión de fe?',
+    'learn.ask_faith_desc': 'Guardamos tu tradición para personalizar el chat, el versículo del día y el muro. Puedes cambiarla cuando quieras en tu Perfil.',
     'learn.yes': 'Sí, es mi fe',
     'learn.not_now': 'Ahora no',
     'lgpd.title': 'Privacidad y Protección de Datos',

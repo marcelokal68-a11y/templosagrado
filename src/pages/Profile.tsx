@@ -20,18 +20,22 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const traditions = [
+  { value: 'christian', labelKey: 'religion.christian' },
   { value: 'catholic', labelKey: 'religion.catholic' },
   { value: 'protestant', labelKey: 'religion.protestant' },
-  { value: 'spiritist', labelKey: 'religion.spiritist' },
-  { value: 'candomble', labelKey: 'religion.candomble' },
-  { value: 'jewish', labelKey: 'religion.jewish' },
-  { value: 'hindu', labelKey: 'religion.hindu' },
   { value: 'mormon', labelKey: 'religion.mormon' },
+  { value: 'jewish', labelKey: 'religion.jewish' },
+  { value: 'islam', labelKey: 'religion.islam' },
+  { value: 'hindu', labelKey: 'religion.hindu' },
+  { value: 'buddhist', labelKey: 'religion.buddhist' },
+  { value: 'spiritist', labelKey: 'religion.spiritist' },
+  { value: 'umbanda', labelKey: 'religion.umbanda' },
+  { value: 'candomble', labelKey: 'religion.candomble' },
   { value: 'agnostic', labelKey: 'religion.agnostic' },
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext } = useApp();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -169,7 +173,10 @@ export default function Profile() {
     if (!error) {
       setProfile({ ...profile, preferred_religion: value });
       setEditingReligion(false);
-      toast({ title: 'Tradição atualizada!' });
+      // Sync with global app state so chat/sidebar reflect immediately
+      setChatContext(prev => ({ ...prev, religion: value || '', philosophy: '', topic: '' }));
+      await refreshProfile();
+      toast({ title: value ? 'Tradição atualizada!' : 'Tradição removida' });
     }
   };
 
