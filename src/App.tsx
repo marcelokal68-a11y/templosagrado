@@ -12,6 +12,7 @@ import AppSidebar from "@/components/AppSidebar";
 // Eager: landing-critical routes only.
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import OAuthError from "./pages/OAuthError";
 import Landing from "./pages/Landing";
 // Lazy: loaded on demand per-route. TS-102.
 const Profile = lazy(() => import("./pages/Profile"));
@@ -73,6 +74,8 @@ const App = () => (
                       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                       <Route path="/landing" element={<Landing />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/auth/oauth-error" element={<OAuthError />} />
+                      <Route path="/oauth-error" element={<OAuthError />} />
                       <Route path="/pricing" element={<Pricing />} />
                       <Route path="/verse" element={<ProtectedRoute><Verse /></ProtectedRoute>} />
                       <Route path="/mural" element={<ProtectedRoute><Mural /></ProtectedRoute>} />
