@@ -124,6 +124,7 @@ function monthLabel(iso: string, locale: string): string {
 
 export default function Journey() {
   const { language, user } = useApp();
+  const L = J_LABELS[language] || J_LABELS['pt-BR'];
   const { toast } = useToast();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,12 +150,12 @@ export default function Journey() {
     await supabase.from('activity_history').delete().eq('id', id);
     setItems(prev => prev.filter(i => i.id !== id));
     setSelected(null);
-    toast({ title: 'Removido da sua jornada' });
+    toast({ title: L.removed });
   };
 
   const copyContent = async (content: string) => {
     await navigator.clipboard.writeText(content);
-    toast({ title: 'Copiado!' });
+    toast({ title: L.copied });
   };
 
   const downloadPdf = async (item: ActivityItem) => {
@@ -170,7 +171,7 @@ export default function Journey() {
   // Group by month
   const groups: Record<string, ActivityItem[]> = {};
   filtered.forEach(i => {
-    const k = monthLabel(i.created_at);
+    const k = monthLabel(i.created_at, L.locale);
     if (!groups[k]) groups[k] = [];
     groups[k].push(i);
   });
@@ -188,7 +189,7 @@ export default function Journey() {
             {t('journey.title', language)}
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-            Cada conversa, oração e versículo que você guardou compõe seu livro pessoal de caminhada espiritual.
+            {L.intro}
           </p>
         </div>
 
@@ -206,7 +207,7 @@ export default function Journey() {
               )}
             >
               <f.icon className="h-3.5 w-3.5" />
-              {f.label}
+              {(L as any)[f.id]}
             </button>
           ))}
         </div>
