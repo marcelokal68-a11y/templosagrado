@@ -587,8 +587,6 @@ const translations: Record<Language, Record<string, string>> = {
     'landing.stat_available': 'Disponível',
     'landing.cta_pricing_title': 'Comece gratuitamente. Evolua quando quiser.',
     'landing.cta_pricing_desc': '10 perguntas grátis para começar. Planos a partir de R$19,90/mês para acesso ilimitado.',
-    'landing.cta_pricing_title': 'Comece gratuitamente. Evolua quando quiser.',
-    'landing.cta_pricing_desc': '10 perguntas grátis para começar. Planos a partir de R$19,90/mês para acesso ilimitado.',
     'landing.sign_in': 'Entrar',
     'landing.subscribe': 'Assinar',
     'landing.features_title': 'O que o Templo oferece',
