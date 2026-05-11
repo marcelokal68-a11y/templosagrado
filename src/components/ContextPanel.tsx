@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { clearAffiliationHistory } from '@/lib/clearAffiliationHistory';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -203,7 +204,7 @@ function ChipGroup({ label, items, prefix, selected, onSelect, specificItems }: 
 }
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
-  const { language, chatContext, setChatContext, clearChatWithUndo, preferredReligion, user, refreshProfile } = useApp();
+  const { language, chatContext, setChatContext, setMessages, preferredReligion, user, refreshProfile } = useApp();
   const navigate = useNavigate();
   const [exploreIntent, setExploreIntent] = useState<typeof FAITH_OPTIONS[0] | null>(null);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
@@ -247,12 +248,20 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     }
   };
 
-  const applyOption = (option: typeof FAITH_OPTIONS[0]) => {
-    clearChatWithUndo();
+  const applyOption = async (option: typeof FAITH_OPTIONS[0]) => {
+    const prevReligion = chatContext.religion;
+    const prevPhilosophy = chatContext.philosophy;
+    if (user && (prevReligion || prevPhilosophy)) {
+      await clearAffiliationHistory(user.id, prevReligion, prevPhilosophy);
+    }
+    setMessages([]);
     if (option.mode === 'religion') {
       setChatContext(prev => ({ ...prev, religion: option.key, philosophy: '', topic: '' }));
     } else {
       setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
+    }
+    if (prevReligion || prevPhilosophy) {
+      toast.success(t('faith.switch_done', language));
     }
   };
 
@@ -273,11 +282,8 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
     }
     await refreshProfile();
-    applyOption(option);
+    await applyOption(option);
     setExploreIntent(null);
-    toast.success(
-      language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada'
-    );
   };
 
   // From the 3-option dialog: explore in /learn without changing faith
@@ -542,17 +548,17 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Mudar de caminho?</AlertDialogTitle>
+            <AlertDialogTitle>{t('faith.switch_title', language)}</AlertDialogTitle>
             <AlertDialogDescription>
-              Ao trocar, sua conversa atual será limpa para começar uma nova jornada.
+              {t('faith.switch_desc', language)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setShowSwitchConfirm(false); setPendingOption(null); }}>
-              Manter
+              {t('faith.switch_cancel', language)}
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmSwitch}>
-              Trocar
+              {t('faith.switch_confirm', language)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -563,18 +569,10 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {language === 'en'
-                ? `Change to ${exploreLabel}?`
-                : language === 'es'
-                  ? `¿Cambiar a ${exploreLabel}?`
-                  : `Mudar para ${exploreLabel}?`}
+              {t('faith.switch_title', language)}{exploreLabel ? ` — ${exploreLabel}` : ''}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {language === 'en'
-                ? 'You can change your faith, or just explore this tradition in the Learn section without changing your profile.'
-                : language === 'es'
-                  ? 'Puedes cambiar tu fe, o solo explorar esta tradición en la sección Aprende sin cambiar tu perfil.'
-                  : 'Você pode mudar sua fé, ou apenas explorar esta tradição na aba Aprenda sem alterar seu perfil.'}
+              {t('faith.switch_desc', language)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-2 mt-2">

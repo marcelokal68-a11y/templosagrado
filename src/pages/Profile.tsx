@@ -242,7 +242,7 @@ const LABELS = {
 };
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext, setMessages } = useApp();
   const L = LABELS[language] || LABELS['pt-BR'];
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -331,6 +331,7 @@ export default function Profile() {
   const [nameValue, setNameValue] = useState('');
   const [editingReligion, setEditingReligion] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pendingReligion, setPendingReligion] = useState<{ value: string | null } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -366,7 +367,23 @@ export default function Profile() {
 
   const saveReligion = async (value: string | null) => {
     if (!user || !profile) return;
+    // If switching to a different tradition (and one already exists), confirm first
+    const prev = profile.preferred_religion;
+    if (prev && prev !== value) {
+      setPendingReligion({ value });
+      return;
+    }
+    await applyReligionChange(value);
+  };
+
+  const applyReligionChange = async (value: string | null) => {
+    if (!user || !profile) return;
+    const prev = profile.preferred_religion;
     setSaving(true);
+    if (prev && prev !== value) {
+      const { clearAffiliationHistory } = await import('@/lib/clearAffiliationHistory');
+      await clearAffiliationHistory(user.id, prev, null);
+    }
     const { error } = await supabase
       .from('profiles')
       .update({ preferred_religion: value })
@@ -375,9 +392,14 @@ export default function Profile() {
     if (!error) {
       setProfile({ ...profile, preferred_religion: value });
       setEditingReligion(false);
+      setMessages([]);
       setChatContext(prev => ({ ...prev, religion: value || '', philosophy: '', topic: '' }));
       await refreshProfile();
-      toast({ title: value ? L.traditionUpdated : L.traditionRemoved });
+      toast({
+        title: prev && prev !== value
+          ? t('faith.switch_done', language)
+          : (value ? L.traditionUpdated : L.traditionRemoved),
+      });
     }
   };
 
@@ -718,6 +740,32 @@ export default function Profile() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {L.yesCancel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pendingReligion} onOpenChange={(open) => { if (!open) setPendingReligion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('faith.switch_title', language)}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('faith.switch_desc', language)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingReligion(null)}>
+              {t('faith.switch_cancel', language)}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                const v = pendingReligion?.value ?? null;
+                setPendingReligion(null);
+                await applyReligionChange(v);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('faith.switch_confirm', language)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
