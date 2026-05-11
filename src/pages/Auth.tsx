@@ -44,7 +44,7 @@ export default function Auth() {
       redirect_uri: window.location.origin,
     });
     if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      toast({ title: t('auth.error', language), description: error.message, variant: 'destructive' });
     }
   };
 
@@ -73,19 +73,17 @@ export default function Auth() {
         });
         if (error) throw error;
         setJustSignedUp(true);
-        // If session is created immediately, useEffect will redirect to /profile?onboarding=true
         if (data.session) {
           navigate('/profile?onboarding=true', { replace: true });
         } else {
-          // Email confirmation required: try auto-login (some configs allow it)
           const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
           if (signInErr) {
-            toast({ title: 'Conta criada!', description: 'Verifique seu email para confirmar antes de entrar.' });
+            toast({ title: t('auth.account_created', language), description: t('auth.verify_email', language) });
           }
         }
       }
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+      toast({ title: t('auth.error', language), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
