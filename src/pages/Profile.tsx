@@ -20,13 +20,17 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const traditions = [
+  { value: 'christian', labelKey: 'religion.christian' },
   { value: 'catholic', labelKey: 'religion.catholic' },
   { value: 'protestant', labelKey: 'religion.protestant' },
-  { value: 'spiritist', labelKey: 'religion.spiritist' },
-  { value: 'candomble', labelKey: 'religion.candomble' },
-  { value: 'jewish', labelKey: 'religion.jewish' },
-  { value: 'hindu', labelKey: 'religion.hindu' },
   { value: 'mormon', labelKey: 'religion.mormon' },
+  { value: 'jewish', labelKey: 'religion.jewish' },
+  { value: 'islam', labelKey: 'religion.islam' },
+  { value: 'hindu', labelKey: 'religion.hindu' },
+  { value: 'buddhist', labelKey: 'religion.buddhist' },
+  { value: 'spiritist', labelKey: 'religion.spiritist' },
+  { value: 'umbanda', labelKey: 'religion.umbanda' },
+  { value: 'candomble', labelKey: 'religion.candomble' },
   { value: 'agnostic', labelKey: 'religion.agnostic' },
 ] as const;
 
