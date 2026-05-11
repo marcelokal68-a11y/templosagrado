@@ -204,7 +204,7 @@ function ChipGroup({ label, items, prefix, selected, onSelect, specificItems }: 
 }
 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
-  const { language, chatContext, setChatContext, setMessages, preferredReligion, user, refreshProfile } = useApp();
+  const { language, chatContext, setChatContext, messages, setMessages, preferredReligion, user, refreshProfile } = useApp();
   const navigate = useNavigate();
   const [exploreIntent, setExploreIntent] = useState<typeof FAITH_OPTIONS[0] | null>(null);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
@@ -248,21 +248,53 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     }
   };
 
-  const applyOption = async (option: typeof FAITH_OPTIONS[0]) => {
+  const applyOption = async (option: typeof FAITH_OPTIONS[0], opts?: { prevPreferredReligion?: string | null }) => {
     const prevReligion = chatContext.religion;
     const prevPhilosophy = chatContext.philosophy;
-    if (user && (prevReligion || prevPhilosophy)) {
-      await clearAffiliationHistory(user.id, prevReligion, prevPhilosophy);
-    }
+    const prevMessages = [...messages];
+    const prevContext = { ...chatContext };
+    const hadHistory = !!(prevReligion || prevPhilosophy);
+
+    // Apply UI change immediately
     setMessages([]);
     if (option.mode === 'religion') {
       setChatContext(prev => ({ ...prev, religion: option.key, philosophy: '', topic: '' }));
     } else {
       setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
     }
-    if (prevReligion || prevPhilosophy) {
-      toast.success(t('faith.switch_done', language));
-    }
+
+    if (!hadHistory) return;
+
+    // Defer DB deletion to allow undo
+    const UNDO_MS = 15000;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      if (cancelled || !user) return;
+      clearAffiliationHistory(user.id, prevReligion, prevPhilosophy);
+    }, UNDO_MS);
+
+    toast.success(t('faith.switch_done', language), {
+      duration: UNDO_MS,
+      action: {
+        label: t('faith.undo', language),
+        onClick: async () => {
+          cancelled = true;
+          clearTimeout(timer);
+          // Restore UI state
+          setMessages(prevMessages);
+          setChatContext(prevContext);
+          // Revert preferred_religion in DB if it was changed in this flow
+          if (user && opts && opts.prevPreferredReligion !== undefined) {
+            await supabase
+              .from('profiles')
+              .update({ preferred_religion: opts.prevPreferredReligion } as any)
+              .eq('user_id', user.id);
+            await refreshProfile();
+          }
+          toast.success(t('faith.switch_undone', language));
+        },
+      },
+    });
   };
 
   const confirmSwitch = () => {
@@ -275,6 +307,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
   const handleChangeFaith = async () => {
     if (!exploreIntent || !user) return;
     const option = exploreIntent;
+    const prevPreferredReligion = preferredReligion;
     if (option.mode === 'religion') {
       await supabase.from('profiles').update({ preferred_religion: option.key } as any).eq('user_id', user.id);
     } else {
@@ -282,7 +315,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
     }
     await refreshProfile();
-    await applyOption(option);
+    await applyOption(option, { prevPreferredReligion });
     setExploreIntent(null);
   };
 
