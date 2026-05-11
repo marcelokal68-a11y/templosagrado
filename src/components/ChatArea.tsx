@@ -107,10 +107,12 @@ type MessageBubbleProps = {
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
   isLast?: boolean; onSuggestionClick?: (text: string) => void;
   isVisitor?: boolean; onPremiumGate?: () => void;
+  onDelete?: (index: number) => void;
+  deleteLabel?: string;
 };
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function MessageBubble(
-  { msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate },
+  { msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate, onDelete, deleteLabel },
   ref,
 ) {
   const isUser = msg.role === 'user';
