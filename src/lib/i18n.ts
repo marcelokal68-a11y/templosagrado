@@ -567,6 +567,12 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.no_account': 'Não tem conta?',
     'auth.has_account': 'Já tem conta?',
     'auth.subtitle': 'Seu guia espiritual e filosófico',
+    'auth.google': 'Entrar com Google',
+    'auth.or': 'ou',
+    'auth.error': 'Erro',
+    'auth.account_created': 'Conta criada!',
+    'auth.verify_email': 'Verifique seu email para confirmar antes de entrar.',
+    'auth.privacy_link': 'Política de Privacidade',
 
     // Landing
     'landing.hero_title': 'Templo Sagrado',
