@@ -662,6 +662,7 @@ const translations: Record<Language, Record<string, string>> = {
     'learn.professor_mode': 'Modo Professor — pergunte o que quiser',
     'learn.ask_placeholder': 'Faça uma pergunta ao professor...',
     'learn.ask_faith': 'Deseja configurar {religion} como sua religião de fé?',
+    'learn.ask_faith_desc': 'Salvamos sua tradição para personalizar o chat, o versículo do dia e o mural. Você pode mudar a qualquer momento no Perfil.',
     'learn.yes': 'Sim, é minha fé',
     'learn.not_now': 'Não agora',
     // LGPD
