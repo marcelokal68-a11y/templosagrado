@@ -39,13 +39,58 @@ type ActivityItem = {
   created_at: string;
 };
 
+const J_LABELS = {
+  'pt-BR': {
+    all: 'Todos', summary: 'Resumos', chat: 'Conversas', verse: 'Versículos', prayer: 'Orações', practice: 'Práticas',
+    today: 'hoje', yesterday: 'ontem',
+    daysAgo: (n: number) => `há ${n} dias`,
+    weeksAgo: (n: number) => `há ${n} semana${n > 1 ? 's' : ''}`,
+    monthsAgo: (n: number) => `há ${n} ${n === 1 ? 'mês' : 'meses'}`,
+    locale: 'pt-BR',
+    intro: 'Cada conversa, oração e versículo que você guardou compõe seu livro pessoal de caminhada espiritual.',
+    emptyDesc: 'Cada conversa, oração e versículo aparece neste livro pessoal.',
+    talkMentor: 'Conversar com o mentor',
+    privacyNote: 'Apenas você vê esta página. Nem mesmo nossa equipe tem acesso.',
+    copy: 'Copiar', deletev: 'Apagar', copied: 'Copiado!', removed: 'Removido da sua jornada',
+    pageOf: (p: number, total: number) => `Templo Sagrado · templosagrado.lovable.app · página ${p} de ${total}`,
+  },
+  en: {
+    all: 'All', summary: 'Summaries', chat: 'Conversations', verse: 'Verses', prayer: 'Prayers', practice: 'Practices',
+    today: 'today', yesterday: 'yesterday',
+    daysAgo: (n: number) => `${n} days ago`,
+    weeksAgo: (n: number) => `${n} week${n > 1 ? 's' : ''} ago`,
+    monthsAgo: (n: number) => `${n} month${n > 1 ? 's' : ''} ago`,
+    locale: 'en-US',
+    intro: 'Every conversation, prayer and verse you saved makes up your personal book of spiritual journey.',
+    emptyDesc: 'Every conversation, prayer and verse appears in this personal book.',
+    talkMentor: 'Chat with the mentor',
+    privacyNote: 'Only you see this page. Not even our team has access.',
+    copy: 'Copy', deletev: 'Delete', copied: 'Copied!', removed: 'Removed from your journey',
+    pageOf: (p: number, total: number) => `Sacred Temple · templosagrado.lovable.app · page ${p} of ${total}`,
+  },
+  es: {
+    all: 'Todos', summary: 'Resúmenes', chat: 'Conversaciones', verse: 'Versículos', prayer: 'Oraciones', practice: 'Prácticas',
+    today: 'hoy', yesterday: 'ayer',
+    daysAgo: (n: number) => `hace ${n} días`,
+    weeksAgo: (n: number) => `hace ${n} semana${n > 1 ? 's' : ''}`,
+    monthsAgo: (n: number) => `hace ${n} ${n === 1 ? 'mes' : 'meses'}`,
+    locale: 'es-ES',
+    intro: 'Cada conversación, oración y versículo que guardaste compone tu libro personal de camino espiritual.',
+    emptyDesc: 'Cada conversación, oración y versículo aparece en este libro personal.',
+    talkMentor: 'Hablar con el mentor',
+    privacyNote: 'Solo tú ves esta página. Ni siquiera nuestro equipo tiene acceso.',
+    copy: 'Copiar', deletev: 'Borrar', copied: '¡Copiado!', removed: 'Eliminado de tu jornada',
+    pageOf: (p: number, total: number) => `Templo Sagrado · templosagrado.lovable.app · página ${p} de ${total}`,
+  },
+};
+
 const TYPE_FILTERS = [
-  { id: 'all', label: 'Todos', icon: History },
-  { id: 'summary', label: 'Resumos', icon: FileText },
-  { id: 'chat', label: 'Conversas', icon: MessageCircle },
-  { id: 'verse', label: 'Versículos', icon: BookOpen },
-  { id: 'prayer', label: 'Orações', icon: Heart },
-  { id: 'practice', label: 'Práticas', icon: CheckSquare },
+  { id: 'all', icon: History },
+  { id: 'summary', icon: FileText },
+  { id: 'chat', icon: MessageCircle },
+  { id: 'verse', icon: BookOpen },
+  { id: 'prayer', icon: Heart },
+  { id: 'practice', icon: CheckSquare },
 ];
 
 function getTypeIcon(type: string) {
@@ -59,22 +104,22 @@ function getTypeIcon(type: string) {
   }
 }
 
-function relativeDate(iso: string): string {
+function relativeDate(iso: string, L: typeof J_LABELS['pt-BR']): string {
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'hoje';
-  if (diffDays === 1) return 'ontem';
-  if (diffDays < 7) return `há ${diffDays} dias`;
-  if (diffDays < 30) return `há ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''}`;
-  if (diffDays < 365) return `há ${Math.floor(diffDays / 30)} ${Math.floor(diffDays / 30) === 1 ? 'mês' : 'meses'}`;
-  return d.toLocaleDateString('pt-BR');
+  if (diffDays === 0) return L.today;
+  if (diffDays === 1) return L.yesterday;
+  if (diffDays < 7) return L.daysAgo(diffDays);
+  if (diffDays < 30) return L.weeksAgo(Math.floor(diffDays / 7));
+  if (diffDays < 365) return L.monthsAgo(Math.floor(diffDays / 30));
+  return d.toLocaleDateString(L.locale);
 }
 
-function monthLabel(iso: string): string {
+function monthLabel(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
 export default function Journey() {
