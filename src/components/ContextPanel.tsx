@@ -551,17 +551,17 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Mudar de caminho?</AlertDialogTitle>
+            <AlertDialogTitle>{t('faith.switch_title', language)}</AlertDialogTitle>
             <AlertDialogDescription>
-              Ao trocar, sua conversa atual será limpa para começar uma nova jornada.
+              {t('faith.switch_desc', language)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setShowSwitchConfirm(false); setPendingOption(null); }}>
-              Manter
+              {t('faith.switch_cancel', language)}
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmSwitch}>
-              Trocar
+              {t('faith.switch_confirm', language)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -572,18 +572,10 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {language === 'en'
-                ? `Change to ${exploreLabel}?`
-                : language === 'es'
-                  ? `¿Cambiar a ${exploreLabel}?`
-                  : `Mudar para ${exploreLabel}?`}
+              {t('faith.switch_title', language)}{exploreLabel ? ` — ${exploreLabel}` : ''}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {language === 'en'
-                ? 'You can change your faith, or just explore this tradition in the Learn section without changing your profile.'
-                : language === 'es'
-                  ? 'Puedes cambiar tu fe, o solo explorar esta tradición en la sección Aprende sin cambiar tu perfil.'
-                  : 'Você pode mudar sua fé, ou apenas explorar esta tradição na aba Aprenda sem alterar seu perfil.'}
+              {t('faith.switch_desc', language)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-2 mt-2">
