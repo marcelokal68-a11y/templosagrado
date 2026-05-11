@@ -65,6 +65,10 @@ const translations: Record<Language, Record<string, string>> = {
     // History
     'history.title': 'Histórico',
     'history.delete_all': 'Apagar tudo',
+    'history.delete_one': 'Apagar esta conversa',
+    'history.delete_one_title': 'Apagar esta conversa?',
+    'history.delete_one_desc': 'Esta troca será removida permanentemente do seu histórico.',
+    'history.deleted_one': 'Conversa apagada',
     'history.empty': 'Nenhuma mensagem salva.',
     'history.deleted': 'Histórico apagado',
     
