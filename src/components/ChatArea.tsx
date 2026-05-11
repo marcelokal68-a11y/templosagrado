@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download, LogIn } from 'lucide-react';
+import { SendHorizonal, Loader2, Volume2, VolumeX, Mic, MicOff, MoreVertical, Trash2, XCircle, Copy, Sparkles, Lock, Brain, ShieldCheck, FileText, Download, LogIn, X, Eraser } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -107,17 +107,19 @@ type MessageBubbleProps = {
   onNarrate: (text: string, index: number) => void; onCopy: (text: string) => void;
   isLast?: boolean; onSuggestionClick?: (text: string) => void;
   isVisitor?: boolean; onPremiumGate?: () => void;
+  onDelete?: (index: number) => void;
+  deleteLabel?: string;
 };
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function MessageBubble(
-  { msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate },
+  { msg, index, playingIndex, loadingAudio, onNarrate, onCopy, isLast, onSuggestionClick, isVisitor, onPremiumGate, onDelete, deleteLabel },
   ref,
 ) {
   const isUser = msg.role === 'user';
   const { text: displayText, suggestions } = isUser ? { text: msg.content, suggestions: [] } : parseSuggestions(msg.content);
   
   return (
-    <div ref={ref} className={cn("flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
+    <div ref={ref} className={cn("group/msg flex gap-2 animate-fade-in", isUser ? 'justify-end' : 'justify-start')}>
       {/* Divine avatar */}
       {!isUser && (
         <div className="shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center mt-auto ring-1 ring-primary/20">
@@ -125,7 +127,20 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(function Me
         </div>
       )}
       
-      <div className={cn("flex flex-col gap-0.5", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
+      <div className={cn("flex flex-col gap-0.5 relative", isUser ? "items-end" : "items-start", "max-w-[78%]")}>
+        {onDelete && (
+          <button
+            onClick={() => onDelete(index)}
+            title={deleteLabel}
+            aria-label={deleteLabel}
+            className={cn(
+              "absolute -top-2 z-10 p-1 rounded-full bg-background border border-border text-muted-foreground hover:text-destructive hover:border-destructive transition-colors opacity-60 hover:opacity-100",
+              isUser ? "-left-2" : "-right-2"
+            )}
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
         <div className={cn(
           "rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed",
           isUser
@@ -241,6 +256,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
+  const [deleteOneIndex, setDeleteOneIndex] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [confessionalMode, setConfessionalMode] = useState(false);
   const [sessionClosed, setSessionClosed] = useState(false);
@@ -974,21 +990,27 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
         )}
 
         {/* Messages */}
-        {messages.map((msg, i) => (
-          <MessageBubble
-            key={i}
-            msg={msg}
-            index={i}
-            playingIndex={playingIndex}
-            loadingAudio={loadingAudio}
-            onNarrate={playNarration}
-            onCopy={handleCopy}
-            isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
-            onSuggestionClick={(text) => doSendMessage(text)}
-            isVisitor={!user}
-            onPremiumGate={() => navigate('/auth?next=/pricing')}
-          />
-        ))}
+        {messages.map((msg, i) => {
+          // Allow deleting a user message (and its assistant reply pair) from current view
+          const canDelete = !isLoading && msg.role === 'user' && (i < messages.length - 1 ? messages[i + 1].role === 'assistant' : true);
+          return (
+            <MessageBubble
+              key={i}
+              msg={msg}
+              index={i}
+              playingIndex={playingIndex}
+              loadingAudio={loadingAudio}
+              onNarrate={playNarration}
+              onCopy={handleCopy}
+              isLast={i === messages.length - 1 && !isLoading && !sessionClosed}
+              onSuggestionClick={(text) => doSendMessage(text)}
+              isVisitor={!user}
+              onPremiumGate={() => navigate('/auth?next=/pricing')}
+              onDelete={canDelete ? (idx) => setDeleteOneIndex(idx) : undefined}
+              deleteLabel={t('chat.delete_one', language)}
+            />
+          );
+        })}
         
         {/* Typing indicator */}
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
@@ -1072,19 +1094,18 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
                 {messages.length > 0 && (
                   <button
-                    onClick={async () => {
-                      if (user) {
-                        await supabase.from('chat_messages').delete().eq('user_id', user.id);
-                      }
+                    onClick={() => {
                       stopAudio();
                       audioCacheRef.current.clear();
                       setMessages([]);
                       setSessionClosed(false);
+                      toast({ title: t('chat.clear_view', language), description: t('chat.clear_view_done', language) });
                     }}
-                    className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors min-h-[44px] flex items-center"
-                    title={t('chat.clear', language)}
+                    className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center"
+                    title={t('chat.clear_view', language)}
+                    aria-label={t('chat.clear_view', language)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Eraser className="h-4 w-4" />
                   </button>
                 )}
                 <DropdownMenu>
@@ -1133,19 +1154,17 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                     )}
                     {messages.length > 0 && (
                       <DropdownMenuItem
-                        onClick={async () => {
-                          if (user && !confessionalMode) {
-                            await supabase.from('chat_messages').delete().eq('user_id', user.id);
-                          }
+                        onClick={() => {
                           stopAudio();
                           audioCacheRef.current.clear();
                           setMessages([]);
                           setSessionClosed(false);
+                          toast({ title: t('chat.clear_view', language), description: t('chat.clear_view_done', language) });
                         }}
                         className="text-muted-foreground"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t('chat.clear', language)}
+                        <Eraser className="h-4 w-4 mr-2" />
+                        {t('chat.clear_view', language)}
                       </DropdownMenuItem>
                     )}
                     {user && !confessionalMode && (
@@ -1377,6 +1396,52 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
               }}
             >
               {t('chat.clear_all', language)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete one exchange dialog */}
+      <AlertDialog open={deleteOneIndex !== null} onOpenChange={(open) => !open && setDeleteOneIndex(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('chat.delete_one_title', language)}</AlertDialogTitle>
+            <AlertDialogDescription>{t('chat.delete_one_desc', language)}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('panel.keep', language)}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                const idx = deleteOneIndex;
+                if (idx === null) return;
+                const userMsg = messages[idx];
+                const assistantMsg = messages[idx + 1];
+                const removeCount = assistantMsg && assistantMsg.role === 'assistant' ? 2 : 1;
+                // Best-effort DB cleanup by content match (most recent matches)
+                if (user && !confessionalMode && userMsg) {
+                  try {
+                    const contents = [userMsg.content];
+                    if (removeCount === 2) contents.push(assistantMsg.content);
+                    await supabase
+                      .from('chat_messages')
+                      .delete()
+                      .eq('user_id', user.id)
+                      .in('content', contents);
+                  } catch {}
+                }
+                setMessages(prev => {
+                  const next = [...prev];
+                  next.splice(idx, removeCount);
+                  return next;
+                });
+                stopAudio();
+                audioCacheRef.current.clear();
+                setDeleteOneIndex(null);
+                toast({ title: t('chat.message_deleted', language) });
+              }}
+            >
+              {t('chat.delete_one', language)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
