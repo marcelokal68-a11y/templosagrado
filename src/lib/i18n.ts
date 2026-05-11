@@ -1217,6 +1217,12 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.no_account': 'Don\'t have an account?',
     'auth.has_account': 'Already have an account?',
     'auth.subtitle': 'Your spiritual and philosophical guide',
+    'auth.google': 'Sign in with Google',
+    'auth.or': 'or',
+    'auth.error': 'Error',
+    'auth.account_created': 'Account created!',
+    'auth.verify_email': 'Check your email to confirm before signing in.',
+    'auth.privacy_link': 'Privacy Policy',
 
     'landing.hero_title': 'Sacred Temple',
     'landing.hero_subtitle': 'Your digital sanctuary of wisdom, prayer and inner peace',
