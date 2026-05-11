@@ -254,7 +254,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               {t('learn.ask_faith', language).replace('{religion}', faithReligionLabel)}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('learn.ask_faith', language).replace('{religion}', faithReligionLabel)}
+              {t('learn.ask_faith_desc', language)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
