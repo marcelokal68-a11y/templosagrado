@@ -12,7 +12,7 @@ export async function clearAffiliationHistory(
 ): Promise<void> {
   if (!userId) return;
 
-  const tasks: Promise<unknown>[] = [];
+  const tasks: PromiseLike<unknown>[] = [];
 
   if (prevReligion) {
     tasks.push(
