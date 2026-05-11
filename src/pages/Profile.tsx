@@ -35,7 +35,7 @@ const traditions = [
 ] as const;
 
 export default function Profile() {
-  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin } = useApp();
+  const { user, language, isSubscriber, memoryEnabled, setMemoryEnabled, chatTone, setChatTone, accessStatus, trialDaysLeft, isAdmin, refreshProfile, setChatContext } = useApp();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
