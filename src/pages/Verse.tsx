@@ -149,7 +149,7 @@ export default function Verse() {
   };
 
   return (
-    <div className="flex-1 flex items-start justify-center p-4 pb-24">
+    <div className="flex-1 flex items-start justify-center p-4 pb-40 md:pb-24">
       <div className="w-full max-w-2xl space-y-4">
         <div className="text-center space-y-1">
           <BookOpen className="h-10 w-10 text-primary mx-auto" />

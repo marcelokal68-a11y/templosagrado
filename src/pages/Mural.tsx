@@ -102,7 +102,7 @@ export default function Mural() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pb-20 md:pb-8">
+    <div className="flex-1 overflow-y-auto pb-40 md:pb-24">
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">

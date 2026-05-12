@@ -187,7 +187,7 @@ export default function Practice() {
   }, [checkedCount, items.length]);
 
   return (
-    <main className="flex-1 container max-w-2xl py-6 px-4 pb-24 space-y-6">
+    <main className="flex-1 container max-w-2xl px-4 pt-6 pb-40 md:pb-24 space-y-6">
       <div className="text-center space-y-1">
         <h1 className="text-2xl font-display font-bold text-foreground">
           {t('practice.title', language)}
