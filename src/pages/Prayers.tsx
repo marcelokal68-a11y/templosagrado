@@ -170,7 +170,7 @@ export default function Prayers() {
   const canGenerate = intention.trim() && (religion || philosophy);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-4 gap-6 overflow-y-auto pb-28">
+    <div className="flex-1 flex flex-col items-center justify-start p-4 gap-6 overflow-y-auto pb-40 md:pb-24">
       {/* Prayer Form */}
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
