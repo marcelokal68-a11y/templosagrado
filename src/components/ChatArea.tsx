@@ -271,6 +271,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
   });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
+  const [traditionSwitchNotice, setTraditionSwitchNotice] = useState<{ from: string; to: string } | null>(null);
+  const lastAffiliationRef = useRef<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -311,6 +313,20 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     toast({ title: language === 'en' ? 'Faith updated' : language === 'es' ? 'Fe actualizada' : 'Fé atualizada' });
   };
 
+
+
+  // Detect tradition switch to show a visible in-chat banner (in addition to toast)
+  useEffect(() => {
+    const current = chatContext.philosophy || chatContext.religion || '';
+    const prev = lastAffiliationRef.current;
+    if (prev && current && prev !== current) {
+      setTraditionSwitchNotice({ from: prev, to: current });
+      const timer = setTimeout(() => setTraditionSwitchNotice(null), 8000);
+      lastAffiliationRef.current = current;
+      return () => clearTimeout(timer);
+    }
+    lastAffiliationRef.current = current;
+  }, [chatContext.religion, chatContext.philosophy]);
 
   useEffect(() => {
     if (hasPendingUndo) {
@@ -942,6 +958,26 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </button>
           <button
             onClick={() => setExploringFaith(null)}
+            className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
+            aria-label="Dispensar"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {/* Tradition-switch confirmation banner */}
+      {traditionSwitchNotice && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 border-b border-primary/30 animate-fade-in">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground/90 flex-1 leading-snug">
+            {language === 'en'
+              ? <>Tradition switched to <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. Previous conversation ended.</>
+              : language === 'es'
+                ? <>Tradición cambiada a <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. La conversación anterior terminó.</>
+                : <>Tradição alterada para <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. Conversa anterior encerrada.</>}
+          </p>
+          <button
+            onClick={() => setTraditionSwitchNotice(null)}
             className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
             aria-label="Dispensar"
           >

@@ -206,8 +206,6 @@ function ChipGroup({ label, items, prefix, selected, onSelect, specificItems }: 
 export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () => void; onClose?: () => void }) {
   const { language, chatContext, setChatContext, messages, setMessages, preferredReligion, user, refreshProfile } = useApp();
   const navigate = useNavigate();
-  const [exploreIntent, setExploreIntent] = useState<typeof FAITH_OPTIONS[0] | null>(null);
-  const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [pendingOption, setPendingOption] = useState<typeof FAITH_OPTIONS[0] | null>(null);
 
   const currentSelection = chatContext.religion || chatContext.philosophy || '';
@@ -221,41 +219,43 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
 
   const hasContext = chatContext.religion || chatContext.need || chatContext.mood || chatContext.topic || chatContext.philosophy;
 
+  const currentLabel = (() => {
+    const key = chatContext.religion || chatContext.philosophy;
+    if (!key) return '';
+    return FAITH_OPTIONS.find(o => o.key === key)?.label || key;
+  })();
+
   const handleOptionSelect = (option: typeof FAITH_OPTIONS[0]) => {
     const isAlreadySelected =
       (option.mode === 'religion' && chatContext.religion === option.key) ||
       (option.mode === 'philosophy' && chatContext.philosophy === option.key);
 
     if (isAlreadySelected) {
-      setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
+      // toggle off — only allow if no chat exists, otherwise treat as a switch confirm
+      if (messages.length === 0) {
+        setChatContext(prev => ({ ...prev, religion: '', philosophy: '', topic: '' }));
+      }
       return;
     }
 
-    // If user has a preferred religion and this is a *different* option, show 3-option dialog
-    const isDimmed = preferredReligion && option.key !== preferredReligion;
-    if (isDimmed) {
-      setExploreIntent(option);
-      return;
-    }
-
-    // Otherwise fallback to prior behavior: if something else selected, confirm switch
     const hasExisting = chatContext.religion || chatContext.philosophy;
     if (hasExisting) {
+      // Always confirm — single clear dialog (no more 3-option ambiguity)
       setPendingOption(option);
-      setShowSwitchConfirm(true);
     } else {
       applyOption(option);
     }
   };
 
-  const applyOption = async (option: typeof FAITH_OPTIONS[0], opts?: { prevPreferredReligion?: string | null }) => {
+  const applyOption = async (option: typeof FAITH_OPTIONS[0]) => {
     const prevReligion = chatContext.religion;
     const prevPhilosophy = chatContext.philosophy;
+    const prevPreferredReligion = preferredReligion;
     const prevMessages = [...messages];
     const prevContext = { ...chatContext };
     const hadHistory = !!(prevReligion || prevPhilosophy);
 
-    // Apply UI change immediately
+    // Apply UI change immediately — chat clears now
     setMessages([]);
     if (option.mode === 'religion') {
       setChatContext(prev => ({ ...prev, religion: option.key, philosophy: '', topic: '' }));
@@ -263,7 +263,19 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       setChatContext(prev => ({ ...prev, philosophy: option.key, religion: '', topic: '' }));
     }
 
-    if (!hadHistory) return;
+    // Update preferred_religion in DB so the ★ "sua fé" marker follows the new choice
+    if (user) {
+      const newPreferred = option.mode === 'religion' ? option.key : null;
+      await supabase.from('profiles').update({ preferred_religion: newPreferred } as any).eq('user_id', user.id);
+      await refreshProfile();
+    }
+
+    onClose?.();
+
+    if (!hadHistory) {
+      toast.success(language === 'en' ? 'Tradition set' : language === 'es' ? 'Tradición definida' : 'Tradição definida');
+      return;
+    }
 
     // Defer DB deletion to allow undo
     const UNDO_MS = 15000;
@@ -273,58 +285,47 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
       clearAffiliationHistory(user.id, prevReligion, prevPhilosophy);
     }, UNDO_MS);
 
-    toast.success(t('faith.switch_done', language), {
-      duration: UNDO_MS,
-      action: {
-        label: t('faith.undo', language),
-        onClick: async () => {
-          cancelled = true;
-          clearTimeout(timer);
-          // Restore UI state
-          setMessages(prevMessages);
-          setChatContext(prevContext);
-          // Revert preferred_religion in DB if it was changed in this flow
-          if (user && opts && opts.prevPreferredReligion !== undefined) {
-            await supabase
-              .from('profiles')
-              .update({ preferred_religion: opts.prevPreferredReligion } as any)
-              .eq('user_id', user.id);
-            await refreshProfile();
-          }
-          toast.success(t('faith.switch_undone', language));
+    const newLabel = option.label;
+    const prevLabel = FAITH_OPTIONS.find(o => o.key === (prevReligion || prevPhilosophy))?.label || '';
+    toast.success(
+      language === 'en'
+        ? `Chat cleared. Now ${newLabel}.`
+        : language === 'es'
+          ? `Chat limpio. Ahora ${newLabel}.`
+          : `Chat limpo. Agora ${newLabel}${prevLabel ? ` (antes ${prevLabel})` : ''}.`,
+      {
+        duration: UNDO_MS,
+        action: {
+          label: t('faith.undo', language),
+          onClick: async () => {
+            cancelled = true;
+            clearTimeout(timer);
+            setMessages(prevMessages);
+            setChatContext(prevContext);
+            if (user) {
+              await supabase
+                .from('profiles')
+                .update({ preferred_religion: prevPreferredReligion } as any)
+                .eq('user_id', user.id);
+              await refreshProfile();
+            }
+            toast.success(t('faith.switch_undone', language));
+          },
         },
       },
-    });
+    );
   };
 
   const confirmSwitch = () => {
     if (pendingOption) applyOption(pendingOption);
-    setShowSwitchConfirm(false);
     setPendingOption(null);
   };
 
-  // From the 3-option dialog: actually change the preferred faith
-  const handleChangeFaith = async () => {
-    if (!exploreIntent || !user) return;
-    const option = exploreIntent;
-    const prevPreferredReligion = preferredReligion;
-    if (option.mode === 'religion') {
-      await supabase.from('profiles').update({ preferred_religion: option.key } as any).eq('user_id', user.id);
-    } else {
-      // switching to philosophy clears preferred religion
-      await supabase.from('profiles').update({ preferred_religion: null } as any).eq('user_id', user.id);
-    }
-    await refreshProfile();
-    await applyOption(option, { prevPreferredReligion });
-    setExploreIntent(null);
-  };
-
-  // From the 3-option dialog: explore in /learn without changing faith
-  const handleExploreOnly = () => {
-    if (!exploreIntent) return;
-    const key = exploreIntent.key;
-    const kind = exploreIntent.mode === 'religion' ? 'religion' : 'philosophy';
-    setExploreIntent(null);
+  const exploreInLearn = () => {
+    if (!pendingOption) return;
+    const key = pendingOption.key;
+    const kind = pendingOption.mode === 'religion' ? 'religion' : 'philosophy';
+    setPendingOption(null);
     onClose?.();
     navigate(`/learn?topic=${key}&kind=${kind}`);
   };
@@ -351,7 +352,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     setPlaylistPrefs(prev => ({ ...prev, [activeKey || 'default']: id }));
   };
 
-  const exploreLabel = exploreIntent?.label ?? '';
+  const pendingLabel = pendingOption?.label ?? '';
 
   return (
     <div className="space-y-5 p-4">
@@ -577,47 +578,55 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         </div>
       )}
 
-      {/* Switch confirmation (when no preferred religion is set yet) */}
-      <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('faith.switch_title', language)}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('faith.switch_desc', language)}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setShowSwitchConfirm(false); setPendingOption(null); }}>
-              {t('faith.switch_cancel', language)}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSwitch}>
-              {t('faith.switch_confirm', language)}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* 3-option dialog: change faith vs. just explore */}
-      <AlertDialog open={!!exploreIntent} onOpenChange={(open) => { if (!open) setExploreIntent(null); }}>
+      {/* Single, unambiguous switch confirmation */}
+      <AlertDialog open={!!pendingOption} onOpenChange={(open) => { if (!open) setPendingOption(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('faith.switch_title', language)}{exploreLabel ? ` — ${exploreLabel}` : ''}
+              {language === 'en'
+                ? `Switch to ${pendingLabel}?`
+                : language === 'es'
+                  ? `¿Cambiar a ${pendingLabel}?`
+                  : `Trocar para ${pendingLabel}?`}
+              {currentLabel ? (
+                <span className="block text-xs font-normal text-muted-foreground mt-1">
+                  {language === 'en'
+                    ? `Currently: ${currentLabel}`
+                    : language === 'es'
+                      ? `Actualmente: ${currentLabel}`
+                      : `Atualmente: ${currentLabel}`}
+                </span>
+              ) : null}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('faith.switch_desc', language)}
+              {language === 'en'
+                ? 'Your current conversation will end and the chat window will be cleared. You can undo for 15 seconds.'
+                : language === 'es'
+                  ? 'Tu conversación actual terminará y el chat será borrado. Puedes deshacer durante 15 segundos.'
+                  : 'Sua conversa atual será encerrada e o chat será limpo. Você pode desfazer por 15 segundos.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-2 mt-2">
-            <Button onClick={handleChangeFaith} className="w-full">
-              {language === 'en' ? 'Yes, change my faith' : language === 'es' ? 'Sí, cambiar mi fe' : 'Sim, mudar minha fé'}
+            <Button onClick={confirmSwitch} className="w-full">
+              {language === 'en'
+                ? 'Yes, switch and clear chat'
+                : language === 'es'
+                  ? 'Sí, cambiar y limpiar chat'
+                  : 'Sim, trocar e limpar chat'}
             </Button>
-            <Button onClick={handleExploreOnly} variant="outline" className="w-full">
-              {language === 'en' ? 'Just explore (Learn)' : language === 'es' ? 'Solo explorar (Aprende)' : 'Só explorar (Aprenda)'}
+            <Button onClick={() => setPendingOption(null)} variant="outline" className="w-full">
+              {language === 'en' ? 'Cancel' : 'Cancelar'}
             </Button>
-            <Button onClick={() => setExploreIntent(null)} variant="ghost" className="w-full">
-              {language === 'en' ? 'Cancel' : language === 'es' ? 'Cancelar' : 'Cancelar'}
-            </Button>
+            <button
+              onClick={exploreInLearn}
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 mt-1 py-1"
+            >
+              {language === 'en'
+                ? `Just learn about ${pendingLabel} (no switch)`
+                : language === 'es'
+                  ? `Solo aprender sobre ${pendingLabel} (sin cambiar)`
+                  : `Só conhecer ${pendingLabel} (sem trocar)`}
+            </button>
           </div>
         </AlertDialogContent>
       </AlertDialog>

@@ -408,11 +408,32 @@ Responde SOLO con JSON válido (sin markdown):
   const jsonFieldEn = ', "practical_use": "practical paragraph"';
   const jsonFieldEs = ', "practical_use": "párrafo práctico"';
   const jsonField = lang === 'en' ? jsonFieldEn : lang === 'es' ? jsonFieldEs : jsonFieldPt;
+
+  // Force depth: override the original "5-8 linhas" with a much deeper requirement
+  const depthInstr: Record<string, string> = {
+    'pt-BR': `\n\nINSTRUÇÃO DE PROFUNDIDADE (OBRIGATÓRIA — sobrepõe instruções anteriores de tamanho):
+- "explanation" DEVE ter entre 10 e 14 linhas substantivas (mínimo 600 caracteres), cobrindo: (1) contexto histórico e cultural, (2) exegese ou comentário tradicional com citação REAL de fonte erudita, (3) significado doutrinário/espiritual profundo, (4) aplicação espiritual ao leitor moderno. Nunca seja genérico nem superficial.
+- "reflection" DEVE ter de 3 a 5 linhas reflexivas (mínimo 200 caracteres).
+- "scholarly_note" DEVE citar fonte real e específica (autor + obra/tratado/capítulo).
+- Escreva como um grande erudito da tradição falando a um discípulo sério. Profundidade > brevidade.`,
+    'en': `\n\nDEPTH INSTRUCTION (MANDATORY — overrides previous length instructions):
+- "explanation" MUST be 10-14 substantive lines (min 600 chars), covering: (1) historical/cultural context, (2) exegesis or traditional commentary with a REAL scholarly citation, (3) deep doctrinal/spiritual meaning, (4) spiritual application to the modern reader. Never generic or shallow.
+- "reflection" MUST be 3-5 reflective lines (min 200 chars).
+- "scholarly_note" MUST cite a real specific source (author + work/tractate/chapter).
+- Write as a great scholar of the tradition speaking to a serious disciple. Depth > brevity.`,
+    'es': `\n\nINSTRUCCIÓN DE PROFUNDIDAD (OBLIGATORIA — sobrepone instrucciones anteriores de tamaño):
+- "explanation" DEBE tener entre 10 y 14 líneas sustanciales (mín. 600 caracteres), cubriendo: (1) contexto histórico, (2) exégesis o comentario tradicional con cita REAL erudita, (3) significado doctrinario/espiritual profundo, (4) aplicación al lector moderno. Nunca genérico ni superficial.
+- "reflection" DEBE tener 3-5 líneas reflexivas (mín. 200 caracteres).
+- "scholarly_note" DEBE citar fuente real específica (autor + obra/capítulo).
+- Escribe como un gran erudito hablando a un discípulo serio. Profundidad > brevedad.`,
+  };
+  const depth = depthInstr[lang] || depthInstr['pt-BR'];
+
   // Add practical_use to system prompt and JSON format
   const updatedSystem = rel.system.replace(
     /("scholarly_note":\s*"[^"]*")\s*}/,
     `$1${jsonField}}`
-  ) + practicalInstr;
+  ) + practicalInstr + depth;
   return { system: updatedSystem, user: rel.user };
 }
 
@@ -506,7 +527,19 @@ serve(async (req) => {
       .eq('language', lang)
       .maybeSingle();
 
-    if (cached?.verse_data) {
+    // Discard cached entries that are too shallow (legacy short responses)
+    const cachedExpl = String((cached?.verse_data as any)?.explanation || '');
+    const cachedTooShallow = !!cached?.verse_data && cachedExpl.trim().length < 600;
+    if (cachedTooShallow) {
+      console.log(`Discarding shallow cache (${cachedExpl.length} chars): ${date}/${rel}/${lang}`);
+      await sb.from('daily_verse_cache')
+        .delete()
+        .eq('cache_date', date)
+        .eq('religion', rel)
+        .eq('language', lang);
+    }
+
+    if (cached?.verse_data && !cachedTooShallow) {
       // For Jewish: validate cached verse matches current Parashá (avoid serving stale week)
       if (rel === 'jewish' && parashaContext) {
         const parashaName = parashaContext.match(/é "([^"]+)"/)?.[1] || '';
@@ -552,7 +585,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 2000,
+          max_tokens: 3500,
           messages: [
             { role: "system", content: systemContent },
             { role: "user", content: prompt.user },
@@ -585,17 +618,20 @@ serve(async (req) => {
     let parsed: any = null;
 
     try {
-      ({ raw, finishReason } = await callAI("google/gemini-2.5-flash"));
+      // Use Pro by default for depth; fall back to Flash only on Pro failure or shallow output
+      ({ raw, finishReason } = await callAI("google/gemini-2.5-pro"));
       parsed = tryParse(raw);
 
-      // Retry with Pro model if truncated or invalid JSON
-      const needsRetry = finishReason === "length" || !parsed || !parsed.title || !parsed.explanation;
+      const isShallow = parsed && typeof parsed.explanation === "string" && parsed.explanation.trim().length < 600;
+      const needsRetry = finishReason === "length" || !parsed || !parsed.title || !parsed.explanation || isShallow;
       if (needsRetry) {
-        console.warn(`First attempt failed (finish=${finishReason}, parsed=${!!parsed}), retrying with Pro model`);
-        ({ raw, finishReason } = await callAI("google/gemini-2.5-pro"));
-        const retryParsed = tryParse(raw);
-        if (retryParsed && retryParsed.title && retryParsed.explanation) {
+        console.warn(`Pro attempt insufficient (finish=${finishReason}, parsed=${!!parsed}, shallow=${isShallow}), retrying with Flash`);
+        const fb = await callAI("google/gemini-2.5-flash");
+        const retryParsed = tryParse(fb.raw);
+        if (retryParsed && retryParsed.title && retryParsed.explanation && retryParsed.explanation.length >= (parsed?.explanation?.length || 0)) {
           parsed = retryParsed;
+          raw = fb.raw;
+          finishReason = fb.finishReason;
         }
       }
     } catch (err) {
