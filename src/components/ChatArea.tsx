@@ -271,8 +271,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
   });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
-  const [traditionSwitchNotice, setTraditionSwitchNotice] = useState<{ from: string; to: string } | null>(null);
-  const lastAffiliationRef = useRef<string>('');
+  const { notice: traditionSwitchNotice, dismiss: dismissTraditionNotice } = useTraditionSwitchNotice(
+    chatContext.religion,
+    chatContext.philosophy,
+  );
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -315,18 +317,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
 
 
-  // Detect tradition switch to show a visible in-chat banner (in addition to toast)
-  useEffect(() => {
-    const current = chatContext.philosophy || chatContext.religion || '';
-    const prev = lastAffiliationRef.current;
-    if (prev && current && prev !== current) {
-      setTraditionSwitchNotice({ from: prev, to: current });
-      const timer = setTimeout(() => setTraditionSwitchNotice(null), 8000);
-      lastAffiliationRef.current = current;
-      return () => clearTimeout(timer);
-    }
-    lastAffiliationRef.current = current;
-  }, [chatContext.religion, chatContext.philosophy]);
+  // Tradition switch banner is managed by useTraditionSwitchNotice (8s auto-dismiss).
 
   useEffect(() => {
     if (hasPendingUndo) {
