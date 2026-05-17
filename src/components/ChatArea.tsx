@@ -965,6 +965,26 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
           </button>
         </div>
       )}
+      {/* Tradition-switch confirmation banner */}
+      {traditionSwitchNotice && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 border-b border-primary/30 animate-fade-in">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground/90 flex-1 leading-snug">
+            {language === 'en'
+              ? <>Tradition switched to <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. Previous conversation ended.</>
+              : language === 'es'
+                ? <>Tradición cambiada a <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. La conversación anterior terminó.</>
+                : <>Tradição alterada para <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. Conversa anterior encerrada.</>}
+          </p>
+          <button
+            onClick={() => setTraditionSwitchNotice(null)}
+            className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
+            aria-label="Dispensar"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       {/* Messages area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 md:py-4 space-y-3 md:space-y-4 mobile-scroll">
         {/* Empty state — welcome + suggested questions */}
