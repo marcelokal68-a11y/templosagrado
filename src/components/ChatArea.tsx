@@ -314,6 +314,20 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
   };
 
 
+
+  // Detect tradition switch to show a visible in-chat banner (in addition to toast)
+  useEffect(() => {
+    const current = chatContext.philosophy || chatContext.religion || '';
+    const prev = lastAffiliationRef.current;
+    if (prev && current && prev !== current) {
+      setTraditionSwitchNotice({ from: prev, to: current });
+      const timer = setTimeout(() => setTraditionSwitchNotice(null), 8000);
+      lastAffiliationRef.current = current;
+      return () => clearTimeout(timer);
+    }
+    lastAffiliationRef.current = current;
+  }, [chatContext.religion, chatContext.philosophy]);
+
   useEffect(() => {
     if (hasPendingUndo) {
       toast({
