@@ -34,6 +34,20 @@ export const FAB_POSITION_CLASS =
  */
 export const FAB_SAFE_PADDING = 'pb-40 md:pb-24';
 
+/**
+ * Verifica se a rota atual deve exibir o FAB.
+ *
+ * Aceita:
+ *  - rota exata: `/verse`
+ *  - subrotas/parâmetros: `/verse/123`, `/verse/abc/detalhe`
+ *  - querystring/hash: `/verse?x=1`, `/verse#top`
+ *  - trailing slash: `/verse/`
+ *
+ * Rejeita falsos positivos como `/versearch` ou `/learning`.
+ */
 export function isFabRoute(pathname: string): boolean {
-  return FAB_ROUTES.some((p) => pathname.startsWith(p));
+  if (!pathname) return false;
+  // Normaliza: remove querystring/hash e trailing slash (exceto raiz).
+  const clean = pathname.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
+  return FAB_ROUTES.some((p) => clean === p || clean.startsWith(`${p}/`));
 }
