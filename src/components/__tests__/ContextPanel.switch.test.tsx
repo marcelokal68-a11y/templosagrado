@@ -3,28 +3,56 @@ import { render, screen, act, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
-// ---------- Mocks ----------
-const clearAffiliationHistoryMock = vi.fn().mockResolvedValue(undefined);
+// ---------- Hoisted mocks ----------
+const h = vi.hoisted(() => {
+  const clearAffiliationHistoryMock = vi.fn().mockResolvedValue(undefined);
+  const toastSuccessMock = vi.fn();
+  const toastMock = vi.fn();
+  const refreshProfileMock = vi.fn().mockResolvedValue(undefined);
+  const setMessagesMock = vi.fn();
+  const setChatContextMock = vi.fn();
+  const supabaseUpdates: any[] = [];
+  const state: {
+    messages: { role: string; content: string }[];
+    chatContext: any;
+  } = {
+    messages: [],
+    chatContext: {
+      religion: 'buddhist',
+      need: '',
+      mood: '',
+      topic: '',
+      philosophy: '',
+    },
+  };
+  return {
+    clearAffiliationHistoryMock,
+    toastSuccessMock,
+    toastMock,
+    refreshProfileMock,
+    setMessagesMock,
+    setChatContextMock,
+    supabaseUpdates,
+    state,
+  };
+});
+
 vi.mock('@/lib/clearAffiliationHistory', () => ({
-  clearAffiliationHistory: clearAffiliationHistoryMock,
+  clearAffiliationHistory: h.clearAffiliationHistoryMock,
 }));
 
-const toastSuccessMock = vi.fn();
-const toastMock = vi.fn();
 vi.mock('sonner', () => {
-  const fn: any = (...args: any[]) => toastMock(...args);
-  fn.success = toastSuccessMock;
+  const fn: any = (...args: any[]) => h.toastMock(...args);
+  fn.success = h.toastSuccessMock;
   fn.error = vi.fn();
   return { toast: fn };
 });
 
-// Chainable supabase mock — every from().update().eq() resolves OK.
-const supabaseUpdates: any[] = [];
 vi.mock('@/integrations/supabase/client', () => {
   const builder = () => {
     const b: any = {
       update: (payload: any) => {
-        supabaseUpdates.push(payload);
+        h.supabaseUpdates.push(payload);
         return b;
       },
       eq: () => Promise.resolve({ data: null, error: null }),
@@ -36,41 +64,24 @@ vi.mock('@/integrations/supabase/client', () => {
   return { supabase: { from: () => builder() } };
 });
 
-// AppContext — controllable state
-type Ctx = {
-  religion: string;
-  need: string;
-  mood: string;
-  topic: string;
-  philosophy: string;
-};
-
-let messagesState: { role: string; content: string }[] = [];
-let chatContextState: Ctx = {
-  religion: 'buddhist',
-  need: '',
-  mood: '',
-  topic: '',
-  philosophy: '',
-};
-const setMessagesMock = vi.fn((next: any) => {
-  messagesState = typeof next === 'function' ? next(messagesState) : next;
-});
-const setChatContextMock = vi.fn((next: any) => {
-  chatContextState = typeof next === 'function' ? next(chatContextState) : next;
-});
-const refreshProfileMock = vi.fn().mockResolvedValue(undefined);
-
 vi.mock('@/contexts/AppContext', () => ({
   useApp: () => ({
     language: 'pt-BR',
-    chatContext: chatContextState,
-    setChatContext: setChatContextMock,
-    messages: messagesState,
-    setMessages: setMessagesMock,
+    chatContext: h.state.chatContext,
+    setChatContext: (next: any) => {
+      h.state.chatContext =
+        typeof next === 'function' ? next(h.state.chatContext) : next;
+      h.setChatContextMock(next);
+    },
+    messages: h.state.messages,
+    setMessages: (next: any) => {
+      h.state.messages =
+        typeof next === 'function' ? next(h.state.messages) : next;
+      h.setMessagesMock(next);
+    },
     preferredReligion: 'buddhist',
     user: { id: 'user-test-1' },
-    refreshProfile: refreshProfileMock,
+    refreshProfile: h.refreshProfileMock,
   }),
 }));
 
@@ -78,24 +89,24 @@ vi.mock('@/contexts/AppContext', () => ({
 import ContextPanel from '@/components/ContextPanel';
 
 function resetAll() {
-  messagesState = [
+  h.state.messages = [
     { role: 'user', content: 'oi' },
     { role: 'assistant', content: 'olá' },
   ];
-  chatContextState = {
+  h.state.chatContext = {
     religion: 'buddhist',
     need: '',
     mood: '',
     topic: '',
     philosophy: '',
   };
-  clearAffiliationHistoryMock.mockClear();
-  toastSuccessMock.mockClear();
-  toastMock.mockClear();
-  setMessagesMock.mockClear();
-  setChatContextMock.mockClear();
-  refreshProfileMock.mockClear();
-  supabaseUpdates.length = 0;
+  h.clearAffiliationHistoryMock.mockClear();
+  h.toastSuccessMock.mockClear();
+  h.toastMock.mockClear();
+  h.setMessagesMock.mockClear();
+  h.setChatContextMock.mockClear();
+  h.refreshProfileMock.mockClear();
+  h.supabaseUpdates.length = 0;
 }
 
 describe('ContextPanel — switching tradition (integration)', () => {
