@@ -101,7 +101,7 @@ function resetAll() {
 describe('ContextPanel — switching tradition (integration)', () => {
   beforeEach(() => {
     resetAll();
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
   });
   afterEach(() => {
     vi.runOnlyPendingTimers();
