@@ -109,7 +109,6 @@ describe('ContextPanel — switching tradition (integration)', () => {
   });
 
   async function openConfirmAndSwitch() {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(
       <MemoryRouter>
         <ContextPanel />
@@ -117,20 +116,24 @@ describe('ContextPanel — switching tradition (integration)', () => {
     );
 
     // Pick a different tradition → opens the confirmation dialog
-    await user.click(screen.getByRole('button', { name: /Judaísmo/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Judaísmo/i }));
+    });
 
-    // Dialog appears with explicit clear/undo description
     expect(
-      await screen.findByText(/Sua conversa atual será encerrada/i),
+      screen.getByText(/Sua conversa atual será encerrada/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/desfazer por 15 segundos/i)).toBeInTheDocument();
 
-    // Confirm the switch
-    await user.click(
-      screen.getByRole('button', { name: /Sim, trocar e limpar chat/i }),
-    );
+    // Confirm the switch (fires async applyOption)
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: /Sim, trocar e limpar chat/i }),
+      );
+    });
 
-    return user;
+    // Wait until the undo toast has been emitted (signals applyOption finished)
+    await waitFor(() => expect(h.toastSuccessMock).toHaveBeenCalled());
   }
 
   it('clears the chat immediately, updates preferred_religion and shows undo toast', async () => {
