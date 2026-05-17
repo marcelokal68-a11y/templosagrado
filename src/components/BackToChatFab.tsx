@@ -15,9 +15,24 @@ export default function BackToChatFab() {
   const shouldShow = SHOW_ON.some(p => location.pathname.startsWith(p));
   if (!shouldShow) return null;
 
+  const handleClick = () => {
+    const maxScroll = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight
+    ) - window.innerHeight;
+    const remaining = maxScroll - window.scrollY;
+
+    if (remaining > 4) {
+      window.scrollTo({ top: maxScroll, behavior: 'smooth' });
+      window.setTimeout(() => navigate('/'), Math.min(600, 250 + remaining * 0.4));
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <button
-      onClick={() => navigate('/')}
+      onClick={handleClick}
       aria-label={t('nav.chat', language)}
       className={cn(
         'fixed z-40 right-4 bottom-20 md:bottom-6',
