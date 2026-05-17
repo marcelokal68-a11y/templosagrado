@@ -1,68 +1,68 @@
-## Problema
+# Profundidade Emocional Adaptativa — Mestre, Guia e Psicólogo
 
-**1) Trocar tradição não muda o chat nem avisa**
+## Objetivo
 
-Quando o usuário tem uma `preferred_religion` salva (ex: budista) e seleciona outra opção no painel (ex: judeu), o app abre um diálogo de 3 opções ("Sim, mudar minha fé" / "Só explorar" / "Cancelar"). Esse diálogo:
+Toda resposta do mentor deve ter **profundidade emocional e alma** por padrão — como um mestre espiritual + guia de vida + psicólogo humanista. Apenas quando a pergunta for **claramente racional/factual** (data, definição objetiva, "o que significa X", pedido técnico), o tom muda para clareza direta, sem perder respeito.
 
-- Não fica claro que o chat será limpo e que a fé será trocada.
-- Se o usuário clica "Só explorar", navega para `/learn` sem mudar nada — fácil interpretar como "não funcionou".
-- O caminho de troca real exige clicar no botão certo, e o título reaproveita o texto genérico de switch, sem mencionar "de Budista → Judaísmo".
+Hoje o `systemPrompt` em `supabase/functions/sacred-chat/index.ts` já trata tom (`concise`/`reflexivo`) e tradição, mas **não tem instrução explícita** sobre:
+- atuar como **psicólogo** (escuta ativa, reframe, validação profunda do não-dito),
+- modular **profundidade emocional vs racional** conforme a natureza da pergunta,
+- garantir que respostas emotivas tenham **corpo, imagem sensorial e ressonância**, não apenas frases bonitas.
 
-Resultado: o Pedro clica em "Judaísmo", o diálogo aparece, ele fecha/escolhe errado, o chat continua budista — sem aviso, sem limpeza, sem feedback de "nada mudou".
+## O que vai mudar
 
-**2) Versículo do dia raso**
+### 1. Novo módulo `supabase/functions/_shared/depth-persona.ts`
 
-O prompt pede "5-8 linhas". O fluxo chama `gemini-2.5-flash` primeiro e só usa o `gemini-2.5-pro` (mais profundo) como fallback de erro/truncamento. Quando o flash devolve algo válido mas raso, o conteúdo profundo nunca é exibido.
+Centraliza a "habilidade" para poder reusar em `sacred-chat`, `learn-chat` e futuras funções:
 
-## Plano
+- `MASTER_GUIDE_PSYCHOLOGIST_LAYER` (string): bloco de instruções descrevendo as três vozes:
+  - **Mestre**: sabedoria da tradição, citação orgânica, perspectiva ampla.
+  - **Guia**: ação suave, próximo passo possível, presença encorajadora.
+  - **Psicólogo humanista**: escuta o que está *embaixo* da frase, nomeia o sentimento, valida sem julgar, oferece reframe quando útil. Inspirado em escuta rogeriana, ACT e logoterapia — **sem usar jargão clínico**.
+- `DEPTH_MODE_RULES` (string): regras de modulação:
+  - **Modo Emocional/Existencial (padrão)**: usar imagem sensorial concreta (1 metáfora viva), nomear o sentimento real, evitar clichê espiritual ("tudo vai dar certo", "confie"), buscar a dor ou alegria por baixo da pergunta antes de responder.
+  - **Modo Racional/Factual**: quando a mensagem é uma pergunta objetiva (definição, data, "qual livro", "como funciona X", pedido prático), responder com clareza direta e calor mínimo — sem encenação emotiva forçada. Ainda assim, fechar com 1 frase humana.
+  - **Heurística de classificação** (na própria LLM, não em código): lista curta de marcadores ("o que é", "quando", "qual", "explica", "como funciona", "diferença entre") → racional; "sinto", "estou", "não aguento", "por que comigo", silêncio, dor, dúvida existencial, alegria, gratidão → emocional. Mensagens mistas → emocional ganha.
+- `ANTI_PATTERNS` (string): proibições explícitas — não psicologizar à força ("você parece estar projetando..."), não diagnosticar, não usar rótulos clínicos, não responder racional com tom solene desnecessário, não usar "sinto muito que você esteja passando por isso" como muleta.
 
-### A. Fluxo vital: trocar tradição limpa e avisa de verdade
+### 2. Integração em `sacred-chat/index.ts`
 
-`src/components/ContextPanel.tsx`
+No `systemPrompt` (linha ~517), inserir os 3 blocos **antes** do `chatTone` (modo concise/reflexivo já existente). Ordem final:
 
-1. **Simplificar o diálogo de troca.** Substituir o `AlertDialog` de 3 botões por um `AlertDialog` direto de confirmação com:
-   - Título dinâmico: "Trocar de {Atual} para {Nova}?"
-   - Descrição explícita: "Sua conversa atual ({Atual}) será encerrada e a janela do chat será limpa. Você pode desfazer por 15 segundos."
-   - Dois botões: "Cancelar" / "Sim, trocar e limpar chat".
-   - Um link discreto separado: "Só quero conhecer essa tradição (sem trocar)" → navega para `/learn?topic={key}&kind={mode}`.
+```text
+${persona}
+${MASTER_GUIDE_PSYCHOLOGIST_LAYER}
+${DEPTH_MODE_RULES}
+${ANTI_PATTERNS}
+${moodInstruction}
+... (resto inalterado)
+```
 
-2. **Unificar o caminho.** Hoje há dois fluxos (com/sem `preferredReligion`). Unificar para que toda troca passe pela mesma confirmação, sempre executando: `applyOption` → toast "Chat limpo, fé atualizada" com ação "Desfazer".
+A nova camada **convive** com `concise`/`reflexivo` — o tom controla *tamanho*, a nova camada controla *profundidade e voz*.
 
-3. **Garantir limpeza visível.** Em `applyOption`:
-   - Chamar `setMessages([])` imediatamente (já feito).
-   - Forçar `prevAffiliationRef.current = ''` em `ChatArea` para que o efeito de carregar mensagens não restaure conteúdo antigo (passar via uma chave ou usar o próprio `chatContext` — já está ok, mas validar).
-   - Manter o `clearAffiliationHistory` no DB após 15s (já feito).
+### 3. Integração em `learn-chat/index.ts`
 
-4. **Aviso visual no chat.** Quando a troca acontece, além do toast, exibir um banner suave no topo do `ChatArea`: "Tradição alterada para {Nova}. Conversa anterior foi encerrada." que some em 8s.
+Mesma inserção, com nota de que em `learn-chat` o **Modo Racional** é mais frequente (é um chat de aprendizado sobre a tradição). Ainda assim, se o usuário trouxer dor/dúvida pessoal no meio do estudo, o mentor migra para Emocional.
 
-`src/components/ChatArea.tsx`
+### 4. Verso do dia e práticas
 
-5. Adicionar o banner descrito acima, controlado por um efeito que detecta mudança em `chatContext.religion`/`philosophy`.
+Não tocar em `verse-of-day` e `daily-practice` neste passo — eles já foram aprofundados em iteração anterior e geram conteúdo, não conversam. Se o usuário quiser, fazemos numa próxima rodada.
 
-### B. Versículo do dia mais profundo
+### 5. Memória de projeto
 
-`supabase/functions/verse-of-day/index.ts`
+Atualizar `mem://features/chatbot-sacerdote` com a nova capacidade ("Mestre + Guia + Psicólogo com modulação racional/emocional") para que futuras alterações ao persona não removam acidentalmente esta camada.
 
-1. **Subir o modelo padrão para `google/gemini-2.5-pro`** (manter flash apenas como fallback rápido se Pro falhar).
+## Detalhes técnicos
 
-2. **Aprofundar o prompt** para todas as tradições:
-   - "explanation" passa a exigir **10-14 linhas** (não 5-8), com: contexto histórico, exegese/comentário tradicional citado, conexão doutrinária e aplicação espiritual.
-   - "reflection" passa a 3-5 linhas.
-   - Reforçar: "Seja erudito e profundo, evite respostas genéricas. Cite fontes reais."
+- Sem migrations, sem mudança de schema, sem novo secret.
+- Sem alteração de UI / frontend.
+- Apenas: 1 arquivo novo (`_shared/depth-persona.ts`) + 2 arquivos editados (`sacred-chat/index.ts`, `learn-chat/index.ts`) + 1 memória atualizada.
+- Edge functions reimplantam automaticamente.
 
-3. **Invalidar cache raso existente.** Adicionar checagem ao ler o cache: se `explanation.length < 400`, descartar e regerar. Assim caches antigos rasos somem automaticamente.
+## Como validar
 
-4. Manter `practical_use` como está.
+1. Mensagem emocional ("estou exausto, sinto que não dou conta") → resposta deve nomear o cansaço, oferecer imagem viva, citação orgânica, fechamento humano — sem clichê.
+2. Mensagem racional ("qual a diferença entre Torá e Talmud?") → resposta direta, didática, calorosa em 1 frase de fechamento, sem encenação solene.
+3. Mensagem mista ("estou triste, mas também queria saber o que o budismo diz sobre morte") → ganha o emocional: valida primeiro, depois ensina.
 
-### Detalhes técnicos
-
-- Nenhuma migração de DB necessária.
-- `clearAffiliationHistory` e `scheduleAffiliationClear` continuam servindo.
-- Edge function `verse-of-day` é redeployada automaticamente.
-- O banner usa tokens existentes (`bg-primary/10`, `border-primary/30`).
-
-### Arquivos alterados
-
-- `src/components/ContextPanel.tsx` — unificar fluxo de troca, simplificar diálogo.
-- `src/components/ChatArea.tsx` — banner de troca de tradição.
-- `supabase/functions/verse-of-day/index.ts` — Pro como padrão, prompts mais profundos, invalidação de cache raso.
+Se aprovar, implemento direto.

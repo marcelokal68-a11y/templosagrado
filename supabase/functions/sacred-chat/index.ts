@@ -4,6 +4,7 @@ import { retrieveRagContext } from "../_shared/rag.ts";
 import { corsHeadersFor } from "../_shared/cors.ts";
 import { responseLanguage } from "../_shared/lang.ts";
 import { streamFromGateway } from "../_shared/aiStream.ts";
+import { DEPTH_PERSONA_BLOCK } from "../_shared/depth-persona.ts";
 
 const SACRED_TEXTS: Record<string, string> = {
   christian: "the Bible (Old and New Testament)",
@@ -515,6 +516,8 @@ If no religion can be detected from the message, respond with universal spiritua
     }
 
     const systemPrompt = `${persona}
+
+${DEPTH_PERSONA_BLOCK}
 
 ${moodInstruction}
 ${needInstruction}

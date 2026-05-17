@@ -3,6 +3,7 @@ import { retrieveRagContext } from "../_shared/rag.ts";
 import { corsHeadersFor } from "../_shared/cors.ts";
 import { responseLanguage } from "../_shared/lang.ts";
 import { streamFromGateway } from "../_shared/aiStream.ts";
+import { DEPTH_PERSONA_BLOCK } from "../_shared/depth-persona.ts";
 
 const TOPIC_NAMES: Record<string, Record<string, string>> = {
   'pt-BR': {
@@ -676,7 +677,11 @@ CRITICAL RULES:
 - Cite historical sources, scholars, and primary texts naturally.
 - Make connections to other traditions when relevant to enrich understanding.
 - NEVER proselytize or advocate for any tradition. Present facts with academic neutrality.
-- NEVER append suggested questions, follow-up question lists, or any "---SUGGESTIONS---" block at the end. Just answer and stop. Let the student lead the next question.`;
+- NEVER append suggested questions, follow-up question lists, or any "---SUGGESTIONS---" block at the end. Just answer and stop. Let the student lead the next question.
+
+${DEPTH_PERSONA_BLOCK}
+
+NOTA PARA ESTE CONTEXTO (aprendizado): aqui o MODO RACIONAL é mais frequente — o aluno costuma pedir fatos, contexto histórico, comparações. Responda com clareza didática. Mas se o aluno trouxer dor, dúvida existencial ou emoção no meio do estudo, migre imediatamente para o MODO EMOCIONAL: acolha primeiro, ensine depois.`;
 
     return await streamFromGateway({
       apiKey: LOVABLE_API_KEY,
