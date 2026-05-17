@@ -37,6 +37,7 @@ import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
 import { isPreviewEnvironment } from '@/lib/access';
 import { edgeFunctionUrl, getEdgeAuthHeaders, hasLiveSession, PUBLISHABLE_KEY } from '@/lib/authHeader';
+import { useTraditionSwitchNotice } from '@/hooks/useTraditionSwitchNotice';
 
 type Source = { id: string; title: string; author: string | null };
 type Msg = { role: 'user' | 'assistant'; content: string; sources?: Source[] };
@@ -271,8 +272,10 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
   });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
-  const [traditionSwitchNotice, setTraditionSwitchNotice] = useState<{ from: string; to: string } | null>(null);
-  const lastAffiliationRef = useRef<string>('');
+  const { notice: traditionSwitchNotice, dismiss: dismissTraditionNotice } = useTraditionSwitchNotice(
+    chatContext.religion,
+    chatContext.philosophy,
+  );
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -315,18 +318,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
 
 
 
-  // Detect tradition switch to show a visible in-chat banner (in addition to toast)
-  useEffect(() => {
-    const current = chatContext.philosophy || chatContext.religion || '';
-    const prev = lastAffiliationRef.current;
-    if (prev && current && prev !== current) {
-      setTraditionSwitchNotice({ from: prev, to: current });
-      const timer = setTimeout(() => setTraditionSwitchNotice(null), 8000);
-      lastAffiliationRef.current = current;
-      return () => clearTimeout(timer);
-    }
-    lastAffiliationRef.current = current;
-  }, [chatContext.religion, chatContext.philosophy]);
+  // Tradition switch banner is managed by useTraditionSwitchNotice (8s auto-dismiss).
 
   useEffect(() => {
     if (hasPendingUndo) {
@@ -977,7 +969,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 : <>Tradição alterada para <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. Conversa anterior encerrada.</>}
           </p>
           <button
-            onClick={() => setTraditionSwitchNotice(null)}
+            onClick={dismissTraditionNotice}
             className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
             aria-label="Dispensar"
           >
