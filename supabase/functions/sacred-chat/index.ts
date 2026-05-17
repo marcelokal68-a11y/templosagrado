@@ -517,6 +517,8 @@ If no religion can be detected from the message, respond with universal spiritua
 
     const systemPrompt = `${persona}
 
+${DEPTH_PERSONA_BLOCK}
+
 ${moodInstruction}
 ${needInstruction}
 ${topicInstruction}
