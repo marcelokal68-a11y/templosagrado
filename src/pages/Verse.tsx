@@ -8,6 +8,7 @@ import PublishToMural from '@/components/mural/PublishToMural';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { FAB_SAFE_PADDING } from '@/components/fab/fabConfig';
 
 const FAITH_OPTIONS = [
   { key: 'catholic', label: 'Católico', mode: 'religion' as const },
@@ -149,7 +150,7 @@ export default function Verse() {
   };
 
   return (
-    <div className="flex-1 flex items-start justify-center p-4 pb-40 md:pb-24">
+    <div className={`flex-1 flex items-start justify-center p-4 ${FAB_SAFE_PADDING}`}>
       <div className="w-full max-w-2xl space-y-4">
         <div className="text-center space-y-1">
           <BookOpen className="h-10 w-10 text-primary mx-auto" />

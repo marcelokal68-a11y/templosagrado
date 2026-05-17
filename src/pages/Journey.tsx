@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { FAB_SAFE_PADDING } from '@/components/fab/fabConfig';
 
 type ActivityItem = {
   id: string;
@@ -179,7 +180,7 @@ export default function Journey() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-background">
-      <div className="max-w-3xl mx-auto px-4 pt-8 pb-40 md:pb-24">
+      <div className={`max-w-3xl mx-auto px-4 pt-8 ${FAB_SAFE_PADDING}`}>
         {/* Header */}
         <div className="mb-6 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-3">

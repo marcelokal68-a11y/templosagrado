@@ -9,6 +9,7 @@ import { containsProfanity } from '@/lib/profanityFilter';
 import { sanitizeDisplayName } from '@/lib/sanitizeDisplayName';
 import { edgeFunctionUrl, PUBLISHABLE_KEY } from '@/lib/authHeader';
 import EcumenicalWall from '@/components/mural/EcumenicalWall';
+import { FAB_SAFE_PADDING } from '@/components/fab/fabConfig';
 
 export default function Mural() {
   const { user } = useApp();
@@ -102,7 +103,7 @@ export default function Mural() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pb-40 md:pb-24">
+    <div className={`flex-1 overflow-y-auto ${FAB_SAFE_PADDING}`}>
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">

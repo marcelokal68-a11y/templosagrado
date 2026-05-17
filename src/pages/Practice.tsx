@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { FAB_SAFE_PADDING } from '@/components/fab/fabConfig';
 import { BookOpen, Loader2, Sparkles, Volume2, VolumeX, BookMarked, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -187,7 +188,7 @@ export default function Practice() {
   }, [checkedCount, items.length]);
 
   return (
-    <main className="flex-1 container max-w-2xl px-4 pt-6 pb-40 md:pb-24 space-y-6">
+    <main className={`flex-1 container max-w-2xl px-4 pt-6 ${FAB_SAFE_PADDING} space-y-6`}>
       <div className="text-center space-y-1">
         <h1 className="text-2xl font-display font-bold text-foreground">
           {t('practice.title', language)}
