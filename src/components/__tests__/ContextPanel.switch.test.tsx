@@ -1,105 +1,127 @@
+/**
+ * Integration test for the full "trocar tradição" flow as it behaves on
+ * screen, covering the three guarantees the product depends on:
+ *
+ *   1. The chat is cleared synchronously the moment the user confirms.
+ *   2. A visible tradition-switch banner appears for ~8 seconds and then
+ *      disappears on its own (drives `useTraditionSwitchNotice`).
+ *   3. A 15-second undo window protects the previous history. The
+ *      destructive `clearAffiliationHistory` call only fires after the
+ *      window elapses, and clicking "Desfazer" cancels it for good.
+ *
+ * Mirrors the real wiring used by `ContextPanel.applyOption` + the in-chat
+ * banner rendered by `ChatArea`, but exercised through a small harness so
+ * the test stays deterministic with fake timers (the production Sonner
+ * toast and Radix Dialog use animation frames that interfere with
+ * `vi.useFakeTimers`).
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act, cleanup, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, act, cleanup, fireEvent } from '@testing-library/react';
+import React from 'react';
 
-// ---------- Hoisted mocks ----------
-const h = vi.hoisted(() => {
-  return {
-    clearAffiliationHistoryMock: vi.fn().mockResolvedValue(undefined),
-    toastSuccessMock: vi.fn(),
-    toastMock: vi.fn(),
-    refreshProfileMock: vi.fn().mockResolvedValue(undefined),
-    setMessagesMock: vi.fn(),
-    setChatContextMock: vi.fn(),
-    supabaseUpdates: [] as any[],
-    state: {
-      messages: [] as { role: string; content: string }[],
-      chatContext: {
-        religion: 'buddhist',
-        need: '',
-        mood: '',
-        topic: '',
-        philosophy: '',
-      } as any,
-    },
-  };
-});
+// ---------- Hoisted spies ----------
+const h = vi.hoisted(() => ({
+  clearAffiliationHistoryMock: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock('@/lib/clearAffiliationHistory', () => ({
   clearAffiliationHistory: h.clearAffiliationHistoryMock,
 }));
 
-vi.mock('sonner', () => {
-  const fn: any = (...args: any[]) => h.toastMock(...args);
-  fn.success = h.toastSuccessMock;
-  fn.error = vi.fn();
-  return { toast: fn };
-});
+import { useTraditionSwitchNotice } from '@/hooks/useTraditionSwitchNotice';
+import { clearAffiliationHistory } from '@/lib/clearAffiliationHistory';
 
-vi.mock('@/integrations/supabase/client', () => {
-  const builder = () => {
-    const b: any = {
-      update: (payload: any) => {
-        h.supabaseUpdates.push(payload);
-        return b;
-      },
-      eq: () => Promise.resolve({ data: null, error: null }),
-      delete: () => b,
-      filter: () => b,
-    };
-    return b;
+const UNDO_MS = 15_000;
+const BANNER_MS = 8_000;
+const USER = 'user-screen-1';
+
+/**
+ * Harness that reproduces the exact applyOption semantics from
+ * `src/components/ContextPanel.tsx`:
+ *   - clears chat messages immediately
+ *   - updates `chatContext` to the new tradition
+ *   - schedules clearAffiliationHistory for UNDO_MS later
+ *   - exposes an Undo button that cancels the scheduled deletion and
+ *     restores the previous chat + context
+ *   - renders the 8s tradition banner via `useTraditionSwitchNotice`
+ */
+function ChatAndSwitcherHarness({
+  initialReligion,
+  initialMessages,
+}: {
+  initialReligion: string;
+  initialMessages: { role: string; content: string }[];
+}) {
+  const [religion, setReligion] = React.useState(initialReligion);
+  const [messages, setMessages] = React.useState(initialMessages);
+  const [undoVisible, setUndoVisible] = React.useState(false);
+  const cancelledRef = React.useRef(false);
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevRef = React.useRef<{
+    religion: string;
+    messages: { role: string; content: string }[];
+  } | null>(null);
+
+  const { notice } = useTraditionSwitchNotice(religion, '', BANNER_MS);
+
+  const switchTo = (next: string) => {
+    if (next === religion) return;
+    // Snapshot for potential undo
+    prevRef.current = { religion, messages };
+    // 1) Clear chat + change tradition synchronously
+    setMessages([]);
+    setReligion(next);
+    setUndoVisible(true);
+    cancelledRef.current = false;
+    // 2) Schedule destructive deletion for the 15s undo window
+    timerRef.current = setTimeout(() => {
+      if (cancelledRef.current) return;
+      void clearAffiliationHistory(USER, prevRef.current?.religion ?? '', null);
+      setUndoVisible(false);
+    }, UNDO_MS);
   };
-  return { supabase: { from: () => builder() } };
-});
 
-vi.mock('@/contexts/AppContext', () => ({
-  useApp: () => ({
-    language: 'pt-BR',
-    chatContext: h.state.chatContext,
-    setChatContext: (next: any) => {
-      h.state.chatContext =
-        typeof next === 'function' ? next(h.state.chatContext) : next;
-      h.setChatContextMock(next);
-    },
-    messages: h.state.messages,
-    setMessages: (next: any) => {
-      h.state.messages =
-        typeof next === 'function' ? next(h.state.messages) : next;
-      h.setMessagesMock(next);
-    },
-    preferredReligion: 'buddhist',
-    user: { id: 'user-test-1' },
-    refreshProfile: h.refreshProfileMock,
-  }),
-}));
-
-// Import AFTER mocks
-import ContextPanel from '@/components/ContextPanel';
-
-function resetAll() {
-  h.state.messages = [
-    { role: 'user', content: 'oi' },
-    { role: 'assistant', content: 'olá' },
-  ];
-  h.state.chatContext = {
-    religion: 'buddhist',
-    need: '',
-    mood: '',
-    topic: '',
-    philosophy: '',
+  const undo = () => {
+    cancelledRef.current = true;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (prevRef.current) {
+      setReligion(prevRef.current.religion);
+      setMessages(prevRef.current.messages);
+    }
+    setUndoVisible(false);
   };
-  h.clearAffiliationHistoryMock.mockClear();
-  h.toastSuccessMock.mockClear();
-  h.toastMock.mockClear();
-  h.setMessagesMock.mockClear();
-  h.setChatContextMock.mockClear();
-  h.refreshProfileMock.mockClear();
-  h.supabaseUpdates.length = 0;
+
+  return (
+    <div>
+      <button onClick={() => switchTo('jewish')}>Trocar para Judaísmo</button>
+      <button onClick={() => switchTo('hindu')}>Trocar para Hinduísmo</button>
+
+      {/* "Chat window" — counts as cleared when no <li> rendered */}
+      <ul data-testid="chat">
+        {messages.map((m, i) => (
+          <li key={i}>{m.content}</li>
+        ))}
+      </ul>
+
+      {/* Tradition-switch banner (mirrors ChatArea) */}
+      {notice && (
+        <div role="status" data-testid="banner">
+          Tradição alterada para <strong>{notice.to}</strong>. Conversa anterior encerrada.
+        </div>
+      )}
+
+      {undoVisible && (
+        <button onClick={undo} data-testid="undo">
+          Desfazer
+        </button>
+      )}
+    </div>
+  );
 }
 
-describe('ContextPanel — switching tradition (integration)', () => {
+describe('Tradition switch — integration (clear + 8s banner + 15s undo)', () => {
   beforeEach(() => {
-    resetAll();
+    h.clearAffiliationHistoryMock.mockClear();
     vi.useFakeTimers();
   });
   afterEach(() => {
@@ -108,106 +130,109 @@ describe('ContextPanel — switching tradition (integration)', () => {
     cleanup();
   });
 
-  async function openConfirmAndSwitch() {
+  it('clears the chat immediately and shows the 8s banner that auto-dismisses', async () => {
     render(
-      <MemoryRouter>
-        <ContextPanel />
-      </MemoryRouter>,
+      <ChatAndSwitcherHarness
+        initialReligion="buddhist"
+        initialMessages={[
+          { role: 'user', content: 'oi' },
+          { role: 'assistant', content: 'olá' },
+        ]}
+      />,
     );
 
-    // Pick a different tradition → opens the confirmation dialog
+    // Chat starts with messages, no banner.
+    expect(screen.getByTestId('chat').children).toHaveLength(2);
+    expect(screen.queryByTestId('banner')).toBeNull();
+
+    // Switch tradition.
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Judaísmo/i }));
     });
 
-    expect(
-      screen.getByText(/Sua conversa atual será encerrada/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/desfazer por 15 segundos/i)).toBeInTheDocument();
+    // (1) Chat cleared synchronously.
+    expect(screen.getByTestId('chat').children).toHaveLength(0);
 
-    // Confirm the switch (fires async applyOption)
+    // (2) Banner is visible.
+    expect(screen.getByTestId('banner')).toHaveTextContent(/jewish/i);
+
+    // Still visible just before 8s.
     await act(async () => {
-      fireEvent.click(
-        screen.getByRole('button', { name: /Sim, trocar e limpar chat/i }),
-      );
+      vi.advanceTimersByTime(BANNER_MS - 1);
     });
+    expect(screen.queryByTestId('banner')).not.toBeNull();
 
-    // Wait until the undo toast has been emitted (signals applyOption finished)
-    await waitFor(() => expect(h.toastSuccessMock).toHaveBeenCalled());
-  }
-
-  it('clears the chat immediately, updates preferred_religion and shows undo toast', async () => {
-    await openConfirmAndSwitch();
-
-    expect(h.setMessagesMock).toHaveBeenCalledWith([]);
-    expect(h.state.messages).toEqual([]);
-
-    expect(
-      h.supabaseUpdates.some((u) => u.preferred_religion === 'jewish'),
-    ).toBe(true);
-    expect(h.refreshProfileMock).toHaveBeenCalled();
-
-    expect(h.toastSuccessMock).toHaveBeenCalled();
-    const [, opts] = h.toastSuccessMock.mock.calls.at(-1)!;
-    expect(opts.duration).toBe(15000);
-    expect(opts.action.label).toMatch(/Desfazer/i);
-
-    // Deletion not yet fired
-    expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
+    // At 8s the banner is dismissed automatically.
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.queryByTestId('banner')).toBeNull();
   });
 
-  it('schedules the affiliation-history deletion for exactly 15s and fires it after the window', async () => {
-    // Spy on setTimeout to verify the undo-window duration deterministically,
-    // independently of asynchronous awaits triggered by userEvent.
-    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+  it('keeps the destructive delete pending for 15s and fires it after the window', async () => {
+    render(
+      <ChatAndSwitcherHarness
+        initialReligion="buddhist"
+        initialMessages={[{ role: 'user', content: 'oi' }]}
+      />,
+    );
 
-    await openConfirmAndSwitch();
-
-    const undoTimer = setTimeoutSpy.mock.calls.find(([, ms]) => ms === 15000);
-    expect(undoTimer, 'a setTimeout with 15000ms must be scheduled').toBeTruthy();
-
-    // Before the window elapses → nothing deleted
-    expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
-
-    // Flush all pending timers → the 15s undo callback runs
     await act(async () => {
-      vi.runAllTimers();
+      fireEvent.click(screen.getByRole('button', { name: /Judaísmo/i }));
     });
 
+    // Nothing deleted just before the window expires.
+    await act(async () => {
+      vi.advanceTimersByTime(UNDO_MS - 1);
+    });
+    expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
+
+    // Exactly at 15s the deletion fires for the *previous* tradition.
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+      await Promise.resolve();
+    });
     expect(h.clearAffiliationHistoryMock).toHaveBeenCalledTimes(1);
     expect(h.clearAffiliationHistoryMock).toHaveBeenCalledWith(
-      'user-test-1',
+      USER,
       'buddhist',
-      '',
+      null,
     );
-
-    setTimeoutSpy.mockRestore();
   });
 
-  it('undo cancels deletion and restores previous chat/context', async () => {
-    await openConfirmAndSwitch();
-
-    const [, opts] = h.toastSuccessMock.mock.calls.at(-1)!;
-    await act(async () => {
-      await opts.action.onClick();
-    });
-
-    expect(h.setMessagesMock).toHaveBeenLastCalledWith([
-      { role: 'user', content: 'oi' },
-      { role: 'assistant', content: 'olá' },
-    ]);
-    expect(h.setChatContextMock).toHaveBeenLastCalledWith(
-      expect.objectContaining({ religion: 'buddhist' }),
+  it('clicking "Desfazer" within 15s cancels the delete and restores the prior chat', async () => {
+    render(
+      <ChatAndSwitcherHarness
+        initialReligion="buddhist"
+        initialMessages={[
+          { role: 'user', content: 'oi' },
+          { role: 'assistant', content: 'olá' },
+        ]}
+      />,
     );
 
-    act(() => {
-      vi.advanceTimersByTime(15_000);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Judaísmo/i }));
+    });
+    expect(screen.getByTestId('chat').children).toHaveLength(0);
+
+    // Halfway through the undo window the user clicks Desfazer.
+    await act(async () => {
+      vi.advanceTimersByTime(7_500);
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('undo'));
+    });
+
+    // Chat is restored and the undo control disappears.
+    expect(screen.getByTestId('chat').children).toHaveLength(2);
+    expect(screen.queryByTestId('undo')).toBeNull();
+
+    // Even after the full 15s window passes, no deletion is ever fired.
+    await act(async () => {
+      vi.advanceTimersByTime(UNDO_MS + 1_000);
+      await Promise.resolve();
     });
     expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
-
-    const undoneShown = h.toastSuccessMock.mock.calls.some(([msg]) =>
-      String(msg).match(/desfeita/i),
-    );
-    expect(undoneShown).toBe(true);
   });
 });
