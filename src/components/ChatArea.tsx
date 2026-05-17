@@ -37,6 +37,7 @@ import { ToastAction } from '@/components/ui/toast';
 import TrialBanner from '@/components/TrialBanner';
 import { isPreviewEnvironment } from '@/lib/access';
 import { edgeFunctionUrl, getEdgeAuthHeaders, hasLiveSession, PUBLISHABLE_KEY } from '@/lib/authHeader';
+import { useTraditionSwitchNotice } from '@/hooks/useTraditionSwitchNotice';
 
 type Source = { id: string; title: string; author: string | null };
 type Msg = { role: 'user' | 'assistant'; content: string; sources?: Source[] };
@@ -968,7 +969,7 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
                 : <>Tradição alterada para <strong className="text-primary">{t(`religion.${traditionSwitchNotice.to}` as any, language) || t(`philosophy.${traditionSwitchNotice.to}` as any, language) || traditionSwitchNotice.to}</strong>. Conversa anterior encerrada.</>}
           </p>
           <button
-            onClick={() => setTraditionSwitchNotice(null)}
+            onClick={dismissTraditionNotice}
             className="text-xs text-muted-foreground hover:text-foreground shrink-0 px-1 py-1"
             aria-label="Dispensar"
           >
