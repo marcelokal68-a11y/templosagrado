@@ -271,6 +271,8 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     return Number.isFinite(saved) && saved >= 0 ? saved : GUEST_QUESTION_LIMIT;
   });
   const [exploringFaith, setExploringFaith] = useState<string | null>(null);
+  const [traditionSwitchNotice, setTraditionSwitchNotice] = useState<{ from: string; to: string } | null>(null);
+  const lastAffiliationRef = useRef<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<number, string>>(new Map());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
