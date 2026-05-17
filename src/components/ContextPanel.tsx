@@ -352,7 +352,7 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
     setPlaylistPrefs(prev => ({ ...prev, [activeKey || 'default']: id }));
   };
 
-  const exploreLabel = exploreIntent?.label ?? '';
+  const pendingLabel = pendingOption?.label ?? '';
 
   return (
     <div className="space-y-5 p-4">
