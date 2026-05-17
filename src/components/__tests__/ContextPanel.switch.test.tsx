@@ -5,35 +5,24 @@ import { MemoryRouter } from 'react-router-dom';
 
 // ---------- Hoisted mocks ----------
 const h = vi.hoisted(() => {
-  const h.clearAffiliationHistoryMock = vi.fn().mockResolvedValue(undefined);
-  const h.toastSuccessMock = vi.fn();
-  const toastMock = vi.fn();
-  const h.refreshProfileMock = vi.fn().mockResolvedValue(undefined);
-  const h.setMessagesMock = vi.fn();
-  const h.setChatContextMock = vi.fn();
-  const h.supabaseUpdates: any[] = [];
-  const state: {
-    messages: { role: string; content: string }[];
-    chatContext: any;
-  } = {
-    messages: [],
-    chatContext: {
-      religion: 'buddhist',
-      need: '',
-      mood: '',
-      topic: '',
-      philosophy: '',
-    },
-  };
   return {
-    h.clearAffiliationHistoryMock,
-    h.toastSuccessMock,
-    toastMock,
-    h.refreshProfileMock,
-    h.setMessagesMock,
-    h.setChatContextMock,
-    h.supabaseUpdates,
-    state,
+    clearAffiliationHistoryMock: vi.fn().mockResolvedValue(undefined),
+    toastSuccessMock: vi.fn(),
+    toastMock: vi.fn(),
+    refreshProfileMock: vi.fn().mockResolvedValue(undefined),
+    setMessagesMock: vi.fn(),
+    setChatContextMock: vi.fn(),
+    supabaseUpdates: [] as any[],
+    state: {
+      messages: [] as { role: string; content: string }[],
+      chatContext: {
+        religion: 'buddhist',
+        need: '',
+        mood: '',
+        topic: '',
+        philosophy: '',
+      } as any,
+    },
   };
 });
 
@@ -135,9 +124,7 @@ describe('ContextPanel — switching tradition (integration)', () => {
     expect(
       await screen.findByText(/Sua conversa atual será encerrada/i),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/desfazer por 15 segundos/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/desfazer por 15 segundos/i)).toBeInTheDocument();
 
     // Confirm the switch
     await user.click(
@@ -150,57 +137,50 @@ describe('ContextPanel — switching tradition (integration)', () => {
   it('clears the chat immediately, updates preferred_religion and shows undo toast', async () => {
     await openConfirmAndSwitch();
 
-    // Chat was cleared synchronously
     expect(h.setMessagesMock).toHaveBeenCalledWith([]);
     expect(h.state.messages).toEqual([]);
 
-    // preferred_religion in DB updated to the new key
-    expect(h.supabaseUpdates.some(u => u.preferred_religion === 'jewish')).toBe(
-      true,
-    );
+    expect(
+      h.supabaseUpdates.some((u) => u.preferred_religion === 'jewish'),
+    ).toBe(true);
     expect(h.refreshProfileMock).toHaveBeenCalled();
 
-    // Toast with action (Desfazer) was shown with 15s duration
     expect(h.toastSuccessMock).toHaveBeenCalled();
     const [, opts] = h.toastSuccessMock.mock.calls.at(-1)!;
     expect(opts.duration).toBe(15000);
     expect(opts.action.label).toMatch(/Desfazer/i);
 
-    // Hard deletion has NOT happened yet
+    // Deletion not yet fired
     expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
   });
 
   it('deletes affiliation history exactly after the 15s undo window', async () => {
     await openConfirmAndSwitch();
 
-    // 14.999s → still pending
     act(() => {
       vi.advanceTimersByTime(14_999);
     });
     expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
 
-    // 15.000s → fires
     act(() => {
       vi.advanceTimersByTime(1);
     });
     expect(h.clearAffiliationHistoryMock).toHaveBeenCalledTimes(1);
     expect(h.clearAffiliationHistoryMock).toHaveBeenCalledWith(
       'user-test-1',
-      'buddhist', // prevReligion
-      '', // prevPhilosophy
+      'buddhist',
+      '',
     );
   });
 
-  it('undo button cancels deletion and restores previous chat/context', async () => {
+  it('undo cancels deletion and restores previous chat/context', async () => {
     await openConfirmAndSwitch();
 
     const [, opts] = h.toastSuccessMock.mock.calls.at(-1)!;
-    // Pretend the user clicks the toast action within the 15s window
     await act(async () => {
       await opts.action.onClick();
     });
 
-    // Restored prior messages + context
     expect(h.setMessagesMock).toHaveBeenLastCalledWith([
       { role: 'user', content: 'oi' },
       { role: 'assistant', content: 'olá' },
@@ -209,13 +189,11 @@ describe('ContextPanel — switching tradition (integration)', () => {
       expect.objectContaining({ religion: 'buddhist' }),
     );
 
-    // Even after the 15s window passes, deletion must NOT happen
     act(() => {
       vi.advanceTimersByTime(15_000);
     });
     expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
 
-    // A confirmation toast ("Troca desfeita") was shown
     const undoneShown = h.toastSuccessMock.mock.calls.some(([msg]) =>
       String(msg).match(/desfeita/i),
     );
