@@ -585,7 +585,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 2000,
+          max_tokens: 3500,
           messages: [
             { role: "system", content: systemContent },
             { role: "user", content: prompt.user },
