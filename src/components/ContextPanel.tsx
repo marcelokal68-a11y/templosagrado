@@ -578,47 +578,55 @@ export default function ContextPanel({ onGenerate, onClose }: { onGenerate?: () 
         </div>
       )}
 
-      {/* Switch confirmation (when no preferred religion is set yet) */}
-      <AlertDialog open={showSwitchConfirm} onOpenChange={setShowSwitchConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('faith.switch_title', language)}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('faith.switch_desc', language)}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setShowSwitchConfirm(false); setPendingOption(null); }}>
-              {t('faith.switch_cancel', language)}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSwitch}>
-              {t('faith.switch_confirm', language)}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* 3-option dialog: change faith vs. just explore */}
-      <AlertDialog open={!!exploreIntent} onOpenChange={(open) => { if (!open) setExploreIntent(null); }}>
+      {/* Single, unambiguous switch confirmation */}
+      <AlertDialog open={!!pendingOption} onOpenChange={(open) => { if (!open) setPendingOption(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('faith.switch_title', language)}{exploreLabel ? ` — ${exploreLabel}` : ''}
+              {language === 'en'
+                ? `Switch to ${pendingLabel}?`
+                : language === 'es'
+                  ? `¿Cambiar a ${pendingLabel}?`
+                  : `Trocar para ${pendingLabel}?`}
+              {currentLabel ? (
+                <span className="block text-xs font-normal text-muted-foreground mt-1">
+                  {language === 'en'
+                    ? `Currently: ${currentLabel}`
+                    : language === 'es'
+                      ? `Actualmente: ${currentLabel}`
+                      : `Atualmente: ${currentLabel}`}
+                </span>
+              ) : null}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('faith.switch_desc', language)}
+              {language === 'en'
+                ? 'Your current conversation will end and the chat window will be cleared. You can undo for 15 seconds.'
+                : language === 'es'
+                  ? 'Tu conversación actual terminará y el chat será borrado. Puedes deshacer durante 15 segundos.'
+                  : 'Sua conversa atual será encerrada e o chat será limpo. Você pode desfazer por 15 segundos.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-2 mt-2">
-            <Button onClick={handleChangeFaith} className="w-full">
-              {language === 'en' ? 'Yes, change my faith' : language === 'es' ? 'Sí, cambiar mi fe' : 'Sim, mudar minha fé'}
+            <Button onClick={confirmSwitch} className="w-full">
+              {language === 'en'
+                ? 'Yes, switch and clear chat'
+                : language === 'es'
+                  ? 'Sí, cambiar y limpiar chat'
+                  : 'Sim, trocar e limpar chat'}
             </Button>
-            <Button onClick={handleExploreOnly} variant="outline" className="w-full">
-              {language === 'en' ? 'Just explore (Learn)' : language === 'es' ? 'Solo explorar (Aprende)' : 'Só explorar (Aprenda)'}
+            <Button onClick={() => setPendingOption(null)} variant="outline" className="w-full">
+              {language === 'en' ? 'Cancel' : 'Cancelar'}
             </Button>
-            <Button onClick={() => setExploreIntent(null)} variant="ghost" className="w-full">
-              {language === 'en' ? 'Cancel' : language === 'es' ? 'Cancelar' : 'Cancelar'}
-            </Button>
+            <button
+              onClick={exploreInLearn}
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 mt-1 py-1"
+            >
+              {language === 'en'
+                ? `Just learn about ${pendingLabel} (no switch)`
+                : language === 'es'
+                  ? `Solo aprender sobre ${pendingLabel} (sin cambiar)`
+                  : `Só conhecer ${pendingLabel} (sem trocar)`}
+            </button>
           </div>
         </AlertDialogContent>
       </AlertDialog>
