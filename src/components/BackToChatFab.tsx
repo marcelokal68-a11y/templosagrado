@@ -3,8 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-
-const SHOW_ON = ['/learn', '/verse', '/mural', '/journey', '/prayers', '/practice'];
+import { FAB_POSITION_CLASS, isFabRoute } from './fab/fabConfig';
 
 export default function BackToChatFab() {
   const navigate = useNavigate();
@@ -12,8 +11,7 @@ export default function BackToChatFab() {
   const { user, language } = useApp();
 
   if (!user) return null;
-  const shouldShow = SHOW_ON.some(p => location.pathname.startsWith(p));
-  if (!shouldShow) return null;
+  if (!isFabRoute(location.pathname)) return null;
 
   const handleClick = () => {
     const maxScroll = Math.max(
@@ -35,7 +33,7 @@ export default function BackToChatFab() {
       onClick={handleClick}
       aria-label={t('nav.chat', language)}
       className={cn(
-        'fixed z-40 right-4 bottom-20 md:bottom-6',
+        FAB_POSITION_CLASS,
         'flex items-center gap-2 px-4 h-12 rounded-full',
         'bg-primary text-primary-foreground shadow-lg',
         'hover:bg-primary/90 hover:shadow-xl active:scale-95',

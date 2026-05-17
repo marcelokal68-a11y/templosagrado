@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Heart, Copy, Check, Mail, RefreshCw, Sparkles, User, ArrowLeft } from 'lucide-react';
 import PublishToMural from '@/components/mural/PublishToMural';
 import { cn } from '@/lib/utils';
+import { FAB_SAFE_PADDING } from '@/components/fab/fabConfig';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const FAITH_OPTIONS = [
@@ -170,7 +171,7 @@ export default function Prayers() {
   const canGenerate = intention.trim() && (religion || philosophy);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-4 gap-6 overflow-y-auto pb-40 md:pb-24">
+    <div className={`flex-1 flex flex-col items-center justify-start p-4 gap-6 overflow-y-auto ${FAB_SAFE_PADDING}`}>
       {/* Prayer Form */}
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
