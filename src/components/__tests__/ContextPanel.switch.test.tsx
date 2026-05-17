@@ -101,7 +101,7 @@ function resetAll() {
 describe('ContextPanel — switching tradition (integration)', () => {
   beforeEach(() => {
     resetAll();
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
   });
   afterEach(() => {
     vi.runOnlyPendingTimers();
@@ -110,7 +110,8 @@ describe('ContextPanel — switching tradition (integration)', () => {
   });
 
   async function openConfirmAndSwitch() {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    // delay:null → no fake-time consumed by user interactions
+    const user = userEvent.setup({ delay: null });
     render(
       <MemoryRouter>
         <ContextPanel />
