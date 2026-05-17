@@ -155,23 +155,32 @@ describe('ContextPanel — switching tradition (integration)', () => {
     expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
   });
 
-  it('deletes affiliation history exactly after the 15s undo window', async () => {
+  it('schedules the affiliation-history deletion for exactly 15s and fires it after the window', async () => {
+    // Spy on setTimeout to verify the undo-window duration deterministically,
+    // independently of asynchronous awaits triggered by userEvent.
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+
     await openConfirmAndSwitch();
 
-    act(() => {
-      vi.advanceTimersByTime(14_999);
-    });
+    const undoTimer = setTimeoutSpy.mock.calls.find(([, ms]) => ms === 15000);
+    expect(undoTimer, 'a setTimeout with 15000ms must be scheduled').toBeTruthy();
+
+    // Before the window elapses → nothing deleted
     expect(h.clearAffiliationHistoryMock).not.toHaveBeenCalled();
 
-    act(() => {
-      vi.advanceTimersByTime(1);
+    // Flush all pending timers → the 15s undo callback runs
+    await act(async () => {
+      vi.runAllTimers();
     });
+
     expect(h.clearAffiliationHistoryMock).toHaveBeenCalledTimes(1);
     expect(h.clearAffiliationHistoryMock).toHaveBeenCalledWith(
       'user-test-1',
       'buddhist',
       '',
     );
+
+    setTimeoutSpy.mockRestore();
   });
 
   it('undo cancels deletion and restores previous chat/context', async () => {
