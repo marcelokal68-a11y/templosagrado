@@ -7,7 +7,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { corsHeadersFor } from "../_shared/cors.ts";
 
-const EMBED_MODEL = "google/text-embedding-004";
+const EMBED_MODEL = "text-embedding-004";
 const CHUNK_CHAR_TARGET = 2400; // ~800 tokens
 const CHUNK_CHAR_OVERLAP = 300;
 
@@ -55,7 +55,7 @@ async function embedBatch(texts: string[], apiKey: string): Promise<number[][]> 
   // Lovable AI Gateway embeddings — one call per text (gateway currently single-input safest)
   const results: number[][] = [];
   for (const text of texts) {
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+    const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/embeddings", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -97,8 +97,8 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     // Validate caller is an admin
     const authHeader = req.headers.get("Authorization");
@@ -174,7 +174,7 @@ serve(async (req) => {
       let inserted = 0;
       for (let i = 0; i < chunks.length; i += BATCH) {
         const batch = chunks.slice(i, i + BATCH);
-        const embeddings = await embedBatch(batch, LOVABLE_API_KEY);
+        const embeddings = await embedBatch(batch, GEMINI_API_KEY);
         const rows = batch.map((content, idx) => ({
           source_id,
           chunk_index: i + idx,

@@ -20,11 +20,11 @@ export type RagResult = {
   promptSection: string;
 };
 
-const EMBED_MODEL = "google/text-embedding-004";
+const EMBED_MODEL = "text-embedding-004";
 
 export async function embedQuery(query: string, apiKey: string): Promise<number[] | null> {
   try {
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+    const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/embeddings", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,

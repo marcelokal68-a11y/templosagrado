@@ -133,14 +133,14 @@ Use essas informações para tornar a conversa mais íntima e personalizada. Se 
 
 async function extractAndSaveMemories(userId: string, userMessage: string, apiKey: string): Promise<void> {
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "gemini-2.5-flash-lite",
         messages: [
           {
             role: "system",
@@ -289,8 +289,8 @@ serve(async (req) => {
         // ignore — treat as guest
       }
     }
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     const religion = context?.religion || "";
     const philosophy = context?.philosophy || "";
@@ -403,7 +403,7 @@ serve(async (req) => {
       if (memoryEnabled) {
         const lastUserMsg = messages?.filter((m: { role: string }) => m.role === 'user').pop();
         if (lastUserMsg?.content && lastUserMsg.content.length > 10) {
-          extractAndSaveMemories(userId, lastUserMsg.content, LOVABLE_API_KEY).catch(e =>
+          extractAndSaveMemories(userId, lastUserMsg.content, GEMINI_API_KEY).catch(e =>
             console.error("Background memory extraction failed:", e)
           );
         }
@@ -419,7 +419,7 @@ serve(async (req) => {
       const lastUserMsg = messages?.filter((m: { role: string }) => m.role === "user").pop();
       if (lastUserMsg?.content && !generateSummary && !isClosing) {
         const filterRel = religion || null;
-        const rag = await retrieveRagContext(lastUserMsg.content, filterRel, LOVABLE_API_KEY, 5);
+        const rag = await retrieveRagContext(lastUserMsg.content, filterRel, GEMINI_API_KEY, 5);
         ragSection = rag.promptSection;
         ragSources = rag.sources;
       }
@@ -621,8 +621,8 @@ BENCAO FINAL
 Cada seção deve ter no mínimo 3 frases substantivas. Seja específico — não use generalidades.` : ''}`;
 
     return await streamFromGateway({
-      apiKey: LOVABLE_API_KEY,
-      model: generateSummary ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+      apiKey: GEMINI_API_KEY,
+      model: generateSummary ? "gemini-2.5-pro" : "gemini-2.5-flash",
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,

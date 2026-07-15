@@ -443,8 +443,8 @@ serve(async (req) => {
 
   try {
     const { religion, language, userDate, timezone } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     // Use user's local date when provided; fallback to UTC
     let date = userDate && /^\d{4}-\d{2}-\d{2}$/.test(userDate)
@@ -577,10 +577,10 @@ serve(async (req) => {
 
     // Helper: call AI gateway with given model and return { raw, finishReason }
     const callAI = async (model: string) => {
-      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const r = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${GEMINI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -619,14 +619,14 @@ serve(async (req) => {
 
     try {
       // Use Pro by default for depth; fall back to Flash only on Pro failure or shallow output
-      ({ raw, finishReason } = await callAI("google/gemini-2.5-pro"));
+      ({ raw, finishReason } = await callAI("gemini-2.5-pro"));
       parsed = tryParse(raw);
 
       const isShallow = parsed && typeof parsed.explanation === "string" && parsed.explanation.trim().length < 600;
       const needsRetry = finishReason === "length" || !parsed || !parsed.title || !parsed.explanation || isShallow;
       if (needsRetry) {
         console.warn(`Pro attempt insufficient (finish=${finishReason}, parsed=${!!parsed}, shallow=${isShallow}), retrying with Flash`);
-        const fb = await callAI("google/gemini-2.5-flash");
+        const fb = await callAI("gemini-2.5-flash");
         const retryParsed = tryParse(fb.raw);
         if (retryParsed && retryParsed.title && retryParsed.explanation && retryParsed.explanation.length >= (parsed?.explanation?.length || 0)) {
           parsed = retryParsed;
