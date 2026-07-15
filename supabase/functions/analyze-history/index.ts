@@ -7,8 +7,8 @@ serve(async (req) => {
 
   try {
     const { items, language } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return new Response(JSON.stringify({ error: "No items provided" }), {
@@ -62,14 +62,14 @@ IMPORTANTE:
 - Identifique a evolução espiritual ao longo do tempo.
 - ${langInstructions[language] || langInstructions['pt-BR']}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Aqui está o histórico completo de atividades do usuário no Templo Sagrado:\n\n${historyText}\n\nFaça a análise profunda conforme instruído.` },

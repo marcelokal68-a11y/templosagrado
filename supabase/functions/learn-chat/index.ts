@@ -56,8 +56,8 @@ serve(async (req) => {
 
   try {
     const { messages, topic, language } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
     const lang = language || 'pt-BR';
     const topicName = TOPIC_NAMES[lang]?.[topic] || TOPIC_NAMES['pt-BR']?.[topic] || topic;
@@ -655,7 +655,7 @@ When the student asks about Candomblé, draw richly from this base. Cite os terr
     try {
       const lastUserMsg = messages?.filter((m: { role: string }) => m.role === "user").pop();
       if (lastUserMsg?.content) {
-        const rag = await retrieveRagContext(lastUserMsg.content, topic || null, LOVABLE_API_KEY, 5, { strict: true });
+        const rag = await retrieveRagContext(lastUserMsg.content, topic || null, GEMINI_API_KEY, 5, { strict: true });
         ragSection = rag.promptSection;
         ragSources = rag.sources;
       }
@@ -684,8 +684,8 @@ ${DEPTH_PERSONA_BLOCK}
 NOTA PARA ESTE CONTEXTO (aprendizado): aqui o MODO RACIONAL é mais frequente — o aluno costuma pedir fatos, contexto histórico, comparações. Responda com clareza didática. Mas se o aluno trouxer dor, dúvida existencial ou emoção no meio do estudo, migre imediatamente para o MODO EMOCIONAL: acolha primeiro, ensine depois.`;
 
     return await streamFromGateway({
-      apiKey: LOVABLE_API_KEY,
-      model: "google/gemini-2.5-flash",
+      apiKey: GEMINI_API_KEY,
+      model: "gemini-2.5-flash",
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,

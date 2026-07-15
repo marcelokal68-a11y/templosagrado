@@ -1,7 +1,7 @@
 // Shared streaming helper for the Lovable AI Gateway.
 //
 // Centralizes:
-//  - POST to https://ai.gateway.lovable.dev/v1/chat/completions with stream=true
+//  - POST to https://generativelanguage.googleapis.com/v1beta/openai/chat/completions with stream=true
 //  - 429 / 402 / generic error mapping to JSON Response with CORS
 //  - Optional SSE prefix injecting `{"__sources": [...]}` so the front-end can
 //    render citation chips before the first token arrives.
@@ -23,7 +23,7 @@ export interface StreamFromGatewayOptions {
   req: Request;
 }
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const GATEWAY_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
 function jsonError(req: Request, status: number, body: Record<string, unknown>): Response {
   return new Response(JSON.stringify(body), {
