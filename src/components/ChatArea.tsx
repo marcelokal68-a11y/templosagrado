@@ -495,7 +495,11 @@ const ChatArea = forwardRef<{ sendAutoMessage: (msg: string) => void }, {}>((_pr
     const userMsg: Msg = { role: 'user', content: text.trim() };
 
     const headers = await getEdgeAuthHeaders();
-    const guestId = user ? undefined : getGuestChatId();
+    // Always send a stable guestId. When the user is authenticated the server
+    // ignores it, but sending it unconditionally avoids a race where `user` is
+    // briefly truthy/undefined during hydration and the guest quota RPC gets
+    // an empty anon_id (which returns quota_limit: 0 → 402 quota_exceeded).
+    const guestId = getGuestChatId();
 
     setMessages(prev => [...prev, userMsg]);
     setChatInput('');
